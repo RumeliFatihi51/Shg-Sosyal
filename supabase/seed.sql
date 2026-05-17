@@ -1,0 +1,3 @@
+-- Supabase CLI varsayılan seed dosyası.
+-- Zengin demo veriyi çalıştırmak için SQL editor veya CLI üzerinden `supabase/seed/demo.sql` içeriğini kullanın.
+-- Bu dosya bilinçli olarak boş bırakıldı; demo seed isteğe bağlıdır.
