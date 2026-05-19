@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 import {
+  ArrowUpRight,
   Bell,
   CalendarDays,
   CheckCircle2,
+  ChevronRight,
   Clock3,
   Flame,
+  Hash,
   Home,
   MapPin,
   Megaphone,
@@ -82,6 +85,7 @@ const tone = {
 };
 
 export function FeedLayout({
+  left,
   feed,
   right,
   signedIn,
@@ -93,15 +97,23 @@ export function FeedLayout({
 }) {
   return (
     <div className="relative isolate pb-20 lg:pb-2">
-      <div className="pointer-events-none absolute inset-x-[-1rem] top-[-2rem] -z-10 h-[28rem] overflow-hidden rounded-[3rem]">
-        <div className="absolute left-[8%] top-8 h-44 w-44 rounded-full bg-orange-300/24 blur-3xl" />
-        <div className="absolute right-[8%] top-16 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl" />
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.68),rgba(255,248,239,0.45),rgba(255,255,255,0.34))]" />
+      <div className="pointer-events-none absolute inset-x-[-1rem] top-[-2rem] -z-10 h-[38rem] overflow-hidden rounded-[3rem]">
+        <div className="absolute left-[7%] top-10 h-52 w-52 rounded-full bg-orange-300/24 blur-3xl" />
+        <div className="absolute right-[6%] top-14 h-64 w-64 rounded-full bg-sky-300/18 blur-3xl" />
+        <div className="absolute left-[40%] top-56 h-44 w-44 rounded-full bg-emerald-200/16 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.75),rgba(255,248,239,0.48),rgba(255,255,255,0.36))]" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px] xl:items-start">
-        <AnimatedSection delay={0.02}>{feed}</AnimatedSection>
-        <AnimatedSection className="xl:sticky xl:top-8" delay={0.07}>{right}</AnimatedSection>
+      <div className="grid gap-5 xl:grid-cols-[238px_minmax(0,1fr)_318px] xl:items-start">
+        {left ? (
+          <AnimatedSection className="hidden xl:sticky xl:top-8 xl:block" delay={0.01}>
+            {left}
+          </AnimatedSection>
+        ) : null}
+        <AnimatedSection delay={0.03}>{feed}</AnimatedSection>
+        <AnimatedSection className="xl:sticky xl:top-8" delay={0.08}>
+          {right}
+        </AnimatedSection>
       </div>
       <MobileBottomNav signedIn={signedIn} />
     </div>
@@ -109,9 +121,15 @@ export function FeedLayout({
 }
 
 export const AppShell = FeedLayout;
+export const HomeShell = FeedLayout;
 
 export function LeftSidebar({ signedIn }: { signedIn: boolean }) {
-  return <QuickActionCard signedIn={signedIn} />;
+  return (
+    <aside className="space-y-4">
+      <HomeMenu signedIn={signedIn} />
+      <QuickActions signedIn={signedIn} />
+    </aside>
+  );
 }
 
 export function MainFeed({
@@ -127,11 +145,14 @@ export function MainFeed({
   items: FeedItem[];
   signedIn: boolean;
 }) {
-  const featuredItem = items.find((item) => item.type === "event") ?? items[0];
+  const featuredItem = pickFeaturedItem(items);
+  const feedItems = featuredItem
+    ? items.filter((item) => itemIdentity(item) !== itemIdentity(featuredItem))
+    : items;
 
   return (
     <main className="space-y-5">
-      <StreamHeader
+      <TodayOverview
         todayCount={todayCount}
         participantCount={participantCount}
         weekPostCount={weekPostCount}
@@ -140,42 +161,27 @@ export function MainFeed({
 
       <CategoryChips signedIn={signedIn} />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-        <FeaturedMovementCard item={featuredItem} signedIn={signedIn} />
-        <TodayTimeline
+      <div className="xl:hidden">
+        <QuickActions signedIn={signedIn} compact />
+      </div>
+
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1.16fr)_minmax(245px,0.84fr)]">
+        <FeaturedHighlight item={featuredItem} signedIn={signedIn} />
+        <CompactActivityList
           todayCount={todayCount}
           participantCount={participantCount}
           weekPostCount={weekPostCount}
           items={items}
           signedIn={signedIn}
         />
-      </div>
+      </section>
 
-      {items.length ? (
-        <section className="space-y-4">
-          <SectionHeading
-            eyebrow="Canlı Akış"
-            title="Okulda şu an olanlar"
-            body="Her içerik türü kendi ritmiyle akar; etkinlik, duyuru, anket ve arkadaş hareketleri tek bakışta ayrılır."
-          />
-          <StaggeredGrid className="grid gap-4">
-            {items.map((item, index) => (
-              <FeedCard key={feedKey(item, index)} item={item} signedIn={signedIn} />
-            ))}
-          </StaggeredGrid>
-        </section>
-      ) : (
-        <EmptyStateCard
-          title="Bugün henüz sakin, ilk hareketi sen başlat."
-          body="Bir etkinlik öner, topluluk kur ya da okul gündemine ilk paylaşımı bırak."
-          action={<LinkButton href={signedIn ? "/events/new" : "/login"}>İlk hareketi başlat</LinkButton>}
-        />
-      )}
+      <MainSchoolFeed items={feedItems} signedIn={signedIn} />
     </main>
   );
 }
 
-export function StreamHeader({
+export function TodayOverview({
   todayCount,
   participantCount,
   weekPostCount,
@@ -188,46 +194,49 @@ export function StreamHeader({
 }) {
   const metrics = [
     {
-      label: "Bugün",
-      value: todayCount ? `${todayCount} etkinlik` : "Etkinlik hazırlanıyor",
+      label: "Bugün okulda",
+      value: todayCount ? `${todayCount} etkinlik var` : "Etkinlik hazırlanıyor",
+      body: todayCount ? "Takvime düşen hareketler" : "İlk etkinliği sen önerebilirsin",
       icon: CalendarDays,
       tone: "ember" as const,
     },
     {
       label: "Katılım",
-      value: participantCount ? `${participantCount} kişi` : "İlk katılımı başlat",
-      icon: UsersRound,
+      value: participantCount ? `${participantCount} öğrenci katılıyor` : "İlk katılımı sen başlat",
+      body: "Etkinliklerdeki canlılık",
+      icon: CheckCircle2,
       tone: "mint" as const,
     },
     {
-      label: "Konuşma",
-      value: weekPostCount ? `${weekPostCount} paylaşım` : "İlk paylaşımı yap",
+      label: "Konuşulanlar",
+      value: weekPostCount ? `${weekPostCount} paylaşım bu hafta` : "İlk paylaşımı yap",
+      body: "Topluluklardan gelen akış",
       icon: MessageCircle,
       tone: "sky" as const,
     },
   ];
 
   return (
-    <section className="relative overflow-hidden rounded-[2.2rem] bg-[#12100f] p-5 text-white shadow-[0_30px_90px_rgba(18,16,15,0.25)] sm:p-7">
-      <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-300 to-sky-300" />
-      <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-orange-400/18 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 left-12 size-72 rounded-full bg-sky-400/14 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[2.1rem] bg-[#15110f] p-4 text-white shadow-[0_26px_86px_rgba(18,16,15,0.24)] sm:p-5 lg:p-6">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-amber-300 to-sky-300" />
+      <div className="pointer-events-none absolute -right-28 -top-24 size-72 rounded-full bg-orange-400/18 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 left-16 size-72 rounded-full bg-sky-400/14 blur-3xl" />
 
-      <div className="relative grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
+      <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.78fr)] lg:items-center">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 py-1.5 text-xs font-black text-slate-200">
             <span className="size-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.9)]" />
             ŞHG Sosyal · okulun ana akışı
           </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.96] tracking-tight text-balance sm:text-6xl">
-            Okulda olan biten, tek ekranda canlı.
+          <h1 className="mt-4 max-w-2xl text-3xl font-black leading-[1.02] tracking-tight text-balance sm:text-5xl">
+            Bugün okulda neler var?
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-            Etkinlikleri gör, topluluklara katıl, arkadaşlarının nereye aktığını takip et. Burası duyuru panosu değil; okulun sosyal akışı.
+          <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
+            Etkinlikler, topluluk hareketleri, arkadaş katılımları ve konuşulanlar aynı akışta. Burası tanıtım sayfası değil; okulun ana ekranı.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3">
             <LinkButton href="/posts" className="bg-white text-slate-950 hover:bg-orange-50">
-              Akışa gir
+              Akışa bak
             </LinkButton>
             <LinkButton href={signedIn ? "/events/new" : "/login"} variant="secondary" className="border-white/15 bg-white/10 text-white hover:bg-white/20">
               <Plus className="size-4" />
@@ -236,15 +245,21 @@ export function StreamHeader({
           </div>
         </div>
 
-        <div className="grid gap-2 rounded-[1.7rem] border border-white/10 bg-white/10 p-2 backdrop-blur">
-          {metrics.map((metric) => (
-            <div key={metric.label} className="flex items-center gap-3 rounded-[1.3rem] bg-white/10 px-3 py-3">
-              <span className={cn("flex size-10 items-center justify-center rounded-2xl ring-1", tone[metric.tone].chip)}>
+        <div className="grid gap-2">
+          {metrics.map((metric, index) => (
+            <div
+              key={metric.label}
+              className={cn(
+                "flex items-center gap-3 rounded-[1.35rem] border border-white/10 bg-white/10 px-3 py-3 backdrop-blur",
+                index === 1 ? "sm:ml-6" : index === 2 ? "sm:ml-12" : "",
+              )}
+            >
+              <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-2xl ring-1", tone[metric.tone].chip)}>
                 <metric.icon className="size-4" />
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-black">{metric.value}</span>
-                <span className="block text-xs font-bold text-slate-400">{metric.label}</span>
+                <span className="block truncate text-xs font-semibold text-slate-400">{metric.body}</span>
               </span>
             </div>
           ))}
@@ -260,7 +275,7 @@ export function CategoryChips({ signedIn }: { signedIn: boolean }) {
     { href: "/events", label: "Etkinlik", icon: CalendarDays },
     { href: "/posts?sort=popular", label: "Popüler", icon: Sparkles },
     { href: signedIn ? "/friends" : "/login", label: "Arkadaşların", icon: UsersRound },
-    { href: "/communities", label: "Topluluk", icon: Home },
+    { href: "/communities", label: "Topluluklar", icon: Home },
   ];
 
   return (
@@ -270,7 +285,7 @@ export function CategoryChips({ signedIn }: { signedIn: boolean }) {
           key={chip.label}
           href={chip.href}
           className={cn(
-            "group inline-flex h-12 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-black shadow-sm transition",
+            "group inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-black shadow-sm transition",
             index === 0
               ? "border-slate-950 bg-slate-950 text-white"
               : "border-white/80 bg-white/80 text-slate-700 backdrop-blur hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50",
@@ -284,7 +299,7 @@ export function CategoryChips({ signedIn }: { signedIn: boolean }) {
   );
 }
 
-export function TodayTimeline({
+export function CompactActivityList({
   todayCount,
   participantCount,
   weekPostCount,
@@ -297,33 +312,100 @@ export function TodayTimeline({
   items: FeedItem[];
   signedIn: boolean;
 }) {
-  const timeline = buildTimelineItems(items, todayCount, participantCount, weekPostCount, signedIn);
+  const rows = buildActivityRows(items, todayCount, participantCount, weekPostCount, signedIn);
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/74 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-      <div className="absolute inset-y-6 left-8 w-px bg-gradient-to-b from-orange-300 via-sky-300 to-transparent" />
+    <section className="relative overflow-hidden rounded-[1.9rem] border border-white/70 bg-white/76 p-4 shadow-[0_20px_62px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className="absolute inset-y-7 left-7 w-px bg-gradient-to-b from-orange-300 via-sky-300 to-transparent" />
       <div className="relative mb-4 pl-9">
-        <div className="text-xs font-black uppercase text-[var(--primary)]">Bugün Okulda</div>
-        <h2 className="mt-1 text-xl font-black text-slate-950">Günün kısa ritmi</h2>
+        <div className="text-xs font-black uppercase text-[var(--primary)]">Bugün okulda</div>
+        <h2 className="mt-1 text-xl font-black text-slate-950">Kısa akış</h2>
       </div>
       <div className="relative grid gap-3">
-        {timeline.map((item) => (
-          <div key={item.label} className="grid grid-cols-[2.35rem_1fr] items-center gap-3">
-            <span className={cn("z-10 flex size-10 items-center justify-center rounded-2xl ring-1 shadow-sm", tone[item.tone].chip)}>
-              <item.icon className="size-4" />
+        {rows.map((row) => (
+          <Link
+            key={row.label}
+            href={row.href}
+            className="grid grid-cols-[2.2rem_1fr] items-center gap-3 rounded-[1.2rem] transition hover:bg-white/60"
+          >
+            <span className={cn("z-10 flex size-9 items-center justify-center rounded-2xl ring-1 shadow-sm", tone[row.tone].chip)}>
+              <row.icon className="size-4" />
             </span>
-            <div className="rounded-[1.3rem] border border-white/80 bg-white/78 px-3 py-3">
-              <div className="text-sm font-black text-slate-950">{item.value}</div>
-              <div className="mt-0.5 text-xs font-bold text-slate-500">{item.label}</div>
-            </div>
-          </div>
+            <span className="rounded-[1.15rem] border border-white/80 bg-white/78 px-3 py-2.5">
+              <span className="block line-clamp-1 text-sm font-black text-slate-950">{row.value}</span>
+              <span className="mt-0.5 block line-clamp-1 text-xs font-bold text-slate-500">{row.label}</span>
+            </span>
+          </Link>
         ))}
       </div>
     </section>
   );
 }
 
-export function FeaturedMovementCard({
+export function MainSchoolFeed({
+  items,
+  signedIn,
+}: {
+  items: FeedItem[];
+  signedIn: boolean;
+}) {
+  const slots = pickFeedSlots(items);
+
+  if (!items.length) {
+    return (
+      <EmptyActionState
+        title="Bugün henüz sakin, ilk hareketi sen başlat."
+        body="Bir etkinlik öner, topluluk kur ya da okul gündemine ilk paylaşımı bırak."
+        href={signedIn ? "/events/new" : "/login"}
+        action="İlk hareketi başlat"
+      />
+    );
+  }
+
+  return (
+    <section className="space-y-4">
+      <SectionHeading
+        eyebrow="Ana akış"
+        title="Okulda olanlar"
+        body="Etkinlikler, duyurular, anketler ve arkadaş hareketleri aynı sıraya dizilmez; her biri kendi ağırlığıyla akar."
+      />
+
+      <StaggeredGrid className="grid gap-4">
+        {slots.event ? <EventFeedCard event={slots.event.event} friends={slots.event.friends} signedIn={signedIn} /> : null}
+
+        {(slots.community || slots.poll) ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {slots.community ? <CommunityFeedCard community={slots.community.community} signedIn={signedIn} /> : null}
+            {slots.poll ? <PollFeedCard poll={slots.poll.poll} /> : null}
+          </div>
+        ) : null}
+
+        {slots.friend ? (
+          <FriendActivityCard
+            title={slots.friend.title}
+            body={slots.friend.body}
+            href={slots.friend.href}
+            friends={slots.friend.friends}
+            signedIn={signedIn}
+          />
+        ) : null}
+
+        {(slots.announcement || slots.post) ? (
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            {slots.announcement ? <AnnouncementFeedCard announcement={slots.announcement.announcement} /> : null}
+            {slots.post ? <PostFeedCard post={slots.post.post} /> : null}
+          </div>
+        ) : null}
+
+        {slots.rest.map((item, index) => (
+          <FeedCard key={feedKey(item, index)} item={item} signedIn={signedIn} />
+        ))}
+      </StaggeredGrid>
+    </section>
+  );
+}
+
+export function FeaturedHighlight({
   item,
   signedIn,
 }: {
@@ -332,10 +414,11 @@ export function FeaturedMovementCard({
 }) {
   if (!item) {
     return (
-      <EmptyStateCard
-        title="Bugünün öne çıkanı yakında burada."
+      <EmptyActionState
+        title="Öne çıkan hareket yakında burada."
         body="Onaylanan etkinlikler, duyurular ve popüler paylaşımlar okul akışında öne çıkar."
-        action={<LinkButton href={signedIn ? "/posts" : "/login"} variant="secondary">İlk paylaşımı yap</LinkButton>}
+        href={signedIn ? "/posts" : "/login"}
+        action="İlk paylaşımı yap"
       />
     );
   }
@@ -344,14 +427,14 @@ export function FeaturedMovementCard({
 
   return (
     <AnimatedCard>
-      <section className="group relative min-h-[22rem] overflow-hidden rounded-[2.2rem] bg-[#181411] p-5 text-white shadow-[0_34px_95px_rgba(24,20,17,0.26)]">
+      <section className="group relative min-h-[24rem] overflow-hidden rounded-[2.35rem] bg-[#181411] p-5 text-white shadow-[0_34px_95px_rgba(24,20,17,0.26)] sm:p-6">
         <div className={cn("absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r", tone[featured.tone].line)} />
         <div className="absolute -right-24 -top-24 size-72 rounded-full bg-white/10 blur-3xl" />
         <div className={cn("absolute -bottom-28 left-8 size-64 rounded-full blur-3xl", tone[featured.tone].wash)} />
         <div className="relative flex h-full flex-col justify-between gap-10">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-slate-950">Bugünün öne çıkanı</span>
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-slate-950">Öne çıkan hareket</span>
               <TonePill toneName={featured.tone}>{featured.category}</TonePill>
             </div>
             <h2 className="mt-5 max-w-2xl text-3xl font-black leading-[1.02] tracking-tight text-balance sm:text-5xl">
@@ -359,12 +442,14 @@ export function FeaturedMovementCard({
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">{featured.body}</p>
           </div>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="rounded-[1.4rem] border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-slate-300">
-              Okul akışında bugün dikkat çeken hareket
+
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div className="rounded-[1.35rem] border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-slate-300">
+              Bugün akışta en çok dikkat çeken içerik burada büyür.
             </div>
             <LinkButton href={featured.href} variant="secondary" className="bg-white text-slate-950">
               {featured.action}
+              <ArrowUpRight className="size-4" />
             </LinkButton>
           </div>
         </div>
@@ -423,8 +508,8 @@ export function EventFeedCard({
 
   return (
     <AnimatedCard>
-      <article className="group overflow-hidden rounded-[2.1rem] border border-orange-200/70 bg-white/82 shadow-[0_24px_72px_rgba(240,90,40,0.11)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-orange-300">
-        <div className="grid md:grid-cols-[11.5rem_1fr]">
+      <article className="group overflow-hidden rounded-[2.1rem] border border-orange-200/70 bg-white/82 shadow-[0_24px_72px_rgba(240,90,40,0.11)] backdrop-blur-xl transition hover:border-orange-300">
+        <div className="grid md:grid-cols-[11.25rem_1fr]">
           <Link
             href={`/events/${event.id}`}
             className="relative min-h-44 overflow-hidden bg-[#17110e] p-5 text-white md:min-h-full"
@@ -449,7 +534,7 @@ export function EventFeedCard({
                 <InfoPill icon={MapPin}>{cleanText(event.location, "Konum yakında")}</InfoPill>
                 <InfoPill icon={UsersRound}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
               </div>
-              <TonePill toneName="ember">Canlı etkinlik</TonePill>
+              <TonePill toneName="ember">Takvimde</TonePill>
             </div>
 
             <Link href={`/events/${event.id}`} className="mt-4 block text-2xl font-black leading-tight text-slate-950 hover:text-[var(--primary)] sm:text-3xl">
@@ -477,20 +562,9 @@ export function EventFeedCard({
 
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {friends.length ? (
-                    friends.slice(0, 4).map((friend) => (
-                      <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-                    ))
-                  ) : (
-                    <>
-                      <Avatar firstName="İlk" lastName="Katılım" size="sm" />
-                      <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
-                    </>
-                  )}
-                </div>
+                <AvatarStack friends={friends} fallback />
                 <span className="text-xs font-bold text-slate-500">
-                  {friends.length ? `${friends.length} arkadaşın gidiyor` : "Arkadaş katılımı yakında görünür"}
+                  {friends.length ? `${friends.length} arkadaşın gidiyor` : "Arkadaş katılımı burada görünür"}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -527,7 +601,7 @@ export function CommunityFeedCard({
 
   return (
     <AnimatedCard>
-      <article className="overflow-hidden rounded-[2rem] border border-emerald-200/70 bg-white/82 p-5 shadow-[0_22px_68px_rgba(16,185,129,0.10)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-emerald-300">
+      <article className="overflow-hidden rounded-[2rem] border border-emerald-200/70 bg-white/82 p-5 shadow-[0_22px_68px_rgba(16,185,129,0.10)] backdrop-blur-xl transition hover:border-emerald-300">
         <div className="flex items-start justify-between gap-4">
           <Link
             href={`/communities/${community.slug}`}
@@ -605,7 +679,7 @@ export function AnnouncementFeedCard({ announcement }: { announcement: any }) {
 }
 
 export function PollFeedCard({ poll }: { poll: any }) {
-  const options = poll.poll_options ?? [];
+  const options = Array.isArray(poll.poll_options) ? poll.poll_options : [];
   const totalVotes = options.reduce(
     (sum: number, option: any) => sum + (Array.isArray(option.poll_votes) ? option.poll_votes.length : 0),
     0,
@@ -693,21 +767,9 @@ export function FriendActivityCard({
     <AnimatedCard>
       <Link
         href={targetHref}
-        className="group flex items-center gap-4 rounded-[1.6rem] border border-amber-200/70 bg-amber-50/82 px-4 py-3 shadow-[0_16px_44px_rgba(245,158,11,0.10)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-amber-300"
+        className="group flex items-center gap-4 rounded-[1.6rem] border border-amber-200/70 bg-amber-50/82 px-4 py-3 shadow-[0_16px_44px_rgba(245,158,11,0.10)] backdrop-blur-xl transition hover:border-amber-300"
       >
-        <span className="relative flex -space-x-2">
-          {(friends ?? []).length ? (
-            friends?.slice(0, 4).map((friend) => (
-              <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-            ))
-          ) : (
-            <>
-              <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
-              <Avatar firstName="Okul" lastName="Akışı" size="sm" />
-            </>
-          )}
-          <span className="absolute -right-1 -top-1 size-3 rounded-full bg-emerald-400 ring-2 ring-amber-50" />
-        </span>
+        <AvatarStack friends={friends ?? []} fallback />
         <span className="min-w-0 flex-1">
           <span className="block line-clamp-1 text-sm font-black text-slate-950">
             {cleanText(title, "Arkadaşların ne yapıyor?")}
@@ -717,255 +779,10 @@ export function FriendActivityCard({
           </span>
         </span>
         <span className="hidden rounded-full bg-white px-3 py-1 text-xs font-black text-amber-800 sm:inline-flex">
-          hareket
+          yeni hareket
         </span>
       </Link>
     </AnimatedCard>
-  );
-}
-
-export function RightSidebar({
-  events,
-  communities,
-  friendItems,
-  signedIn,
-}: {
-  events: any[];
-  communities: any[];
-  friendItems: Array<{ title: string; body: string; href?: string; friends?: FriendAttendance[] }>;
-  signedIn: boolean;
-}) {
-  const featuredEvent = events[0];
-
-  return (
-    <aside className="space-y-4">
-      <QuickActionCard signedIn={signedIn} />
-      <MiniPanel icon={CalendarDays} title="Yakında" href="/events" toneName="ember">
-        {events.length ? (
-          <div className="grid gap-2">
-            {events.slice(0, 4).map((event) => {
-              const { day, month } = getDateParts(event.event_date);
-
-              return (
-                <Link
-                  key={event.id}
-                  href={`/events/${event.id}`}
-                  className="grid grid-cols-[3rem_1fr] gap-3 rounded-[1.35rem] border border-white/75 bg-white/75 p-3 transition hover:border-orange-200 hover:bg-orange-50/70"
-                >
-                  <span className="flex size-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-slate-950 text-white">
-                    <span className="text-base font-black">{day}</span>
-                    <span className="text-[10px] font-black uppercase">{month}</span>
-                  </span>
-                  <span className="min-w-0">
-                    <span className="line-clamp-1 text-sm font-black text-slate-950">{cleanText(event.title, "Etkinlik")}</span>
-                    <span className="mt-1 block text-xs font-semibold text-slate-500">
-                      {formatTime(event.start_time)} · {cleanText(event.location, "Konum yakında")}
-                    </span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyStateCard
-            compact
-            title="Etkinlik hazırlanıyor."
-            body="Onaylanan etkinlikler burada görünür."
-            action={<LinkButton href={signedIn ? "/events/new" : "/login"} variant="secondary">Etkinlik öner</LinkButton>}
-          />
-        )}
-      </MiniPanel>
-
-      <CommunityPanel communities={communities} />
-      <FriendActivityPanel items={friendItems} signedIn={signedIn} />
-
-      <section className="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
-        <div className="p-5">
-          <Badge tone="orange">Haftanın etkinliği</Badge>
-          <h2 className="mt-4 text-xl font-black">
-            {cleanText(featuredEvent?.title, "Öne çıkan etkinlik yakında burada")}
-          </h2>
-          <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">
-            {featuredEvent
-              ? `${formatDate(featuredEvent.event_date)} · ${cleanText(featuredEvent.location, "Konum yakında")}`
-              : "Yeni bir etkinlik yayınlandığında okul akışında öne çıkar."}
-          </p>
-        </div>
-        <div className="border-t border-white/10 p-4">
-          <LinkButton href={featuredEvent ? `/events/${featuredEvent.id}` : signedIn ? "/events/new" : "/login"} variant="secondary" className="w-full bg-white text-slate-950">
-            {featuredEvent ? "Detayları gör" : "Etkinlik öner"}
-          </LinkButton>
-        </div>
-      </section>
-    </aside>
-  );
-}
-
-export function CommunityPanel({ communities }: { communities: any[] }) {
-  return (
-    <MiniPanel icon={UsersRound} title="Aktif topluluklar" href="/communities" toneName="mint">
-      {communities.length ? (
-        <div className="grid gap-2">
-          {communities.slice(0, 4).map((community) => {
-            const { members, posts } = getCommunityStats(community);
-
-            return (
-              <Link
-                key={community.id}
-                href={`/communities/${community.slug}`}
-                className="rounded-[1.35rem] border border-white/75 bg-white/75 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/65"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-black text-slate-950">{cleanText(community.name, "Topluluk")}</div>
-                    <div className="mt-1 text-xs font-bold text-slate-500">
-                      {members ? `${members} üye` : "Yeni üyeler bekleniyor"} · {posts ? `${posts} paylaşım` : "İlk paylaşım bekleniyor"}
-                    </div>
-                  </div>
-                  <Badge tone="green">aktif</Badge>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        <EmptyStateCard compact title="Topluluklar hazır." body="Onaylanan ilk topluluk burada görünecek." />
-      )}
-    </MiniPanel>
-  );
-}
-
-export function FriendActivityPanel({
-  items,
-  signedIn,
-}: {
-  items: Array<{ title: string; body: string; href?: string; friends?: FriendAttendance[] }>;
-  signedIn: boolean;
-}) {
-  return (
-    <MiniPanel icon={UsersRound} title="Arkadaşların" href={signedIn ? "/friends" : "/login"} toneName="sky">
-      {items.length ? (
-        <div className="grid gap-2">
-          {items.slice(0, 3).map((item) => (
-            <Link
-              key={item.title}
-              href={item.href ?? "/friends"}
-              className="block rounded-[1.35rem] border border-sky-100 bg-sky-50/72 p-3 transition hover:border-sky-200 hover:bg-sky-50"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {(item.friends ?? []).slice(0, 3).map((friend) => (
-                    <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-                  ))}
-                </div>
-                <div className="min-w-0">
-                  <div className="line-clamp-1 text-sm font-black text-slate-950">{cleanText(item.title, "Arkadaş hareketi")}</div>
-                  <div className="line-clamp-1 text-xs font-semibold text-slate-600">{cleanText(item.body, "Etkinlik")}</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <EmptyStateCard
-          compact
-          title={signedIn ? "Arkadaş hareketleri yakında." : "Giriş yapınca açılır."}
-          body={signedIn ? "Arkadaşların etkinliklere katıldığında burada görünür." : "Arkadaşlarının katıldığı etkinlikler öne çıkar."}
-        />
-      )}
-    </MiniPanel>
-  );
-}
-
-export function QuickActionCard({ signedIn }: { signedIn: boolean }) {
-  const actions = [
-    { href: signedIn ? "/events/new" : "/login", label: "Etkinlik öner", icon: CalendarDays },
-    { href: signedIn ? "/communities/new" : "/login", label: "Topluluk kur", icon: UsersRound },
-    { href: signedIn ? "/posts" : "/login", label: "Gönderi paylaş", icon: Send },
-  ];
-
-  return (
-    <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/75 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-base font-black text-slate-950">Hızlı hareket</h2>
-          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Akışa yeni bir şey ekle.</p>
-        </div>
-        <Sparkles className="size-5 text-[var(--primary)]" />
-      </div>
-      <div className="mt-4 grid gap-2">
-        {actions.map((action) => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className="flex items-center gap-3 rounded-[1.25rem] border border-white/75 bg-white/72 px-3 py-3 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50"
-          >
-            <span className="flex size-9 items-center justify-center rounded-2xl bg-slate-950 text-white">
-              <action.icon className="size-4" />
-            </span>
-            {action.label}
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export function MobileBottomNav({ signedIn }: { signedIn: boolean }) {
-  const links = [
-    { href: "/", label: "Akış", icon: Home, active: true },
-    { href: "/events", label: "Etkinlik", icon: CalendarDays },
-    { href: "/communities", label: "Topluluk", icon: UsersRound },
-    { href: signedIn ? "/friends" : "/login", label: "Arkadaş", icon: UsersRound },
-    { href: signedIn ? "/notifications" : "/login", label: "Bildirim", icon: Bell },
-  ];
-
-  return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-[1.6rem] border border-white/70 bg-white/88 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:hidden">
-      {links.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className={cn(
-            "flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-black transition",
-            item.active ? "bg-slate-950 text-white" : "text-slate-500 hover:bg-orange-50 hover:text-[var(--primary)]",
-          )}
-        >
-          <item.icon className="size-4" />
-          <span className="truncate">{item.label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
-export function EmptyStateCard({
-  title,
-  body,
-  action,
-  compact = false,
-}: {
-  title: string;
-  body: string;
-  action?: ReactNode;
-  compact?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-[2rem] border border-dashed border-orange-200/80 bg-gradient-to-br from-white via-orange-50/80 to-sky-50/70 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
-        compact ? "p-4" : "p-7",
-      )}
-    >
-      <div className="absolute -right-10 -top-10 size-32 rounded-full bg-orange-200/40 blur-2xl" />
-      <div className="absolute -bottom-12 left-10 size-36 rounded-full bg-sky-200/40 blur-2xl" />
-      <div className={cn("relative mx-auto mb-3 flex items-center justify-center rounded-2xl bg-white text-[var(--primary)] shadow-inner", compact ? "size-10" : "size-12")}>
-        <Sparkles className="size-5" />
-      </div>
-      <h3 className={cn("relative font-black text-slate-950", compact ? "text-sm" : "text-lg")}>{title}</h3>
-      <p className={cn("relative mx-auto mt-2 leading-6 text-slate-600", compact ? "text-xs" : "max-w-md text-sm")}>{body}</p>
-      {action ? <div className="relative mt-5 flex justify-center">{action}</div> : null}
-    </div>
   );
 }
 
@@ -975,7 +792,7 @@ function PostFeedCard({ post }: { post: any }) {
 
   return (
     <AnimatedCard>
-      <article className="overflow-hidden rounded-[1.9rem] border border-slate-200/80 bg-white/84 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-slate-300">
+      <article className="overflow-hidden rounded-[1.9rem] border border-slate-200/80 bg-white/84 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-slate-300">
         <div className="p-5">
           <div className="flex items-start gap-3">
             <Avatar firstName={post.profiles?.first_name} lastName={post.profiles?.last_name} size="sm" />
@@ -1012,7 +829,326 @@ function PostFeedCard({ post }: { post: any }) {
   );
 }
 
-function MiniPanel({
+export function RightSidebar({
+  events,
+  communities,
+  friendItems,
+  signedIn,
+}: {
+  events: any[];
+  communities: any[];
+  friendItems: Array<{ title: string; body: string; href?: string; friends?: FriendAttendance[] }>;
+  signedIn: boolean;
+}) {
+  const featuredEvent = events[0];
+
+  return (
+    <aside className="space-y-4">
+      <UpcomingEventsRail events={events} signedIn={signedIn} />
+      <FriendPulsePanel items={friendItems} signedIn={signedIn} />
+      <ActiveCommunitiesRail communities={communities} />
+      <TrendingTopicsPanel events={events} communities={communities} />
+
+      <section className="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+        <div className="p-5">
+          <Badge tone="orange">Haftanın etkinliği</Badge>
+          <h2 className="mt-4 text-xl font-black">
+            {cleanText(featuredEvent?.title, "Öne çıkan etkinlik yakında burada")}
+          </h2>
+          <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">
+            {featuredEvent
+              ? `${formatDate(featuredEvent.event_date)} · ${cleanText(featuredEvent.location, "Konum yakında")}`
+              : "Yeni bir etkinlik yayınlandığında okul akışında öne çıkar."}
+          </p>
+        </div>
+        <div className="border-t border-white/10 p-4">
+          <LinkButton href={featuredEvent ? `/events/${featuredEvent.id}` : signedIn ? "/events/new" : "/login"} variant="secondary" className="w-full bg-white text-slate-950">
+            {featuredEvent ? "Detayları gör" : "Etkinlik öner"}
+          </LinkButton>
+        </div>
+      </section>
+    </aside>
+  );
+}
+
+export function UpcomingEventsRail({ events, signedIn }: { events: any[]; signedIn: boolean }) {
+  return (
+    <SidePanel icon={CalendarDays} title="Yakında" href="/events" toneName="ember">
+      {events.length ? (
+        <div className="grid gap-2">
+          {events.slice(0, 4).map((event) => {
+            const { day, month } = getDateParts(event.event_date);
+
+            return (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}`}
+                className="grid grid-cols-[3rem_1fr] gap-3 rounded-[1.3rem] border border-orange-100 bg-orange-50/64 p-2.5 transition hover:border-orange-200 hover:bg-orange-50"
+              >
+                <span className="flex size-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-slate-950 text-white">
+                  <span className="text-base font-black">{day}</span>
+                  <span className="text-[10px] font-black uppercase">{month}</span>
+                </span>
+                <span className="min-w-0">
+                  <span className="line-clamp-1 text-sm font-black text-slate-950">{cleanText(event.title, "Etkinlik")}</span>
+                  <span className="mt-1 block line-clamp-1 text-xs font-semibold text-slate-500">
+                    {formatTime(event.start_time)} · {cleanText(event.location, "Konum yakında")}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyActionState
+          compact
+          title="Etkinlik hazırlanıyor."
+          body="Onaylanan etkinlikler burada görünür."
+          href={signedIn ? "/events/new" : "/login"}
+          action="Etkinlik öner"
+        />
+      )}
+    </SidePanel>
+  );
+}
+
+export function ActiveCommunitiesRail({ communities }: { communities: any[] }) {
+  return (
+    <SidePanel icon={UsersRound} title="Aktif topluluklar" href="/communities" toneName="mint">
+      {communities.length ? (
+        <div className="grid gap-2">
+          {communities.slice(0, 4).map((community) => {
+            const { members, posts } = getCommunityStats(community);
+
+            return (
+              <Link
+                key={community.id}
+                href={`/communities/${community.slug}`}
+                className="rounded-[1.3rem] border border-white/75 bg-white/75 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/65"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-black text-slate-950">{cleanText(community.name, "Topluluk")}</div>
+                    <div className="mt-1 text-xs font-bold text-slate-500">
+                      {members ? `${members} üye` : "Yeni üyeler bekleniyor"} · {posts ? `${posts} paylaşım` : "İlk paylaşım bekleniyor"}
+                    </div>
+                  </div>
+                  <Badge tone="green">aktif</Badge>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyActionState compact title="Topluluklar hareketlenmeye hazır." body="Onaylanan ilk topluluk burada görünecek." />
+      )}
+    </SidePanel>
+  );
+}
+
+export function FriendPulsePanel({
+  items,
+  signedIn,
+}: {
+  items: Array<{ title: string; body: string; href?: string; friends?: FriendAttendance[] }>;
+  signedIn: boolean;
+}) {
+  return (
+    <SidePanel icon={UsersRound} title="Arkadaşların" href={signedIn ? "/friends" : "/login"} toneName="sky">
+      {items.length ? (
+        <div className="grid gap-2">
+          {items.slice(0, 3).map((item) => (
+            <Link
+              key={item.title}
+              href={item.href ?? "/friends"}
+              className="block rounded-[1.3rem] border border-sky-100 bg-sky-50/72 p-3 transition hover:border-sky-200 hover:bg-sky-50"
+            >
+              <div className="flex items-center gap-3">
+                <AvatarStack friends={item.friends ?? []} />
+                <div className="min-w-0">
+                  <div className="line-clamp-1 text-sm font-black text-slate-950">{cleanText(item.title, "Arkadaş hareketi")}</div>
+                  <div className="line-clamp-1 text-xs font-semibold text-slate-600">{cleanText(item.body, "Etkinlik")}</div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <EmptyActionState
+          compact
+          title={signedIn ? "Arkadaş hareketleri yakında." : "Giriş yapınca açılır."}
+          body={signedIn ? "Arkadaşların etkinliklere katıldığında burada görünür." : "Arkadaşlarının katıldığı etkinlikler öne çıkar."}
+        />
+      )}
+    </SidePanel>
+  );
+}
+
+export function TrendingTopicsPanel({ events, communities }: { events: any[]; communities: any[] }) {
+  const topics = [
+    events[0] ? { label: cleanText(events[0].title, "Yakındaki etkinlik"), href: `/events/${events[0].id}`, tone: "ember" as const } : null,
+    communities[0] ? { label: cleanText(communities[0].name, "Aktif topluluk"), href: `/communities/${communities[0].slug}`, tone: "mint" as const } : null,
+    { label: "Bu haftanın ilk paylaşımını yap", href: "/posts", tone: "sky" as const },
+  ].filter(Boolean) as Array<{ label: string; href: string; tone: Tone }>;
+
+  return (
+    <SidePanel icon={Hash} title="Konuşulanlar" href="/posts" toneName="ink">
+      <div className="flex flex-wrap gap-2">
+        {topics.map((topic) => (
+          <Link
+            key={topic.label}
+            href={topic.href}
+            className={cn("rounded-full px-3 py-2 text-xs font-black ring-1 transition hover:-translate-y-0.5", tone[topic.tone].chip)}
+          >
+            #{topic.label}
+          </Link>
+        ))}
+      </div>
+    </SidePanel>
+  );
+}
+
+export function QuickActions({ signedIn, compact = false }: { signedIn: boolean; compact?: boolean }) {
+  const actions = [
+    { href: signedIn ? "/events/new" : "/login", label: "Etkinlik öner", body: "Takvime yeni hareket ekle", icon: CalendarDays, tone: "ember" as const },
+    { href: signedIn ? "/communities/new" : "/login", label: "Topluluk kur", body: "Bir alanı hareketlendir", icon: UsersRound, tone: "mint" as const },
+    { href: signedIn ? "/posts" : "/login", label: "Gönderi paylaş", body: "Okul gündemine konu bırak", icon: Send, tone: "sky" as const },
+  ];
+
+  return (
+    <section className={cn("overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/76 shadow-[0_18px_54px_rgba(15,23,42,0.07)] backdrop-blur-xl", compact ? "p-3" : "p-4")}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-black text-slate-950">Hızlı hareket</h2>
+          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Akışa yeni bir şey ekle.</p>
+        </div>
+        <Sparkles className="size-5 text-[var(--primary)]" />
+      </div>
+      <div className={cn("mt-4 grid gap-2", compact ? "sm:grid-cols-3" : "")}>
+        {actions.map((action) => (
+          <Link
+            key={action.label}
+            href={action.href}
+            className="group flex items-center gap-3 rounded-[1.2rem] border border-white/75 bg-white/72 px-3 py-3 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50"
+          >
+            <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-2xl ring-1", tone[action.tone].chip)}>
+              <action.icon className="size-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate">{action.label}</span>
+              <span className="block truncate text-[11px] font-semibold text-slate-500">{action.body}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function HomeMenu({ signedIn }: { signedIn: boolean }) {
+  const links = [
+    { href: "/", label: "Ana akış", icon: Home, active: true },
+    { href: "/events", label: "Etkinlikler", icon: CalendarDays },
+    { href: "/communities", label: "Topluluklar", icon: UsersRound },
+    { href: "/posts", label: "Konuşulanlar", icon: MessageCircle },
+    { href: signedIn ? "/notifications" : "/login", label: "Bildirimler", icon: Bell },
+  ];
+
+  return (
+    <nav className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/72 p-3 shadow-[0_18px_54px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+      <div className="px-2 pb-3">
+        <div className="text-xs font-black uppercase text-[var(--primary)]">ŞHG Sosyal</div>
+        <div className="mt-1 text-lg font-black text-slate-950">Okulun ana akışı</div>
+      </div>
+      <div className="grid gap-1">
+        {links.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className={cn(
+              "flex items-center justify-between gap-3 rounded-[1.1rem] px-3 py-2.5 text-sm font-black transition",
+              link.active ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-orange-50 hover:text-slate-950",
+            )}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <link.icon className="size-4 shrink-0" />
+              <span className="truncate">{link.label}</span>
+            </span>
+            {link.active ? <span className="size-2 rounded-full bg-emerald-300" /> : null}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+export function MobileBottomNav({ signedIn }: { signedIn: boolean }) {
+  const links = [
+    { href: "/", label: "Akış", icon: Home, active: true },
+    { href: "/events", label: "Etkinlik", icon: CalendarDays },
+    { href: "/communities", label: "Topluluk", icon: UsersRound },
+    { href: signedIn ? "/friends" : "/login", label: "Arkadaş", icon: UsersRound },
+    { href: signedIn ? "/notifications" : "/login", label: "Bildirim", icon: Bell },
+  ];
+
+  return (
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-[1.6rem] border border-white/70 bg-white/88 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:hidden">
+      {links.map((item) => (
+        <Link
+          key={item.label}
+          href={item.href}
+          className={cn(
+            "flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-black transition",
+            item.active ? "bg-slate-950 text-white" : "text-slate-500 hover:bg-orange-50 hover:text-[var(--primary)]",
+          )}
+        >
+          <item.icon className="size-4" />
+          <span className="truncate">{item.label}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function EmptyActionState({
+  title,
+  body,
+  href,
+  action,
+  compact = false,
+}: {
+  title: string;
+  body: string;
+  href?: string;
+  action?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[2rem] border border-dashed border-orange-200/80 bg-gradient-to-br from-white via-orange-50/80 to-sky-50/70 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
+        compact ? "p-4" : "p-7",
+      )}
+    >
+      <div className="absolute -right-10 -top-10 size-32 rounded-full bg-orange-200/40 blur-2xl" />
+      <div className="absolute -bottom-12 left-10 size-36 rounded-full bg-sky-200/40 blur-2xl" />
+      <div className={cn("relative mx-auto mb-3 flex items-center justify-center rounded-2xl bg-white text-[var(--primary)] shadow-inner", compact ? "size-10" : "size-12")}>
+        <Sparkles className="size-5" />
+      </div>
+      <h3 className={cn("relative font-black text-slate-950", compact ? "text-sm" : "text-lg")}>{title}</h3>
+      <p className={cn("relative mx-auto mt-2 leading-6 text-slate-600", compact ? "text-xs" : "max-w-md text-sm")}>{body}</p>
+      {href && action ? (
+        <div className="relative mt-5 flex justify-center">
+          <LinkButton href={href} variant="secondary">{action}</LinkButton>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export const EmptyStateCard = EmptyActionState;
+
+function SidePanel({
   icon: Icon,
   title,
   href,
@@ -1026,7 +1162,7 @@ function MiniPanel({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/74 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <section className="overflow-hidden rounded-[1.8rem] border border-white/70 bg-white/74 p-4 shadow-[0_18px_54px_rgba(15,23,42,0.07)] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className={cn("flex size-9 items-center justify-center rounded-2xl ring-1", tone[toneName].chip)}>
@@ -1034,8 +1170,9 @@ function MiniPanel({
           </span>
           <h2 className="text-base font-black text-slate-950">{title}</h2>
         </div>
-        <Link href={href} className={cn("text-xs font-black", tone[toneName].text)}>
+        <Link href={href} className={cn("inline-flex items-center gap-1 text-xs font-black", tone[toneName].text)}>
           Aç
+          <ChevronRight className="size-3.5" />
         </Link>
       </div>
       <div className="mt-4">{children}</div>
@@ -1054,7 +1191,7 @@ function TonePill({ toneName, children }: { toneName: Tone; children: ReactNode 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
-      <div className="text-sm font-black text-slate-950">{value}</div>
+      <div className="truncate text-sm font-black text-slate-950">{value}</div>
       <div className="text-[11px] font-bold text-slate-500">{label}</div>
     </div>
   );
@@ -1089,35 +1226,102 @@ function InfoPill({ icon: Icon, children }: { icon: IconType; children: ReactNod
   );
 }
 
-function buildTimelineItems(
+function AvatarStack({ friends, fallback = false }: { friends: FriendAttendance[]; fallback?: boolean }) {
+  return (
+    <span className="relative flex shrink-0 -space-x-2">
+      {friends.length ? (
+        friends.slice(0, 4).map((friend) => (
+          <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
+        ))
+      ) : fallback ? (
+        <>
+          <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
+          <Avatar firstName="Okul" lastName="Akışı" size="sm" />
+        </>
+      ) : null}
+      <span className="absolute -right-1 -top-1 size-3 rounded-full bg-emerald-400 ring-2 ring-white" />
+    </span>
+  );
+}
+
+function buildActivityRows(
   items: FeedItem[],
   todayCount: number,
   participantCount: number,
   weekPostCount: number,
   signedIn: boolean,
 ) {
-  const hasPost = items.some((item) => item.type === "post");
+  const firstEvent = items.find((item): item is Extract<FeedItem, { type: "event" }> => item.type === "event");
+  const firstPost = items.find((item): item is Extract<FeedItem, { type: "post" }> => item.type === "post");
+  const firstCommunity = items.find((item): item is Extract<FeedItem, { type: "community" }> => item.type === "community");
 
   return [
     {
       label: "Bugün",
-      value: todayCount ? `${todayCount} etkinlik hazırlanmış` : "Bugün için etkinlik hazırlanıyor",
+      value: firstEvent
+        ? cleanText(firstEvent.event.title, "Yakındaki etkinlik")
+        : todayCount
+          ? `${todayCount} etkinlik hazırlanmış`
+          : "Bugün için etkinlik hazırlanıyor",
+      href: firstEvent ? `/events/${firstEvent.event.id}` : signedIn ? "/events/new" : "/login",
       icon: CalendarDays,
       tone: "ember" as const,
     },
     {
       label: "Katılım",
       value: participantCount ? `${participantCount} kişi katılıyor` : "İlk katılımı sen başlat",
+      href: "/events",
       icon: CheckCircle2,
       tone: "mint" as const,
     },
     {
       label: "Konuşulanlar",
-      value: weekPostCount || hasPost ? `${weekPostCount || "Yeni"} paylaşım var` : "Bu haftanın ilk paylaşımını yap",
+      value: firstPost
+        ? cleanText(firstPost.post.title, "Yeni paylaşım")
+        : weekPostCount
+          ? `${weekPostCount} paylaşım var`
+          : "Bu haftanın ilk paylaşımını yap",
+      href: firstPost ? `/posts/${firstPost.post.id}` : "/posts",
       icon: MessageCircle,
       tone: signedIn ? "sky" as const : "sun" as const,
     },
+    {
+      label: "Topluluk",
+      value: firstCommunity ? `${cleanText(firstCommunity.community.name, "Topluluk")} bugün aktif` : "Topluluklar hareketlenmeye hazır",
+      href: firstCommunity ? `/communities/${firstCommunity.community.slug}` : "/communities",
+      icon: UsersRound,
+      tone: "violet" as const,
+    },
   ];
+}
+
+function pickFeedSlots(items: FeedItem[]) {
+  const used = new Set<string>();
+
+  const take = <T extends FeedItem["type"]>(type: T) => {
+    const item = items.find((candidate) => candidate.type === type && !used.has(itemIdentity(candidate))) as Extract<FeedItem, { type: T }> | undefined;
+    if (item) used.add(itemIdentity(item));
+    return item;
+  };
+
+  const event = take("event");
+  const community = take("community");
+  const poll = take("poll");
+  const friend = take("friend");
+  const announcement = take("announcement");
+  const post = take("post");
+  const rest = items.filter((item) => !used.has(itemIdentity(item)));
+
+  return { event, community, poll, friend, announcement, post, rest };
+}
+
+function pickFeaturedItem(items: FeedItem[]) {
+  return (
+    items.find((item) => item.type === "event") ??
+    items.find((item) => item.type === "poll") ??
+    items.find((item) => item.type === "post") ??
+    items[0]
+  );
 }
 
 function getFeaturedMeta(item: FeedItem) {
@@ -1186,13 +1390,17 @@ function getFeaturedMeta(item: FeedItem) {
   };
 }
 
-function feedKey(item: FeedItem, index: number) {
+function itemIdentity(item: FeedItem) {
   if (item.type === "event") return `event-${item.event.id}`;
   if (item.type === "post") return `post-${item.post.id}`;
-  if (item.type === "announcement") return `announcement-${item.announcement.id ?? index}`;
-  if (item.type === "poll") return `poll-${item.poll.id ?? index}`;
+  if (item.type === "announcement") return `announcement-${item.announcement.id ?? item.announcement.title}`;
+  if (item.type === "poll") return `poll-${item.poll.id ?? item.poll.title}`;
   if (item.type === "community") return `community-${item.community.id}`;
-  return `friend-${index}`;
+  return `friend-${item.href ?? item.title}`;
+}
+
+function feedKey(item: FeedItem, index: number) {
+  return `${itemIdentity(item)}-${index}`;
 }
 
 function relativeDate(value?: string | null) {
@@ -1258,10 +1466,16 @@ function cleanText(value?: string | null, fallback = "") {
     .replaceAll("Toplulugu", "Topluluğu")
     .replaceAll("Uretken", "Üretken")
     .replaceAll("gelistirme", "geliştirme")
+    .replaceAll("Gelistirme", "Geliştirme")
     .replaceAll("Cok Amacli Salon", "Çok Amaçlı Salon")
     .replaceAll("Dogaclama", "Doğaçlama")
     .replaceAll("Muzik Kulubu", "Müzik Kulübü")
     .replaceAll("Ogle Arasi", "Öğle Arası")
+    .replaceAll("Siniflar arasi", "Sınıflar arası")
+    .replaceAll("hizli", "hızlı")
+    .replaceAll("Hizli", "Hızlı")
+    .replaceAll("maclari", "maçları")
+    .replaceAll("Maclari", "Maçları")
     .replaceAll("Yapay Zeka Toplulugu", "Yapay Zeka Topluluğu")
     .replaceAll("Muzik", "Müzik")
     .replaceAll("Gonderi", "Gönderi")
