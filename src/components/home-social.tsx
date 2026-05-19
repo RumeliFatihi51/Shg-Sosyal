@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarDays,
   CheckCircle2,
+  Clock3,
   Flame,
   Home,
   MapPin,
@@ -41,36 +42,42 @@ const tone = {
     text: "text-orange-600",
     line: "from-orange-500 via-amber-300 to-rose-300",
     wash: "bg-orange-50/80",
+    border: "border-orange-200/80",
   },
   sky: {
     chip: "bg-sky-100 text-sky-800 ring-sky-200",
     text: "text-sky-600",
     line: "from-sky-500 via-cyan-300 to-blue-300",
     wash: "bg-sky-50/80",
+    border: "border-sky-200/80",
   },
   mint: {
     chip: "bg-emerald-100 text-emerald-800 ring-emerald-200",
     text: "text-emerald-600",
     line: "from-emerald-500 via-lime-300 to-teal-300",
     wash: "bg-emerald-50/80",
+    border: "border-emerald-200/80",
   },
   violet: {
     chip: "bg-violet-100 text-violet-800 ring-violet-200",
     text: "text-violet-600",
     line: "from-violet-500 via-fuchsia-300 to-indigo-300",
     wash: "bg-violet-50/80",
+    border: "border-violet-200/80",
   },
   sun: {
     chip: "bg-amber-100 text-amber-900 ring-amber-200",
     text: "text-amber-700",
     line: "from-amber-500 via-yellow-300 to-orange-300",
     wash: "bg-amber-50/80",
+    border: "border-amber-200/80",
   },
   ink: {
     chip: "bg-slate-100 text-slate-800 ring-slate-200",
     text: "text-slate-700",
     line: "from-slate-950 via-slate-500 to-slate-300",
     wash: "bg-slate-50/80",
+    border: "border-slate-200/80",
   },
 };
 
@@ -149,7 +156,7 @@ export function MainFeed({
           <SectionHeading
             eyebrow="Canlı Akış"
             title="Okulda şu an olanlar"
-            body="Etkinlik, topluluk, duyuru ve konuşmalar tek ritimde akar."
+            body="Her içerik türü kendi ritmiyle akar; etkinlik, duyuru, anket ve arkadaş hareketleri tek bakışta ayrılır."
           />
           <StaggeredGrid className="grid gap-4">
             {items.map((item, index) => (
@@ -159,7 +166,7 @@ export function MainFeed({
         </section>
       ) : (
         <EmptyStateCard
-          title="Akış bugün sakin, ilk hareketi sen başlat."
+          title="Bugün henüz sakin, ilk hareketi sen başlat."
           body="Bir etkinlik öner, topluluk kur ya da okul gündemine ilk paylaşımı bırak."
           action={<LinkButton href={signedIn ? "/events/new" : "/login"}>İlk hareketi başlat</LinkButton>}
         />
@@ -208,7 +215,7 @@ export function StreamHeader({
 
       <div className="relative grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1.5 text-xs font-black text-slate-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 py-1.5 text-xs font-black text-slate-200">
             <span className="size-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.9)]" />
             ŞHG Sosyal · okulun ana akışı
           </div>
@@ -229,9 +236,9 @@ export function StreamHeader({
           </div>
         </div>
 
-        <div className="grid gap-2 rounded-[1.7rem] border border-white/10 bg-white/8 p-2 backdrop-blur">
+        <div className="grid gap-2 rounded-[1.7rem] border border-white/10 bg-white/10 p-2 backdrop-blur">
           {metrics.map((metric) => (
-            <div key={metric.label} className="flex items-center gap-3 rounded-[1.3rem] bg-white/9 px-3 py-3">
+            <div key={metric.label} className="flex items-center gap-3 rounded-[1.3rem] bg-white/10 px-3 py-3">
               <span className={cn("flex size-10 items-center justify-center rounded-2xl ring-1", tone[metric.tone].chip)}>
                 <metric.icon className="size-4" />
               </span>
@@ -326,9 +333,9 @@ export function FeaturedMovementCard({
   if (!item) {
     return (
       <EmptyStateCard
-        title="Öne çıkan hareket yakında burada."
-        body="Onaylanan etkinlikler, duyurular ve popüler paylaşımlar burada öne çıkar."
-        action={<LinkButton href={signedIn ? "/posts" : "/login"} variant="secondary">Paylaşım yap</LinkButton>}
+        title="Bugünün öne çıkanı yakında burada."
+        body="Onaylanan etkinlikler, duyurular ve popüler paylaşımlar okul akışında öne çıkar."
+        action={<LinkButton href={signedIn ? "/posts" : "/login"} variant="secondary">İlk paylaşımı yap</LinkButton>}
       />
     );
   }
@@ -337,27 +344,26 @@ export function FeaturedMovementCard({
 
   return (
     <AnimatedCard>
-      <section className="group relative min-h-[21rem] overflow-hidden rounded-[2.2rem] border border-white/70 bg-white/72 p-5 shadow-[0_28px_80px_rgba(15,23,42,0.11)] backdrop-blur-xl">
+      <section className="group relative min-h-[22rem] overflow-hidden rounded-[2.2rem] bg-[#181411] p-5 text-white shadow-[0_34px_95px_rgba(24,20,17,0.26)]">
         <div className={cn("absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r", tone[featured.tone].line)} />
-        <div className={cn("absolute -right-20 -top-20 size-56 rounded-full blur-3xl", tone[featured.tone].wash)} />
+        <div className="absolute -right-24 -top-24 size-72 rounded-full bg-white/10 blur-3xl" />
+        <div className={cn("absolute -bottom-28 left-8 size-64 rounded-full blur-3xl", tone[featured.tone].wash)} />
         <div className="relative flex h-full flex-col justify-between gap-10">
           <div>
             <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-slate-950">Bugünün öne çıkanı</span>
               <TonePill toneName={featured.tone}>{featured.category}</TonePill>
-              <span className="text-xs font-black uppercase tracking-wide text-slate-400">Öne çıkan</span>
             </div>
-            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-[1.02] tracking-tight text-slate-950 text-balance sm:text-5xl">
+            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-[1.02] tracking-tight text-balance sm:text-5xl">
               {featured.title}
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{featured.body}</p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">{featured.body}</p>
           </div>
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex -space-x-2">
-              <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
-              <Avatar firstName="Okul" lastName="Akışı" size="sm" />
-              <Avatar firstName="Canlı" lastName="Akış" size="sm" />
+            <div className="rounded-[1.4rem] border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-slate-300">
+              Okul akışında bugün dikkat çeken hareket
             </div>
-            <LinkButton href={featured.href} variant="secondary">
+            <LinkButton href={featured.href} variant="secondary" className="bg-white text-slate-950">
               {featured.action}
             </LinkButton>
           </div>
@@ -377,7 +383,7 @@ export function FeedCard({ item, signedIn }: { item: FeedItem; signedIn: boolean
   }
 
   if (item.type === "announcement") {
-    return <AnnouncementCard announcement={item.announcement} />;
+    return <AnnouncementFeedCard announcement={item.announcement} />;
   }
 
   if (item.type === "poll") {
@@ -410,18 +416,25 @@ export function EventFeedCard({
 }) {
   const { day, month } = getDateParts(event.event_date);
   const participantCount = getParticipantCount(event);
+  const capacity = Number(event.capacity ?? 0);
+  const hasCapacity = capacity > 0;
+  const fill = hasCapacity ? Math.min(100, Math.round((participantCount / capacity) * 100)) : 0;
+  const fillWidth = hasCapacity ? `${Math.max(fill, participantCount ? 8 : 4)}%` : "100%";
 
   return (
     <AnimatedCard>
-      <article className="group overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-orange-200">
-        <div className="grid md:grid-cols-[12rem_1fr]">
+      <article className="group overflow-hidden rounded-[2.1rem] border border-orange-200/70 bg-white/82 shadow-[0_24px_72px_rgba(240,90,40,0.11)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-orange-300">
+        <div className="grid md:grid-cols-[11.5rem_1fr]">
           <Link
             href={`/events/${event.id}`}
-            className="relative min-h-40 overflow-hidden bg-[#15110f] p-5 text-white md:min-h-full"
+            className="relative min-h-44 overflow-hidden bg-[#17110e] p-5 text-white md:min-h-full"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,146,60,0.38),transparent_34%),radial-gradient(circle_at_90%_80%,rgba(14,165,233,0.22),transparent_36%)]" />
+            <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-orange-500 via-amber-300 to-rose-300" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_22%,rgba(251,146,60,0.42),transparent_34%),radial-gradient(circle_at_90%_80%,rgba(14,165,233,0.22),transparent_36%)]" />
             <div className="relative flex h-full flex-col justify-between">
-              <span className="text-xs font-black uppercase text-orange-100">Etkinlik</span>
+              <span className="inline-flex w-fit rounded-full bg-white/12 px-2.5 py-1 text-xs font-black uppercase text-orange-100 ring-1 ring-white/15">
+                Etkinlik
+              </span>
               <span>
                 <span className="block text-6xl font-black leading-none">{day}</span>
                 <span className="mt-1 block text-sm font-black uppercase tracking-wide text-orange-100">{month}</span>
@@ -430,48 +443,70 @@ export function EventFeedCard({
           </Link>
 
           <div className="p-5">
-            <FeedMeta
-              category="Etkinlik"
-              icon={CalendarDays}
-              meta={`${formatTime(event.start_time)} · ${cleanText(event.location, "Konum yakında")}`}
-              toneName="ember"
-            />
-            <Link href={`/events/${event.id}`} className="mt-4 block text-2xl font-black leading-tight text-slate-950 hover:text-[var(--primary)]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <InfoPill icon={Clock3}>{formatTime(event.start_time)}</InfoPill>
+                <InfoPill icon={MapPin}>{cleanText(event.location, "Konum yakında")}</InfoPill>
+                <InfoPill icon={UsersRound}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
+              </div>
+              <TonePill toneName="ember">Canlı etkinlik</TonePill>
+            </div>
+
+            <Link href={`/events/${event.id}`} className="mt-4 block text-2xl font-black leading-tight text-slate-950 hover:text-[var(--primary)] sm:text-3xl">
               {cleanText(event.title, "Yeni etkinlik")}
             </Link>
-            <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
               {cleanText(event.description, "Etkinlik detayları yakında paylaşılacak.")}
             </p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-black text-slate-500">
-              <InfoPill icon={CalendarDays}>{formatDate(event.event_date)}</InfoPill>
-              <InfoPill icon={MapPin}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
-              <InfoPill icon={UsersRound}>{participantCount ? `${participantCount} kişi` : "İlk katılım"}</InfoPill>
-              {friends.length ? (
-                <span className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-2.5 py-1 text-sky-700">
-                  <span className="flex -space-x-2">
-                    {friends.slice(0, 3).map((friend) => (
-                      <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-                    ))}
-                  </span>
-                  {friends.length} arkadaşın gidiyor
-                </span>
-              ) : null}
+            <div className="mt-5 rounded-[1.35rem] border border-orange-100 bg-orange-50/70 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-black text-slate-700">
+                <span>{participantCount ? `${participantCount} kişi katılıyor` : "İlk katılımı sen başlat"}</span>
+                <span>{hasCapacity ? `${capacity} kontenjan` : "Kontenjan açık"}</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+                <div
+                  className={cn(
+                    "h-full rounded-full",
+                    hasCapacity ? "bg-gradient-to-r from-orange-500 to-amber-300" : "bg-gradient-to-r from-emerald-400 to-sky-300",
+                  )}
+                  style={{ width: fillWidth }}
+                />
+              </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {signedIn ? (
-                <form action={toggleEventParticipationAction}>
-                  <input type="hidden" name="event_id" value={event.id} />
-                  <input type="hidden" name="is_joined" value="false" />
-                  <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary">
-                    Katılıyorum
-                  </SubmitButton>
-                </form>
-              ) : null}
-              <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"}>
-                Detayları gör
-              </LinkButton>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {friends.length ? (
+                    friends.slice(0, 4).map((friend) => (
+                      <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
+                    ))
+                  ) : (
+                    <>
+                      <Avatar firstName="İlk" lastName="Katılım" size="sm" />
+                      <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
+                    </>
+                  )}
+                </div>
+                <span className="text-xs font-bold text-slate-500">
+                  {friends.length ? `${friends.length} arkadaşın gidiyor` : "Arkadaş katılımı yakında görünür"}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {signedIn ? (
+                  <form action={toggleEventParticipationAction}>
+                    <input type="hidden" name="event_id" value={event.id} />
+                    <input type="hidden" name="is_joined" value="false" />
+                    <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary">
+                      Katılıyorum
+                    </SubmitButton>
+                  </form>
+                ) : null}
+                <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"}>
+                  Detayı aç
+                </LinkButton>
+              </div>
             </div>
           </div>
         </div>
@@ -488,58 +523,84 @@ export function CommunityFeedCard({
   signedIn: boolean;
 }) {
   const { members, posts } = getCommunityStats(community);
+  const initials = communityInitials(cleanText(community.name, "Topluluk"));
 
   return (
-    <BaseFeedCard
-      category="Topluluk"
-      icon={UsersRound}
-      meta="Bugün aktif"
-      title={cleanText(community.name, "Yeni topluluk")}
-      body={cleanText(community.description, "Bu topluluk okul akışında yeni hareketler başlatabilir.")}
-      href={`/communities/${community.slug}`}
-      toneName="mint"
-      footer={
-        <>
-          <span>{members ? `${members} üye` : "Yeni üyeler bekleniyor"}</span>
-          <span>{posts ? `${posts} paylaşım` : "İlk paylaşım bekleniyor"}</span>
-          <span>Bu hafta aktif</span>
-        </>
-      }
-      action={
-        signedIn ? (
-          <form action={joinCommunityAction}>
-            <input type="hidden" name="community_id" value={community.id} />
-            <input type="hidden" name="slug" value={community.slug} />
-            <SubmitButton pendingLabel="Katılım kaydediliyor..." variant="secondary">
-              Katıl
-            </SubmitButton>
-          </form>
-        ) : (
-          <LinkButton href="/login" variant="secondary">Giriş yap</LinkButton>
-        )
-      }
-    >
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <MiniMetric label="Üye" value={members ? String(members) : "bekleniyor"} />
-        <MiniMetric label="Paylaşım" value={posts ? String(posts) : "ilk gönderi"} />
-      </div>
-    </BaseFeedCard>
+    <AnimatedCard>
+      <article className="overflow-hidden rounded-[2rem] border border-emerald-200/70 bg-white/82 p-5 shadow-[0_22px_68px_rgba(16,185,129,0.10)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-emerald-300">
+        <div className="flex items-start justify-between gap-4">
+          <Link
+            href={`/communities/${community.slug}`}
+            className="flex size-16 shrink-0 items-center justify-center rounded-[1.35rem] bg-gradient-to-br from-emerald-500 via-lime-300 to-sky-300 text-xl font-black text-slate-950 shadow-lg shadow-emerald-900/10"
+          >
+            {initials}
+          </Link>
+          <TonePill toneName="mint">Bugün aktif</TonePill>
+        </div>
+
+        <Link href={`/communities/${community.slug}`} className="mt-5 block text-2xl font-black leading-tight text-slate-950 hover:text-emerald-700">
+          {cleanText(community.name, "Yeni topluluk")}
+        </Link>
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+          {cleanText(community.description, "Bu topluluk okul akışında yeni hareketler başlatabilir.")}
+        </p>
+
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <MiniMetric label="Üye" value={members ? String(members) : "bekleniyor"} />
+          <MiniMetric label="Paylaşım" value={posts ? String(posts) : "ilk gönderi"} />
+          <MiniMetric label="Aktivite" value="bugün" />
+        </div>
+
+        <div className="mt-5 flex justify-end">
+          {signedIn ? (
+            <form action={joinCommunityAction}>
+              <input type="hidden" name="community_id" value={community.id} />
+              <input type="hidden" name="slug" value={community.slug} />
+              <SubmitButton pendingLabel="Katılım kaydediliyor..." variant="secondary">
+                Katıl
+              </SubmitButton>
+            </form>
+          ) : (
+            <LinkButton href="/login" variant="secondary">Giriş yap</LinkButton>
+          )}
+        </div>
+      </article>
+    </AnimatedCard>
   );
 }
 
-export function AnnouncementCard({ announcement }: { announcement: any }) {
+export function AnnouncementFeedCard({ announcement }: { announcement: any }) {
   return (
-    <BaseFeedCard
-      category="Duyuru"
-      icon={Megaphone}
-      meta={`Sabit duyuru · ${relativeDate(announcement.created_at)}`}
-      title={cleanText(announcement.title, "Yeni duyuru")}
-      body={cleanText(announcement.body, "Duyurular yakında burada.")}
-      href="/notifications"
-      toneName="violet"
-      footer={<span>Okul duyurusu</span>}
-      action={<LinkButton href="/notifications" variant="secondary">Bildirimleri gör</LinkButton>}
-    />
+    <AnimatedCard>
+      <article className="overflow-hidden rounded-[1.8rem] border border-violet-100 bg-white/86 shadow-[0_18px_54px_rgba(88,28,135,0.08)] backdrop-blur-xl">
+        <div className="grid grid-cols-[0.45rem_1fr]">
+          <div className="bg-gradient-to-b from-violet-500 via-fuchsia-300 to-indigo-300" />
+          <div className="p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-black text-violet-700">
+                <span className="flex size-9 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                  <Megaphone className="size-4" />
+                </span>
+                Okul duyurusu
+              </div>
+              <Badge tone="purple">Sabitlendi</Badge>
+            </div>
+            <h2 className="mt-4 text-xl font-black leading-tight text-slate-950">
+              {cleanText(announcement.title, "Yeni duyuru")}
+            </h2>
+            <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+              {cleanText(announcement.body, "Duyurular yakında burada.")}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-slate-500">
+              <span>{relativeDate(announcement.created_at)}</span>
+              <Link href="/notifications" className="font-black text-violet-700">
+                Bildirimleri gör
+              </Link>
+            </div>
+          </div>
+        </div>
+      </article>
+    </AnimatedCard>
   );
 }
 
@@ -549,40 +610,67 @@ export function PollFeedCard({ poll }: { poll: any }) {
     (sum: number, option: any) => sum + (Array.isArray(option.poll_votes) ? option.poll_votes.length : 0),
     0,
   );
+  const pollOptions = options.length
+    ? options
+    : [{ id: "empty", label: "İlk seçenek hazırlanıyor", poll_votes: [] }];
+  const closesLabel = poll.closes_at
+    ? `Kapanış: ${formatDate(poll.closes_at.slice(0, 10))}`
+    : "Açık anket";
 
   return (
-    <BaseFeedCard
-      category="Anket"
-      icon={Vote}
-      meta="Okul anketi"
-      title={cleanText(poll.title, "Yeni anket")}
-      body={cleanText(poll.description, "Okul gündemine dair kısa bir anket.")}
-      href="/polls"
-      toneName="sky"
-      footer={<span>{totalVotes ? `${totalVotes} oy` : "İlk oyu sen ver"}</span>}
-      action={<LinkButton href="/polls" variant="secondary">Oy ver</LinkButton>}
-    >
-      <div className="mt-4 grid gap-2">
-        {(options.length ? options : [{ id: "empty", label: "Seçenekler hazırlanıyor", poll_votes: [] }])
-          .slice(0, 3)
-          .map((option: any) => {
-            const votes = Array.isArray(option.poll_votes) ? option.poll_votes.length : 0;
-            const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 14;
+    <AnimatedCard>
+      <article className="overflow-hidden rounded-[2rem] border border-sky-200/70 bg-sky-950 text-white shadow-[0_24px_76px_rgba(12,74,110,0.22)]">
+        <div className="relative p-5">
+          <div className="absolute -right-16 -top-20 size-56 rounded-full bg-sky-300/20 blur-3xl" />
+          <div className="relative">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-sky-100 ring-1 ring-white/10">
+                <Vote className="size-4" />
+                Anket
+              </span>
+              <span className="text-xs font-black text-sky-200">{closesLabel}</span>
+            </div>
+            <h2 className="mt-5 text-2xl font-black leading-tight text-white">
+              {cleanText(poll.title, "Yeni anket")}
+            </h2>
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-sky-100/80">
+              {cleanText(poll.description, "Okul gündemine dair kısa bir anket.")}
+            </p>
 
-            return (
-              <div key={option.id} className="rounded-2xl border border-sky-100 bg-sky-50/65 p-3">
-                <div className="flex items-center justify-between gap-3 text-xs font-black text-slate-700">
-                  <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
-                  <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
-                  <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.max(percent, 10)}%` }} />
-                </div>
-              </div>
-            );
-          })}
-      </div>
-    </BaseFeedCard>
+            <div className="mt-5 grid gap-2">
+              {pollOptions.slice(0, 4).map((option: any) => {
+                const votes = Array.isArray(option.poll_votes) ? option.poll_votes.length : 0;
+                const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 0;
+
+                return (
+                  <div key={option.id} className="rounded-[1.15rem] border border-white/10 bg-white/10 p-3">
+                    <div className="flex items-center justify-between gap-3 text-xs font-black">
+                      <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
+                      <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-sky-100"
+                        style={{ width: `${totalVotes ? Math.max(percent, 8) : 18}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs font-black text-sky-100">
+                {totalVotes ? `${totalVotes} oy kullanıldı` : "İlk oyu sen ver"}
+              </span>
+              <LinkButton href="/polls" variant="secondary" className="bg-white text-slate-950">
+                Oy ver
+              </LinkButton>
+            </div>
+          </div>
+        </div>
+      </article>
+    </AnimatedCard>
   );
 }
 
@@ -599,33 +687,40 @@ export function FriendActivityCard({
   friends?: FriendAttendance[];
   signedIn: boolean;
 }) {
+  const targetHref = href ?? (signedIn ? "/friends" : "/login");
+
   return (
-    <BaseFeedCard
-      category="Arkadaş"
-      icon={UsersRound}
-      meta={signedIn ? "Arkadaş hareketi" : "Giriş yapınca açılır"}
-      title={cleanText(title, "Arkadaşların ne yapıyor?")}
-      body={cleanText(body, "Giriş yapınca arkadaşlarının katıldığı etkinlikleri burada görebilirsin.")}
-      href={href ?? (signedIn ? "/friends" : "/login")}
-      toneName="sun"
-      footer={<span>Sadece kabul edilmiş arkadaşların görünür</span>}
-      action={<LinkButton href={href ?? (signedIn ? "/friends" : "/login")} variant="secondary">Detayları gör</LinkButton>}
-    >
-      <div className="mt-4 flex items-center gap-3">
-        <div className="flex -space-x-2">
-          {(friends ?? []).slice(0, 4).map((friend) => (
-            <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-          ))}
-          {!friends?.length ? (
+    <AnimatedCard>
+      <Link
+        href={targetHref}
+        className="group flex items-center gap-4 rounded-[1.6rem] border border-amber-200/70 bg-amber-50/82 px-4 py-3 shadow-[0_16px_44px_rgba(245,158,11,0.10)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-amber-300"
+      >
+        <span className="relative flex -space-x-2">
+          {(friends ?? []).length ? (
+            friends?.slice(0, 4).map((friend) => (
+              <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
+            ))
+          ) : (
             <>
               <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
               <Avatar firstName="Okul" lastName="Akışı" size="sm" />
             </>
-          ) : null}
-        </div>
-        <span className="text-xs font-bold text-slate-500">Sosyal kanıt burada görünür.</span>
-      </div>
-    </BaseFeedCard>
+          )}
+          <span className="absolute -right-1 -top-1 size-3 rounded-full bg-emerald-400 ring-2 ring-amber-50" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block line-clamp-1 text-sm font-black text-slate-950">
+            {cleanText(title, "Arkadaşların ne yapıyor?")}
+          </span>
+          <span className="mt-0.5 block line-clamp-1 text-xs font-bold text-slate-600">
+            {cleanText(body, "Giriş yapınca arkadaşlarının katıldığı etkinlikleri burada görebilirsin.")}
+          </span>
+        </span>
+        <span className="hidden rounded-full bg-white px-3 py-1 text-xs font-black text-amber-800 sm:inline-flex">
+          hareket
+        </span>
+      </Link>
+    </AnimatedCard>
   );
 }
 
@@ -858,17 +953,18 @@ export function EmptyStateCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[2rem] border border-dashed border-orange-200/80 bg-white/74 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
+        "relative overflow-hidden rounded-[2rem] border border-dashed border-orange-200/80 bg-gradient-to-br from-white via-orange-50/80 to-sky-50/70 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
         compact ? "p-4" : "p-7",
       )}
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-sky-300" />
-      <div className={cn("mx-auto mb-3 flex items-center justify-center rounded-2xl bg-orange-50 text-[var(--primary)] shadow-inner", compact ? "size-10" : "size-12")}>
+      <div className="absolute -right-10 -top-10 size-32 rounded-full bg-orange-200/40 blur-2xl" />
+      <div className="absolute -bottom-12 left-10 size-36 rounded-full bg-sky-200/40 blur-2xl" />
+      <div className={cn("relative mx-auto mb-3 flex items-center justify-center rounded-2xl bg-white text-[var(--primary)] shadow-inner", compact ? "size-10" : "size-12")}>
         <Sparkles className="size-5" />
       </div>
-      <h3 className={cn("font-black text-slate-950", compact ? "text-sm" : "text-lg")}>{title}</h3>
-      <p className={cn("mx-auto mt-2 leading-6 text-slate-600", compact ? "text-xs" : "max-w-md text-sm")}>{body}</p>
-      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+      <h3 className={cn("relative font-black text-slate-950", compact ? "text-sm" : "text-lg")}>{title}</h3>
+      <p className={cn("relative mx-auto mt-2 leading-6 text-slate-600", compact ? "text-xs" : "max-w-md text-sm")}>{body}</p>
+      {action ? <div className="relative mt-5 flex justify-center">{action}</div> : null}
     </div>
   );
 }
@@ -878,101 +974,41 @@ function PostFeedCard({ post }: { post: any }) {
   const score = postScore(post);
 
   return (
-    <BaseFeedCard
-      category="Gönderi"
-      icon={MessageCircle}
-      meta={`${cleanText(post.communities?.name, "Topluluk")} · ${relativeDate(post.created_at)}`}
-      title={cleanText(post.title, "Yeni gönderi")}
-      body={cleanText(post.body, "Bu haftanın ilk paylaşımı burada öne çıkabilir.")}
-      href={`/posts/${post.id}`}
-      toneName="ink"
-      footer={
-        <>
-          <span>{score ? `${score} skor` : "İlk beğeni bekleniyor"}</span>
-          <span>{commentCount ? `${commentCount} yorum` : "İlk yorum bekleniyor"}</span>
-        </>
-      }
-      action={<LinkButton href={`/posts/${post.id}`} variant="secondary">Yorum yap</LinkButton>}
-    >
-      <Link href={`/profile/${post.author_id}`} className="mt-4 flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-950">
-        <Avatar firstName={post.profiles?.first_name} lastName={post.profiles?.last_name} size="sm" />
-        <span>{cleanText(fullName(post.profiles), "Öğrenci")}</span>
-      </Link>
-    </BaseFeedCard>
-  );
-}
-
-function BaseFeedCard({
-  category,
-  icon,
-  meta,
-  title,
-  body,
-  href,
-  toneName,
-  footer,
-  action,
-  children,
-}: {
-  category: string;
-  icon: IconType;
-  meta: string;
-  title: string;
-  body?: string | null;
-  href?: string;
-  toneName: Tone;
-  footer?: ReactNode;
-  action?: ReactNode;
-  children?: ReactNode;
-}) {
-  const titleNode = href ? (
-    <Link href={href} className="hover:text-[var(--primary)]">
-      {title}
-    </Link>
-  ) : (
-    title
-  );
-
-  return (
     <AnimatedCard>
-      <article className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-orange-200">
-        <div className={cn("h-1.5 bg-gradient-to-r", tone[toneName].line)} />
+      <article className="overflow-hidden rounded-[1.9rem] border border-slate-200/80 bg-white/84 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-slate-300">
         <div className="p-5">
-          <FeedMeta category={category} icon={icon} meta={meta} toneName={toneName} />
-          <h2 className="mt-4 text-2xl font-black leading-tight text-slate-950">{titleNode}</h2>
-          {body ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{body}</p> : null}
-          {children}
+          <div className="flex items-start gap-3">
+            <Avatar firstName={post.profiles?.first_name} lastName={post.profiles?.last_name} size="sm" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
+                <Link href={`/profile/${post.author_id}`} className="font-black text-slate-800 hover:text-slate-950">
+                  {cleanText(fullName(post.profiles), "Öğrenci")}
+                </Link>
+                <span>·</span>
+                <span>{cleanText(post.communities?.name, "Topluluk")}</span>
+                <span>·</span>
+                <span>{relativeDate(post.created_at)}</span>
+              </div>
+              <Link href={`/posts/${post.id}`} className="mt-2 block text-xl font-black leading-tight text-slate-950 hover:text-[var(--primary)]">
+                {cleanText(post.title, "Yeni gönderi")}
+              </Link>
+              <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+                {cleanText(post.body, "Bu haftanın ilk paylaşımı burada öne çıkabilir.")}
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/70 bg-white/55 px-5 py-4">
-          <div className="flex flex-wrap gap-3 text-xs font-black text-slate-500">{footer}</div>
-          {action}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-5 py-3">
+          <div className="flex gap-2 text-xs font-black text-slate-600">
+            <span className="rounded-full bg-white px-3 py-1">{score ? `${score} skor` : "İlk beğeni bekleniyor"}</span>
+            <span className="rounded-full bg-white px-3 py-1">{commentCount ? `${commentCount} yorum` : "İlk yorum bekleniyor"}</span>
+          </div>
+          <Link href={`/posts/${post.id}`} className="text-xs font-black text-slate-900">
+            Yorum yap
+          </Link>
         </div>
       </article>
     </AnimatedCard>
-  );
-}
-
-function FeedMeta({
-  category,
-  icon: Icon,
-  meta,
-  toneName,
-}: {
-  category: string;
-  icon: IconType;
-  meta: string;
-  toneName: Tone;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <span className={cn("flex size-9 items-center justify-center rounded-2xl ring-1", tone[toneName].chip)}>
-          <Icon className="size-4" />
-        </span>
-        <TonePill toneName={toneName}>{category}</TonePill>
-      </div>
-      <span className="text-xs font-bold text-slate-500">{cleanText(meta, "az önce")}</span>
-    </div>
   );
 }
 
@@ -1046,7 +1082,7 @@ function SectionHeading({
 
 function InfoPill({ icon: Icon, children }: { icon: IconType; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-slate-600 shadow-sm">
       <Icon className="size-3.5" />
       {children}
     </span>
@@ -1202,6 +1238,15 @@ function getCommunityStats(community: any) {
   };
 }
 
+function communityInitials(value: string) {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toLocaleUpperCase("tr-TR"))
+    .join("");
+}
+
 function cleanText(value?: string | null, fallback = "") {
   if (!value) {
     return fallback;
@@ -1212,7 +1257,11 @@ function cleanText(value?: string | null, fallback = "") {
     .replaceAll("Atolyesi", "Atölyesi")
     .replaceAll("Toplulugu", "Topluluğu")
     .replaceAll("Uretken", "Üretken")
+    .replaceAll("gelistirme", "geliştirme")
     .replaceAll("Cok Amacli Salon", "Çok Amaçlı Salon")
+    .replaceAll("Dogaclama", "Doğaçlama")
+    .replaceAll("Muzik Kulubu", "Müzik Kulübü")
+    .replaceAll("Ogle Arasi", "Öğle Arası")
     .replaceAll("Yapay Zeka Toplulugu", "Yapay Zeka Topluluğu")
     .replaceAll("Muzik", "Müzik")
     .replaceAll("Gonderi", "Gönderi")
