@@ -59,7 +59,7 @@ export default async function EventsPage({
   const boardItems = [
     {
       title: `${data.events.length} yaklaşan etkinlik`,
-      body: query.q || query.date || query.location ? "Filtre sonucundaki etkinlik sinyalleri." : "Kampüsün yaklaşan programı.",
+      body: query.q || query.date || query.location ? "Filtre sonucundaki etkinlikler." : "Okulun yaklaşan programı.",
       icon: CalendarDays,
       tone: "orange" as const,
     },
@@ -91,10 +91,10 @@ export default async function EventsPage({
             Etkinlik Akışı
           </PulseBadge>
           <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-slate-950 text-balance sm:text-5xl">
-            Kampüste sıradaki hareket nerede?
+            Okulda sıradaki hareket nerede?
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Etkinlikleri takvim gibi değil, arkadaş katılımı, kontenjan ve sosyal sinyallerle birlikte oku.
+            Etkinlikleri sadece tarih olarak değil, arkadaş katılımı ve kontenjan bilgisiyle birlikte oku.
           </p>
         </div>
         <Link
@@ -147,7 +147,7 @@ export default async function EventsPage({
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <PulseBadge tone="blue">sinyal filtresi</PulseBadge>
+              <PulseBadge tone="blue">akış filtresi</PulseBadge>
               <h2 className="mt-2 text-xl font-black text-slate-950">Etkinlikleri daralt</h2>
             </div>
             <LinkButton href="/events" variant="ghost">Filtreleri temizle</LinkButton>
@@ -188,7 +188,7 @@ export default async function EventsPage({
             <PulseBadge tone="green" live={data.events.length > 0}>
               yaklaşan program
             </PulseBadge>
-            <h2 className="mt-3 text-3xl font-black text-slate-950">Etkinlik sinyalleri</h2>
+            <h2 className="mt-3 text-3xl font-black text-slate-950">Etkinlik akışı</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               Tarih kutusu, konum, kontenjan ve arkadaş vurgusu aynı kartta okunur.
             </p>
@@ -208,7 +208,7 @@ export default async function EventsPage({
         ) : (
           <EmptyState
             title="İlk hareketi sen başlat"
-            body="Filtrelerde etkinlik bulunamadı. Yeni bir etkinlik önerisi göndererek kampüs akışını hareketlendirebilirsin."
+            body="Filtrelerde etkinlik bulunamadı. Yeni bir etkinlik önerisi göndererek okul akışını hareketlendirebilirsin."
             icon={<CalendarDays className="size-5" />}
             action={<LinkButton href="/events/new">Etkinlik oluştur</LinkButton>}
           />

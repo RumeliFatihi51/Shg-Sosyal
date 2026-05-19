@@ -3,12 +3,13 @@ import type { ComponentType, ReactNode } from "react";
 import {
   Bell,
   CalendarDays,
-  ChevronRight,
-  Clock3,
+  CheckCircle2,
+  Flame,
   Home,
   MapPin,
   Megaphone,
   MessageCircle,
+  Plus,
   Send,
   Sparkles,
   UsersRound,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { AnimatedCard, AnimatedSection, StaggeredGrid } from "@/components/motion";
 import { SubmitButton } from "@/components/submit-button";
-import { Avatar, Badge, Card, LinkButton } from "@/components/ui";
+import { Avatar, Badge, LinkButton } from "@/components/ui";
 import { joinCommunityAction } from "@/lib/actions/communities";
 import { toggleEventParticipationAction } from "@/lib/actions/events";
 import { cn, formatDate, formatTime, fullName } from "@/lib/utils";
@@ -24,7 +25,7 @@ import { postScore } from "@/features/posts/post-card";
 import type { FriendAttendance } from "@/lib/types";
 
 type IconType = ComponentType<{ className?: string }>;
-type Tone = "orange" | "blue" | "green" | "purple" | "amber" | "slate";
+type Tone = "ember" | "sky" | "mint" | "violet" | "sun" | "ink";
 
 type FeedItem =
   | { type: "event"; event: any; friends: FriendAttendance[] }
@@ -34,51 +35,66 @@ type FeedItem =
   | { type: "community"; community: any }
   | { type: "friend"; title: string; body: string; href?: string; friends?: FriendAttendance[] };
 
-const categoryTone: Record<string, "orange" | "blue" | "green" | "amber" | "purple" | "slate"> = {
-  Etkinlik: "orange",
-  Duyuru: "purple",
-  Anket: "blue",
-  Topluluk: "green",
-  Arkadaş: "amber",
-  Gönderi: "slate",
-};
-
-const toneClasses: Record<Tone, string> = {
-  orange: "bg-orange-100 text-orange-700 ring-orange-200/80",
-  blue: "bg-blue-100 text-blue-700 ring-blue-200/80",
-  green: "bg-emerald-100 text-emerald-700 ring-emerald-200/80",
-  purple: "bg-purple-100 text-purple-700 ring-purple-200/80",
-  amber: "bg-amber-100 text-amber-800 ring-amber-200/80",
-  slate: "bg-slate-100 text-slate-700 ring-slate-200/80",
-};
-
-const accentClasses: Record<Tone, string> = {
-  orange: "from-orange-500 to-amber-300",
-  blue: "from-blue-500 to-cyan-300",
-  green: "from-emerald-500 to-lime-300",
-  purple: "from-purple-500 to-fuchsia-300",
-  amber: "from-amber-500 to-yellow-300",
-  slate: "from-slate-800 to-slate-400",
+const tone = {
+  ember: {
+    chip: "bg-orange-100 text-orange-800 ring-orange-200",
+    text: "text-orange-600",
+    line: "from-orange-500 via-amber-300 to-rose-300",
+    wash: "bg-orange-50/80",
+  },
+  sky: {
+    chip: "bg-sky-100 text-sky-800 ring-sky-200",
+    text: "text-sky-600",
+    line: "from-sky-500 via-cyan-300 to-blue-300",
+    wash: "bg-sky-50/80",
+  },
+  mint: {
+    chip: "bg-emerald-100 text-emerald-800 ring-emerald-200",
+    text: "text-emerald-600",
+    line: "from-emerald-500 via-lime-300 to-teal-300",
+    wash: "bg-emerald-50/80",
+  },
+  violet: {
+    chip: "bg-violet-100 text-violet-800 ring-violet-200",
+    text: "text-violet-600",
+    line: "from-violet-500 via-fuchsia-300 to-indigo-300",
+    wash: "bg-violet-50/80",
+  },
+  sun: {
+    chip: "bg-amber-100 text-amber-900 ring-amber-200",
+    text: "text-amber-700",
+    line: "from-amber-500 via-yellow-300 to-orange-300",
+    wash: "bg-amber-50/80",
+  },
+  ink: {
+    chip: "bg-slate-100 text-slate-800 ring-slate-200",
+    text: "text-slate-700",
+    line: "from-slate-950 via-slate-500 to-slate-300",
+    wash: "bg-slate-50/80",
+  },
 };
 
 export function FeedLayout({
-  left,
   feed,
   right,
   signedIn,
 }: {
-  left: ReactNode;
+  left?: ReactNode;
   feed: ReactNode;
   right: ReactNode;
   signedIn: boolean;
 }) {
   return (
-    <div className="relative pb-20 lg:pb-0">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 rounded-[3rem] bg-[radial-gradient(circle_at_18%_14%,rgba(240,90,40,0.12),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(14,165,233,0.09),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.6),transparent)]" />
-      <div className="grid gap-5 xl:grid-cols-[220px_minmax(0,1fr)_304px] xl:items-start">
-        <AnimatedSection className="hidden xl:sticky xl:top-8 xl:block">{left}</AnimatedSection>
-        <AnimatedSection delay={0.03}>{feed}</AnimatedSection>
-        <AnimatedSection className="xl:sticky xl:top-8" delay={0.06}>{right}</AnimatedSection>
+    <div className="relative isolate pb-20 lg:pb-2">
+      <div className="pointer-events-none absolute inset-x-[-1rem] top-[-2rem] -z-10 h-[28rem] overflow-hidden rounded-[3rem]">
+        <div className="absolute left-[8%] top-8 h-44 w-44 rounded-full bg-orange-300/24 blur-3xl" />
+        <div className="absolute right-[8%] top-16 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.68),rgba(255,248,239,0.45),rgba(255,255,255,0.34))]" />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px] xl:items-start">
+        <AnimatedSection delay={0.02}>{feed}</AnimatedSection>
+        <AnimatedSection className="xl:sticky xl:top-8" delay={0.07}>{right}</AnimatedSection>
       </div>
       <MobileBottomNav signedIn={signedIn} />
     </div>
@@ -88,79 +104,7 @@ export function FeedLayout({
 export const AppShell = FeedLayout;
 
 export function LeftSidebar({ signedIn }: { signedIn: boolean }) {
-  const links = [
-    { href: "/", label: "Ana Akış", icon: Home },
-    { href: "/events", label: "Etkinlikler", icon: CalendarDays },
-    { href: "/communities", label: "Topluluklar", icon: UsersRound },
-    { href: "/calendar", label: "Takvim", icon: Clock3 },
-    { href: signedIn ? "/friends" : "/login", label: "Arkadaşlar", icon: UsersRound },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <Card className="p-3">
-        <div className="px-3 pb-2 pt-1">
-          <div className="text-sm font-black text-slate-950">ŞHG Sosyal</div>
-          <div className="mt-0.5 text-xs font-bold text-slate-400">Okulun ana akışı.</div>
-        </div>
-        <nav className="grid gap-1">
-          {links.map((item, index) => (
-            <Link
-              key={item.href + item.label}
-              href={item.href}
-              className={cn(
-                "group flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-black transition",
-                index === 0
-                  ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10"
-                  : "text-slate-700 hover:bg-orange-50 hover:text-[var(--primary)]",
-              )}
-            >
-              <span className="flex items-center gap-3">
-                <item.icon className="size-4" />
-                {item.label}
-              </span>
-              <ChevronRight className="size-4 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
-            </Link>
-          ))}
-        </nav>
-      </Card>
-
-      <QuickActionCard signedIn={signedIn} />
-    </div>
-  );
-}
-
-export function QuickActionCard({ signedIn }: { signedIn: boolean }) {
-  const actions = [
-    { href: signedIn ? "/events/new" : "/login", label: "Etkinlik öner", icon: CalendarDays },
-    { href: signedIn ? "/communities/new" : "/login", label: "Topluluk kur", icon: UsersRound },
-    { href: signedIn ? "/posts" : "/login", label: "Gönderi paylaş", icon: Send },
-  ];
-
-  return (
-    <Card className="space-y-3 bg-slate-950 p-4 text-white">
-      <div>
-        <h2 className="text-base font-black">Hızlı oluştur</h2>
-        <p className="mt-1 text-xs font-semibold leading-5 text-slate-300">
-          Okul akışına yeni bir hareket ekle.
-        </p>
-      </div>
-      <div className="grid gap-2">
-        {actions.map((action) => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 text-sm font-black text-white transition hover:bg-white/20"
-          >
-            <span className="flex size-9 items-center justify-center rounded-2xl bg-white text-slate-950">
-              <action.icon className="size-4" />
-            </span>
-            {action.label}
-          </Link>
-        ))}
-      </div>
-    </Card>
-  );
+  return <QuickActionCard signedIn={signedIn} />;
 }
 
 export function MainFeed({
@@ -179,23 +123,33 @@ export function MainFeed({
   const featuredItem = items.find((item) => item.type === "event") ?? items[0];
 
   return (
-    <main className="space-y-4">
-      <CategoryChips signedIn={signedIn} />
-      <TodayTimeline
+    <main className="space-y-5">
+      <StreamHeader
         todayCount={todayCount}
         participantCount={participantCount}
         weekPostCount={weekPostCount}
-        items={items}
         signedIn={signedIn}
       />
-      <FeaturedMovementCard item={featuredItem} signedIn={signedIn} />
+
+      <CategoryChips signedIn={signedIn} />
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
+        <FeaturedMovementCard item={featuredItem} signedIn={signedIn} />
+        <TodayTimeline
+          todayCount={todayCount}
+          participantCount={participantCount}
+          weekPostCount={weekPostCount}
+          items={items}
+          signedIn={signedIn}
+        />
+      </div>
 
       {items.length ? (
-        <section className="space-y-3">
+        <section className="space-y-4">
           <SectionHeading
-            eyebrow="Okul Akışı"
-            title="Bugün konuşulanlar"
-            body="Etkinlikler, duyurular ve topluluk hareketleri tek akışta."
+            eyebrow="Canlı Akış"
+            title="Okulda şu an olanlar"
+            body="Etkinlik, topluluk, duyuru ve konuşmalar tek ritimde akar."
           />
           <StaggeredGrid className="grid gap-4">
             {items.map((item, index) => (
@@ -205,8 +159,8 @@ export function MainFeed({
         </section>
       ) : (
         <EmptyStateCard
-          title="Bugün henüz sakin, ilk hareketi sen başlat."
-          body="Bir etkinlik öner, topluluk kur ya da ilk paylaşımı yap. Okul akışı buradan dolmaya başlar."
+          title="Akış bugün sakin, ilk hareketi sen başlat."
+          body="Bir etkinlik öner, topluluk kur ya da okul gündemine ilk paylaşımı bırak."
           action={<LinkButton href={signedIn ? "/events/new" : "/login"}>İlk hareketi başlat</LinkButton>}
         />
       )}
@@ -214,13 +168,92 @@ export function MainFeed({
   );
 }
 
+export function StreamHeader({
+  todayCount,
+  participantCount,
+  weekPostCount,
+  signedIn,
+}: {
+  todayCount: number;
+  participantCount: number;
+  weekPostCount: number;
+  signedIn: boolean;
+}) {
+  const metrics = [
+    {
+      label: "Bugün",
+      value: todayCount ? `${todayCount} etkinlik` : "Etkinlik hazırlanıyor",
+      icon: CalendarDays,
+      tone: "ember" as const,
+    },
+    {
+      label: "Katılım",
+      value: participantCount ? `${participantCount} kişi` : "İlk katılımı başlat",
+      icon: UsersRound,
+      tone: "mint" as const,
+    },
+    {
+      label: "Konuşma",
+      value: weekPostCount ? `${weekPostCount} paylaşım` : "İlk paylaşımı yap",
+      icon: MessageCircle,
+      tone: "sky" as const,
+    },
+  ];
+
+  return (
+    <section className="relative overflow-hidden rounded-[2.2rem] bg-[#12100f] p-5 text-white shadow-[0_30px_90px_rgba(18,16,15,0.25)] sm:p-7">
+      <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-300 to-sky-300" />
+      <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-orange-400/18 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 left-12 size-72 rounded-full bg-sky-400/14 blur-3xl" />
+
+      <div className="relative grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1.5 text-xs font-black text-slate-200">
+            <span className="size-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.9)]" />
+            ŞHG Sosyal · okulun ana akışı
+          </div>
+          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.96] tracking-tight text-balance sm:text-6xl">
+            Okulda olan biten, tek ekranda canlı.
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+            Etkinlikleri gör, topluluklara katıl, arkadaşlarının nereye aktığını takip et. Burası duyuru panosu değil; okulun sosyal akışı.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <LinkButton href="/posts" className="bg-white text-slate-950 hover:bg-orange-50">
+              Akışa gir
+            </LinkButton>
+            <LinkButton href={signedIn ? "/events/new" : "/login"} variant="secondary" className="border-white/15 bg-white/10 text-white hover:bg-white/20">
+              <Plus className="size-4" />
+              Hareket başlat
+            </LinkButton>
+          </div>
+        </div>
+
+        <div className="grid gap-2 rounded-[1.7rem] border border-white/10 bg-white/8 p-2 backdrop-blur">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="flex items-center gap-3 rounded-[1.3rem] bg-white/9 px-3 py-3">
+              <span className={cn("flex size-10 items-center justify-center rounded-2xl ring-1", tone[metric.tone].chip)}>
+                <metric.icon className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black">{metric.value}</span>
+                <span className="block text-xs font-bold text-slate-400">{metric.label}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function CategoryChips({ signedIn }: { signedIn: boolean }) {
   const chips = [
-    { href: "/", label: "Bugün" },
-    { href: "/events", label: "Yaklaşan" },
-    { href: "/posts?sort=popular", label: "Popüler" },
-    { href: signedIn ? "/friends" : "/login", label: "Arkadaşların" },
-    { href: "/communities", label: "Topluluklar" },
+    { href: "/", label: "Bugün", icon: Flame },
+    { href: "/events", label: "Etkinlik", icon: CalendarDays },
+    { href: "/posts?sort=popular", label: "Popüler", icon: Sparkles },
+    { href: signedIn ? "/friends" : "/login", label: "Arkadaşların", icon: UsersRound },
+    { href: "/communities", label: "Topluluk", icon: Home },
   ];
 
   return (
@@ -230,12 +263,13 @@ export function CategoryChips({ signedIn }: { signedIn: boolean }) {
           key={chip.label}
           href={chip.href}
           className={cn(
-            "shrink-0 rounded-full border px-4 py-2 text-sm font-black shadow-sm transition",
+            "group inline-flex h-12 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-black shadow-sm transition",
             index === 0
               ? "border-slate-950 bg-slate-950 text-white"
-              : "border-white/75 bg-white/82 text-slate-700 hover:border-orange-200 hover:bg-orange-50 hover:text-[var(--primary)]",
+              : "border-white/80 bg-white/80 text-slate-700 backdrop-blur hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50",
           )}
         >
+          <chip.icon className="size-4" />
           {chip.label}
         </Link>
       ))}
@@ -259,33 +293,26 @@ export function TodayTimeline({
   const timeline = buildTimelineItems(items, todayCount, participantCount, weekPostCount, signedIn);
 
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="border-b border-white/70 bg-white/58 px-5 py-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="text-xs font-black uppercase text-[var(--primary)]">Bugün Okulda</div>
-            <h1 className="mt-1 text-2xl font-black leading-tight text-slate-950 sm:text-3xl">
-              Okulun canlı akışı burada.
-            </h1>
-          </div>
-          <Badge tone={todayCount ? "green" : "amber"}>
-            {todayCount ? "bugün hareket var" : "ilk hareket bekleniyor"}
-          </Badge>
-        </div>
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/74 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className="absolute inset-y-6 left-8 w-px bg-gradient-to-b from-orange-300 via-sky-300 to-transparent" />
+      <div className="relative mb-4 pl-9">
+        <div className="text-xs font-black uppercase text-[var(--primary)]">Bugün Okulda</div>
+        <h2 className="mt-1 text-xl font-black text-slate-950">Günün kısa ritmi</h2>
       </div>
-
-      <div className="grid gap-3 p-4 md:grid-cols-3">
+      <div className="relative grid gap-3">
         {timeline.map((item) => (
-          <div key={item.label} className="relative overflow-hidden rounded-3xl border border-white/75 bg-white/74 p-4 shadow-sm">
-            <span className={cn("flex size-10 items-center justify-center rounded-2xl ring-1", toneClasses[item.tone])}>
+          <div key={item.label} className="grid grid-cols-[2.35rem_1fr] items-center gap-3">
+            <span className={cn("z-10 flex size-10 items-center justify-center rounded-2xl ring-1 shadow-sm", tone[item.tone].chip)}>
               <item.icon className="size-4" />
             </span>
-            <div className="mt-3 text-sm font-black text-slate-950">{item.value}</div>
-            <div className="mt-0.5 text-xs font-bold text-slate-500">{item.label}</div>
+            <div className="rounded-[1.3rem] border border-white/80 bg-white/78 px-3 py-3">
+              <div className="text-sm font-black text-slate-950">{item.value}</div>
+              <div className="mt-0.5 text-xs font-bold text-slate-500">{item.label}</div>
+            </div>
           </div>
         ))}
       </div>
-    </Card>
+    </section>
   );
 }
 
@@ -300,7 +327,7 @@ export function FeaturedMovementCard({
     return (
       <EmptyStateCard
         title="Öne çıkan hareket yakında burada."
-        body="Onaylanan etkinlikler, duyurular ve popüler gönderiler okul akışında öne çıkar."
+        body="Onaylanan etkinlikler, duyurular ve popüler paylaşımlar burada öne çıkar."
         action={<LinkButton href={signedIn ? "/posts" : "/login"} variant="secondary">Paylaşım yap</LinkButton>}
       />
     );
@@ -310,23 +337,30 @@ export function FeaturedMovementCard({
 
   return (
     <AnimatedCard>
-      <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 p-5 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
-        <div className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accentClasses[featured.tone])} />
-        <div className="absolute -right-16 -top-20 size-56 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+      <section className="group relative min-h-[21rem] overflow-hidden rounded-[2.2rem] border border-white/70 bg-white/72 p-5 shadow-[0_28px_80px_rgba(15,23,42,0.11)] backdrop-blur-xl">
+        <div className={cn("absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r", tone[featured.tone].line)} />
+        <div className={cn("absolute -right-20 -top-20 size-56 rounded-full blur-3xl", tone[featured.tone].wash)} />
+        <div className="relative flex h-full flex-col justify-between gap-10">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={categoryTone[featured.category] ?? "orange"}>{featured.category}</Badge>
-              <span className="text-xs font-black uppercase tracking-wide text-slate-300">Öne çıkan hareket</span>
+              <TonePill toneName={featured.tone}>{featured.category}</TonePill>
+              <span className="text-xs font-black uppercase tracking-wide text-slate-400">Öne çıkan</span>
             </div>
-            <h2 className="mt-4 max-w-2xl text-2xl font-black leading-tight sm:text-3xl">
+            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-[1.02] tracking-tight text-slate-950 text-balance sm:text-5xl">
               {featured.title}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{featured.body}</p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{featured.body}</p>
           </div>
-          <LinkButton href={featured.href} variant="secondary" className="bg-white text-slate-950 hover:bg-orange-50">
-            {featured.action}
-          </LinkButton>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex -space-x-2">
+              <Avatar firstName="ŞHG" lastName="Sosyal" size="sm" />
+              <Avatar firstName="Okul" lastName="Akışı" size="sm" />
+              <Avatar firstName="Canlı" lastName="Akış" size="sm" />
+            </div>
+            <LinkButton href={featured.href} variant="secondary">
+              {featured.action}
+            </LinkButton>
+          </div>
         </div>
       </section>
     </AnimatedCard>
@@ -379,69 +413,69 @@ export function EventFeedCard({
 
   return (
     <AnimatedCard>
-      <Card className="overflow-hidden p-0 hover:border-orange-200 hover:shadow-[0_20px_58px_rgba(240,90,40,0.12)]">
-        <div className="grid grid-cols-[5px_1fr]">
-          <div className="bg-gradient-to-b from-orange-500 via-amber-300 to-orange-100" />
-          <div>
-            <div className="flex gap-4 p-5">
-              <Link
-                href={`/events/${event.id}`}
-                className="flex size-16 shrink-0 flex-col items-center justify-center rounded-3xl bg-slate-950 text-white shadow-lg shadow-slate-950/15"
-              >
-                <span className="text-2xl font-black leading-none">{day}</span>
-                <span className="mt-1 text-[11px] font-black uppercase">{month}</span>
-              </Link>
-              <div className="min-w-0 flex-1">
-                <FeedMeta
-                  category="Etkinlik"
-                  icon={CalendarDays}
-                  meta={`${formatTime(event.start_time)} · ${cleanText(event.location, "Konum yakında")}`}
-                />
-                <Link href={`/events/${event.id}`} className="mt-3 block text-xl font-black leading-snug text-slate-950 hover:text-[var(--primary)]">
-                  {cleanText(event.title, "Yeni etkinlik")}
-                </Link>
-                <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
-                  {cleanText(event.description, "Etkinlik detayları yakında paylaşılacak.")}
-                </p>
-              </div>
+      <article className="group overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-orange-200">
+        <div className="grid md:grid-cols-[12rem_1fr]">
+          <Link
+            href={`/events/${event.id}`}
+            className="relative min-h-40 overflow-hidden bg-[#15110f] p-5 text-white md:min-h-full"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,146,60,0.38),transparent_34%),radial-gradient(circle_at_90%_80%,rgba(14,165,233,0.22),transparent_36%)]" />
+            <div className="relative flex h-full flex-col justify-between">
+              <span className="text-xs font-black uppercase text-orange-100">Etkinlik</span>
+              <span>
+                <span className="block text-6xl font-black leading-none">{day}</span>
+                <span className="mt-1 block text-sm font-black uppercase tracking-wide text-orange-100">{month}</span>
+              </span>
+            </div>
+          </Link>
+
+          <div className="p-5">
+            <FeedMeta
+              category="Etkinlik"
+              icon={CalendarDays}
+              meta={`${formatTime(event.start_time)} · ${cleanText(event.location, "Konum yakında")}`}
+              toneName="ember"
+            />
+            <Link href={`/events/${event.id}`} className="mt-4 block text-2xl font-black leading-tight text-slate-950 hover:text-[var(--primary)]">
+              {cleanText(event.title, "Yeni etkinlik")}
+            </Link>
+            <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+              {cleanText(event.description, "Etkinlik detayları yakında paylaşılacak.")}
+            </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-black text-slate-500">
+              <InfoPill icon={CalendarDays}>{formatDate(event.event_date)}</InfoPill>
+              <InfoPill icon={MapPin}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
+              <InfoPill icon={UsersRound}>{participantCount ? `${participantCount} kişi` : "İlk katılım"}</InfoPill>
+              {friends.length ? (
+                <span className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-2.5 py-1 text-sky-700">
+                  <span className="flex -space-x-2">
+                    {friends.slice(0, 3).map((friend) => (
+                      <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
+                    ))}
+                  </span>
+                  {friends.length} arkadaşın gidiyor
+                </span>
+              ) : null}
             </div>
 
-            <div className="border-t border-white/70 bg-white/55 px-5 py-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-black text-slate-500">
-                  <InfoPill icon={CalendarDays}>{formatDate(event.event_date)}</InfoPill>
-                  <InfoPill icon={MapPin}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
-                  <span>{participantCount ? `${participantCount} kişi katılıyor` : "İlk katılımı sen başlat"}</span>
-                  {friends.length ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
-                      <span className="flex -space-x-2">
-                        {friends.slice(0, 3).map((friend) => (
-                          <Avatar key={friend.id} firstName={friend.first_name} lastName={friend.last_name} size="sm" />
-                        ))}
-                      </span>
-                      {friends.length} arkadaşın gidiyor
-                    </span>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {signedIn ? (
-                    <form action={toggleEventParticipationAction}>
-                      <input type="hidden" name="event_id" value={event.id} />
-                      <input type="hidden" name="is_joined" value="false" />
-                      <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary">
-                        Katılıyorum
-                      </SubmitButton>
-                    </form>
-                  ) : null}
-                  <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"}>
-                    Detayları gör
-                  </LinkButton>
-                </div>
-              </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {signedIn ? (
+                <form action={toggleEventParticipationAction}>
+                  <input type="hidden" name="event_id" value={event.id} />
+                  <input type="hidden" name="is_joined" value="false" />
+                  <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary">
+                    Katılıyorum
+                  </SubmitButton>
+                </form>
+              ) : null}
+              <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"}>
+                Detayları gör
+              </LinkButton>
             </div>
           </div>
         </div>
-      </Card>
+      </article>
     </AnimatedCard>
   );
 }
@@ -463,7 +497,7 @@ export function CommunityFeedCard({
       title={cleanText(community.name, "Yeni topluluk")}
       body={cleanText(community.description, "Bu topluluk okul akışında yeni hareketler başlatabilir.")}
       href={`/communities/${community.slug}`}
-      tone="green"
+      toneName="mint"
       footer={
         <>
           <span>{members ? `${members} üye` : "Yeni üyeler bekleniyor"}</span>
@@ -484,7 +518,12 @@ export function CommunityFeedCard({
           <LinkButton href="/login" variant="secondary">Giriş yap</LinkButton>
         )
       }
-    />
+    >
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <MiniMetric label="Üye" value={members ? String(members) : "bekleniyor"} />
+        <MiniMetric label="Paylaşım" value={posts ? String(posts) : "ilk gönderi"} />
+      </div>
+    </BaseFeedCard>
   );
 }
 
@@ -497,7 +536,7 @@ export function AnnouncementCard({ announcement }: { announcement: any }) {
       title={cleanText(announcement.title, "Yeni duyuru")}
       body={cleanText(announcement.body, "Duyurular yakında burada.")}
       href="/notifications"
-      tone="purple"
+      toneName="violet"
       footer={<span>Okul duyurusu</span>}
       action={<LinkButton href="/notifications" variant="secondary">Bildirimleri gör</LinkButton>}
     />
@@ -519,7 +558,7 @@ export function PollFeedCard({ poll }: { poll: any }) {
       title={cleanText(poll.title, "Yeni anket")}
       body={cleanText(poll.description, "Okul gündemine dair kısa bir anket.")}
       href="/polls"
-      tone="blue"
+      toneName="sky"
       footer={<span>{totalVotes ? `${totalVotes} oy` : "İlk oyu sen ver"}</span>}
       action={<LinkButton href="/polls" variant="secondary">Oy ver</LinkButton>}
     >
@@ -528,16 +567,16 @@ export function PollFeedCard({ poll }: { poll: any }) {
           .slice(0, 3)
           .map((option: any) => {
             const votes = Array.isArray(option.poll_votes) ? option.poll_votes.length : 0;
-            const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 16;
+            const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 14;
 
             return (
-              <div key={option.id} className="rounded-2xl border border-blue-100 bg-blue-50/55 p-3">
+              <div key={option.id} className="rounded-2xl border border-sky-100 bg-sky-50/65 p-3">
                 <div className="flex items-center justify-between gap-3 text-xs font-black text-slate-700">
                   <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
                   <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
                 </div>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${Math.max(percent, 10)}%` }} />
+                  <div className="h-full rounded-full bg-sky-500" style={{ width: `${Math.max(percent, 10)}%` }} />
                 </div>
               </div>
             );
@@ -568,7 +607,7 @@ export function FriendActivityCard({
       title={cleanText(title, "Arkadaşların ne yapıyor?")}
       body={cleanText(body, "Giriş yapınca arkadaşlarının katıldığı etkinlikleri burada görebilirsin.")}
       href={href ?? (signedIn ? "/friends" : "/login")}
-      tone="amber"
+      toneName="sun"
       footer={<span>Sadece kabul edilmiş arkadaşların görünür</span>}
       action={<LinkButton href={href ?? (signedIn ? "/friends" : "/login")} variant="secondary">Detayları gör</LinkButton>}
     >
@@ -605,7 +644,8 @@ export function RightSidebar({
 
   return (
     <aside className="space-y-4">
-      <MiniPanel icon={CalendarDays} title="Bugün ve yakında" href="/events">
+      <QuickActionCard signedIn={signedIn} />
+      <MiniPanel icon={CalendarDays} title="Yakında" href="/events" toneName="ember">
         {events.length ? (
           <div className="grid gap-2">
             {events.slice(0, 4).map((event) => {
@@ -615,9 +655,9 @@ export function RightSidebar({
                 <Link
                   key={event.id}
                   href={`/events/${event.id}`}
-                  className="flex gap-3 rounded-2xl border border-white/75 bg-white/72 p-3 transition hover:border-orange-200 hover:bg-orange-50/60"
+                  className="grid grid-cols-[3rem_1fr] gap-3 rounded-[1.35rem] border border-white/75 bg-white/75 p-3 transition hover:border-orange-200 hover:bg-orange-50/70"
                 >
-                  <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-2xl bg-slate-950 text-white">
+                  <span className="flex size-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-slate-950 text-white">
                     <span className="text-base font-black">{day}</span>
                     <span className="text-[10px] font-black uppercase">{month}</span>
                   </span>
@@ -634,8 +674,8 @@ export function RightSidebar({
         ) : (
           <EmptyStateCard
             compact
-            title="Bugün için etkinlik hazırlanıyor."
-            body="Onaylanan etkinlikler burada görünecek."
+            title="Etkinlik hazırlanıyor."
+            body="Onaylanan etkinlikler burada görünür."
             action={<LinkButton href={signedIn ? "/events/new" : "/login"} variant="secondary">Etkinlik öner</LinkButton>}
           />
         )}
@@ -644,8 +684,8 @@ export function RightSidebar({
       <CommunityPanel communities={communities} />
       <FriendActivityPanel items={friendItems} signedIn={signedIn} />
 
-      <Card className="overflow-hidden p-0">
-        <div className="bg-slate-950 p-5 text-white">
+      <section className="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+        <div className="p-5">
           <Badge tone="orange">Haftanın etkinliği</Badge>
           <h2 className="mt-4 text-xl font-black">
             {cleanText(featuredEvent?.title, "Öne çıkan etkinlik yakında burada")}
@@ -656,19 +696,19 @@ export function RightSidebar({
               : "Yeni bir etkinlik yayınlandığında okul akışında öne çıkar."}
           </p>
         </div>
-        <div className="p-4">
-          <LinkButton href={featuredEvent ? `/events/${featuredEvent.id}` : signedIn ? "/events/new" : "/login"} variant="secondary" className="w-full">
+        <div className="border-t border-white/10 p-4">
+          <LinkButton href={featuredEvent ? `/events/${featuredEvent.id}` : signedIn ? "/events/new" : "/login"} variant="secondary" className="w-full bg-white text-slate-950">
             {featuredEvent ? "Detayları gör" : "Etkinlik öner"}
           </LinkButton>
         </div>
-      </Card>
+      </section>
     </aside>
   );
 }
 
 export function CommunityPanel({ communities }: { communities: any[] }) {
   return (
-    <MiniPanel icon={UsersRound} title="Aktif topluluklar" href="/communities">
+    <MiniPanel icon={UsersRound} title="Aktif topluluklar" href="/communities" toneName="mint">
       {communities.length ? (
         <div className="grid gap-2">
           {communities.slice(0, 4).map((community) => {
@@ -678,7 +718,7 @@ export function CommunityPanel({ communities }: { communities: any[] }) {
               <Link
                 key={community.id}
                 href={`/communities/${community.slug}`}
-                className="rounded-2xl border border-white/75 bg-white/72 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/55"
+                className="rounded-[1.35rem] border border-white/75 bg-white/75 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/65"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -694,11 +734,7 @@ export function CommunityPanel({ communities }: { communities: any[] }) {
           })}
         </div>
       ) : (
-        <EmptyStateCard
-          compact
-          title="Topluluklar hareketlenmeye hazır."
-          body="Onaylanan ilk topluluk burada görünecek."
-        />
+        <EmptyStateCard compact title="Topluluklar hazır." body="Onaylanan ilk topluluk burada görünecek." />
       )}
     </MiniPanel>
   );
@@ -712,14 +748,14 @@ export function FriendActivityPanel({
   signedIn: boolean;
 }) {
   return (
-    <MiniPanel icon={UsersRound} title="Arkadaşların ne yapıyor?" href={signedIn ? "/friends" : "/login"}>
+    <MiniPanel icon={UsersRound} title="Arkadaşların" href={signedIn ? "/friends" : "/login"} toneName="sky">
       {items.length ? (
         <div className="grid gap-2">
           {items.slice(0, 3).map((item) => (
             <Link
               key={item.title}
               href={item.href ?? "/friends"}
-              className="block rounded-2xl border border-blue-100 bg-blue-50/70 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+              className="block rounded-[1.35rem] border border-sky-100 bg-sky-50/72 p-3 transition hover:border-sky-200 hover:bg-sky-50"
             >
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
@@ -738,11 +774,45 @@ export function FriendActivityPanel({
       ) : (
         <EmptyStateCard
           compact
-          title={signedIn ? "Arkadaş hareketleri yakında burada." : "Giriş yapınca arkadaşlarını görebilirsin."}
-          body={signedIn ? "Arkadaşların etkinliklere katıldığında burada görünür." : "Arkadaşlarının katıldığı etkinlikler özel olarak öne çıkar."}
+          title={signedIn ? "Arkadaş hareketleri yakında." : "Giriş yapınca açılır."}
+          body={signedIn ? "Arkadaşların etkinliklere katıldığında burada görünür." : "Arkadaşlarının katıldığı etkinlikler öne çıkar."}
         />
       )}
     </MiniPanel>
+  );
+}
+
+export function QuickActionCard({ signedIn }: { signedIn: boolean }) {
+  const actions = [
+    { href: signedIn ? "/events/new" : "/login", label: "Etkinlik öner", icon: CalendarDays },
+    { href: signedIn ? "/communities/new" : "/login", label: "Topluluk kur", icon: UsersRound },
+    { href: signedIn ? "/posts" : "/login", label: "Gönderi paylaş", icon: Send },
+  ];
+
+  return (
+    <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/75 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-black text-slate-950">Hızlı hareket</h2>
+          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Akışa yeni bir şey ekle.</p>
+        </div>
+        <Sparkles className="size-5 text-[var(--primary)]" />
+      </div>
+      <div className="mt-4 grid gap-2">
+        {actions.map((action) => (
+          <Link
+            key={action.label}
+            href={action.href}
+            className="flex items-center gap-3 rounded-[1.25rem] border border-white/75 bg-white/72 px-3 py-3 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50"
+          >
+            <span className="flex size-9 items-center justify-center rounded-2xl bg-slate-950 text-white">
+              <action.icon className="size-4" />
+            </span>
+            {action.label}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -788,11 +858,11 @@ export function EmptyStateCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-dashed border-orange-200/80 bg-white/72 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
+        "relative overflow-hidden rounded-[2rem] border border-dashed border-orange-200/80 bg-white/74 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur",
         compact ? "p-4" : "p-7",
       )}
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-emerald-300" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-sky-300" />
       <div className={cn("mx-auto mb-3 flex items-center justify-center rounded-2xl bg-orange-50 text-[var(--primary)] shadow-inner", compact ? "size-10" : "size-12")}>
         <Sparkles className="size-5" />
       </div>
@@ -815,7 +885,7 @@ function PostFeedCard({ post }: { post: any }) {
       title={cleanText(post.title, "Yeni gönderi")}
       body={cleanText(post.body, "Bu haftanın ilk paylaşımı burada öne çıkabilir.")}
       href={`/posts/${post.id}`}
-      tone="slate"
+      toneName="ink"
       footer={
         <>
           <span>{score ? `${score} skor` : "İlk beğeni bekleniyor"}</span>
@@ -839,7 +909,7 @@ function BaseFeedCard({
   title,
   body,
   href,
-  tone,
+  toneName,
   footer,
   action,
   children,
@@ -850,7 +920,7 @@ function BaseFeedCard({
   title: string;
   body?: string | null;
   href?: string;
-  tone: Tone;
+  toneName: Tone;
   footer?: ReactNode;
   action?: ReactNode;
   children?: ReactNode;
@@ -865,11 +935,11 @@ function BaseFeedCard({
 
   return (
     <AnimatedCard>
-      <Card className="overflow-hidden p-0 hover:border-orange-200 hover:shadow-[0_18px_52px_rgba(15,23,42,0.10)]">
-        <div className={cn("h-1 bg-gradient-to-r", accentClasses[tone])} />
+      <article className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:border-orange-200">
+        <div className={cn("h-1.5 bg-gradient-to-r", tone[toneName].line)} />
         <div className="p-5">
-          <FeedMeta category={category} icon={icon} meta={meta} />
-          <h2 className="mt-3 text-xl font-black leading-snug text-slate-950">{titleNode}</h2>
+          <FeedMeta category={category} icon={icon} meta={meta} toneName={toneName} />
+          <h2 className="mt-4 text-2xl font-black leading-tight text-slate-950">{titleNode}</h2>
           {body ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{body}</p> : null}
           {children}
         </div>
@@ -877,7 +947,7 @@ function BaseFeedCard({
           <div className="flex flex-wrap gap-3 text-xs font-black text-slate-500">{footer}</div>
           {action}
         </div>
-      </Card>
+      </article>
     </AnimatedCard>
   );
 }
@@ -886,18 +956,20 @@ function FeedMeta({
   category,
   icon: Icon,
   meta,
+  toneName,
 }: {
   category: string;
   icon: IconType;
   meta: string;
+  toneName: Tone;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2">
-        <span className={cn("flex size-9 items-center justify-center rounded-2xl ring-1", toneClasses[toneForCategory(category)])}>
+        <span className={cn("flex size-9 items-center justify-center rounded-2xl ring-1", tone[toneName].chip)}>
           <Icon className="size-4" />
         </span>
-        <Badge tone={categoryTone[category] ?? "slate"}>{category}</Badge>
+        <TonePill toneName={toneName}>{category}</TonePill>
       </div>
       <span className="text-xs font-bold text-slate-500">{cleanText(meta, "az önce")}</span>
     </div>
@@ -908,28 +980,47 @@ function MiniPanel({
   icon: Icon,
   title,
   href,
+  toneName,
   children,
 }: {
   icon: IconType;
   title: string;
   href: string;
+  toneName: Tone;
   children: ReactNode;
 }) {
   return (
-    <Card className="space-y-4">
+    <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/74 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-2xl bg-orange-50 text-[var(--primary)]">
+          <span className={cn("flex size-9 items-center justify-center rounded-2xl ring-1", tone[toneName].chip)}>
             <Icon className="size-4" />
           </span>
           <h2 className="text-base font-black text-slate-950">{title}</h2>
         </div>
-        <Link href={href} className="text-xs font-black text-[var(--primary)]">
+        <Link href={href} className={cn("text-xs font-black", tone[toneName].text)}>
           Aç
         </Link>
       </div>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function TonePill({ toneName, children }: { toneName: Tone; children: ReactNode }) {
+  return (
+    <span className={cn("rounded-full px-2.5 py-1 text-xs font-black ring-1", tone[toneName].chip)}>
       {children}
-    </Card>
+    </span>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
+      <div className="text-sm font-black text-slate-950">{value}</div>
+      <div className="text-[11px] font-bold text-slate-500">{label}</div>
+    </div>
   );
 }
 
@@ -946,7 +1037,7 @@ function SectionHeading({
     <div className="flex flex-wrap items-end justify-between gap-3 px-1">
       <div>
         <div className="text-xs font-black uppercase text-[var(--primary)]">{eyebrow}</div>
-        <h2 className="mt-1 text-xl font-black text-slate-950">{title}</h2>
+        <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{title}</h2>
       </div>
       <p className="max-w-sm text-sm font-semibold leading-6 text-slate-500">{body}</p>
     </div>
@@ -976,19 +1067,19 @@ function buildTimelineItems(
       label: "Bugün",
       value: todayCount ? `${todayCount} etkinlik hazırlanmış` : "Bugün için etkinlik hazırlanıyor",
       icon: CalendarDays,
-      tone: "orange" as const,
+      tone: "ember" as const,
     },
     {
       label: "Katılım",
       value: participantCount ? `${participantCount} kişi katılıyor` : "İlk katılımı sen başlat",
-      icon: UsersRound,
-      tone: "green" as const,
+      icon: CheckCircle2,
+      tone: "mint" as const,
     },
     {
       label: "Konuşulanlar",
       value: weekPostCount || hasPost ? `${weekPostCount || "Yeni"} paylaşım var` : "Bu haftanın ilk paylaşımını yap",
       icon: MessageCircle,
-      tone: signedIn ? "blue" as const : "amber" as const,
+      tone: signedIn ? "sky" as const : "sun" as const,
     },
   ];
 }
@@ -997,7 +1088,7 @@ function getFeaturedMeta(item: FeedItem) {
   if (item.type === "event") {
     return {
       category: "Etkinlik",
-      tone: "orange" as const,
+      tone: "ember" as const,
       title: cleanText(item.event.title, "Yakındaki etkinlik"),
       body: `${formatDate(item.event.event_date)} · ${formatTime(item.event.start_time)} · ${cleanText(item.event.location, "Konum yakında")}`,
       href: `/events/${item.event.id}`,
@@ -1008,7 +1099,7 @@ function getFeaturedMeta(item: FeedItem) {
   if (item.type === "post") {
     return {
       category: "Gönderi",
-      tone: "slate" as const,
+      tone: "ink" as const,
       title: cleanText(item.post.title, "Yeni gönderi"),
       body: cleanText(item.post.body, "Okul gündemindeki yeni paylaşım."),
       href: `/posts/${item.post.id}`,
@@ -1019,7 +1110,7 @@ function getFeaturedMeta(item: FeedItem) {
   if (item.type === "announcement") {
     return {
       category: "Duyuru",
-      tone: "purple" as const,
+      tone: "violet" as const,
       title: cleanText(item.announcement.title, "Yeni duyuru"),
       body: cleanText(item.announcement.body, "Duyurular yakında burada."),
       href: "/notifications",
@@ -1030,7 +1121,7 @@ function getFeaturedMeta(item: FeedItem) {
   if (item.type === "poll") {
     return {
       category: "Anket",
-      tone: "blue" as const,
+      tone: "sky" as const,
       title: cleanText(item.poll.title, "Yeni anket"),
       body: cleanText(item.poll.description, "Okul gündemine dair kısa bir anket."),
       href: "/polls",
@@ -1041,7 +1132,7 @@ function getFeaturedMeta(item: FeedItem) {
   if (item.type === "community") {
     return {
       category: "Topluluk",
-      tone: "green" as const,
+      tone: "mint" as const,
       title: cleanText(item.community.name, "Aktif topluluk"),
       body: cleanText(item.community.description, "Topluluklar okul akışını hareketlendirir."),
       href: `/communities/${item.community.slug}`,
@@ -1051,7 +1142,7 @@ function getFeaturedMeta(item: FeedItem) {
 
   return {
     category: "Arkadaş",
-    tone: "amber" as const,
+    tone: "sun" as const,
     title: cleanText(item.title, "Arkadaş hareketi"),
     body: cleanText(item.body, "Arkadaşlarının etkinlik hareketleri burada görünür."),
     href: item.href ?? "/friends",
@@ -1066,15 +1157,6 @@ function feedKey(item: FeedItem, index: number) {
   if (item.type === "poll") return `poll-${item.poll.id ?? index}`;
   if (item.type === "community") return `community-${item.community.id}`;
   return `friend-${index}`;
-}
-
-function toneForCategory(category: string): Tone {
-  if (category === "Etkinlik") return "orange";
-  if (category === "Duyuru") return "purple";
-  if (category === "Anket") return "blue";
-  if (category === "Topluluk") return "green";
-  if (category === "Arkadaş") return "amber";
-  return "slate";
 }
 
 function relativeDate(value?: string | null) {

@@ -51,7 +51,7 @@ export default async function CommunitiesPage({
               Aktif Alanlar
             </PulseBadge>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight text-balance sm:text-5xl">
-              Topluluklar artık liste değil, okulun sinyal haritası.
+              Topluluklar artık liste değil, okulun canlı sahnesi.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
               Hangi kulüp konuşuyor, hangi ekip büyüyor, hangi alan bu hafta parlıyor? Hepsini tek ekranda yakala.
@@ -78,7 +78,7 @@ export default async function CommunitiesPage({
 
         <Card className="relative overflow-hidden">
           <PulseBadge tone="green" live={Boolean(featured)}>
-            topluluk sinyalleri
+            topluluk hareketleri
           </PulseBadge>
           <div className="mt-5 grid gap-3">
             <SignalMetric icon={UsersRound} label="aktif topluluk" value={communities.length} tone="blue" />
@@ -90,7 +90,7 @@ export default async function CommunitiesPage({
 
       <OrganicGrid className="grid gap-4 md:grid-cols-3">
         <SignalMetric icon={UsersRound} label="aktif topluluk" value={communities.length} tone="blue" />
-        <SignalMetric icon={Bell} label="takip sinyali" value={totalFollowers} tone="purple" />
+        <SignalMetric icon={Bell} label="takip hareketi" value={totalFollowers} tone="purple" />
         <SignalMetric icon={CheckCircle2} label="onay kuyruğum" value={applicationCount} tone="amber" />
       </OrganicGrid>
 
@@ -99,7 +99,7 @@ export default async function CommunitiesPage({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <PulseBadge tone="orange">topluluk tara</PulseBadge>
-              <h2 className="mt-2 text-xl font-black text-slate-950">Sinyal ara</h2>
+              <h2 className="mt-2 text-xl font-black text-slate-950">Topluluk ara</h2>
             </div>
             <LinkButton href="/communities" variant="ghost">Aramayı temizle</LinkButton>
           </div>
@@ -173,11 +173,11 @@ export default async function CommunitiesPage({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <PulseBadge tone="green" live={communities.length > 0}>
-              topluluk sinyalleri
+              topluluk hareketleri
             </PulseBadge>
             <h2 className="mt-3 text-3xl font-black text-slate-950">Aktif alanlar</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              En aktif topluluk büyük kartta, diğer sinyaller değişken boyutlu bento akışında görünür.
+              En aktif topluluk büyük kartta, diğer topluluklar daha kompakt ve okunabilir kartlarda görünür.
             </p>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default async function CommunitiesPage({
               index < 2 ? (
                 <BentoCard key={community.id} tone={index % 2 === 0 ? "orange" : "green"} size="wide">
                   <PulseBadge tone={index % 2 === 0 ? "orange" : "green"} live>
-                    aktif sinyal
+                    bugün aktif
                   </PulseBadge>
                   <h3 className="mt-4 text-2xl font-black text-slate-950">{community.name}</h3>
                   <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
@@ -240,7 +240,7 @@ export default async function CommunitiesPage({
           </OrganicGrid>
         ) : (
           <EmptyState
-            title="İlk topluluk sinyali bekleniyor"
+            title="İlk topluluk hareketi bekleniyor"
             body="Onaylanan ilk topluluk burada üyeleri, takipçileri ve son aktivite bilgisiyle okulun aktif alanına dönüşecek."
             icon={<UsersRound className="size-5" />}
             action={<LinkButton href="/communities/new">Topluluk kur</LinkButton>}

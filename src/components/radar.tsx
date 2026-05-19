@@ -116,7 +116,7 @@ export function CampusTimeline({
     <Card className="h-full overflow-hidden p-0">
       <div className="border-b border-white/70 bg-white/60 p-5">
         <PulseBadge tone="amber" live>
-          kampüs akışı
+          okul akışı
         </PulseBadge>
         <h2 className="mt-3 text-2xl font-black text-slate-950">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -172,7 +172,7 @@ export function CampusTimeline({
 export function CampusBoardPanel({
   items,
   featured,
-  eyebrow = "Kampüs Panosu",
+  eyebrow = "Okul Panosu",
   title = "Okul Nabzı",
   description = "Bugünün etkinlikleri, topluluk hareketleri ve okul gündemi daha okunabilir bir merkezde toplanır.",
 }: {
@@ -208,7 +208,7 @@ export function CampusBoardPanel({
           </p>
         </div>
         <div className="rounded-3xl border border-white/12 bg-white/10 px-4 py-3 text-sm font-black text-orange-100">
-          canlı kampüs özeti
+          canlı okul özeti
         </div>
       </div>
 
@@ -351,7 +351,7 @@ export function FriendPulsePanel({
           <div className="rounded-3xl border border-dashed border-blue-200 bg-blue-50/55 p-5">
             <UsersRound className="size-6 text-blue-700" />
             <h3 className="mt-3 text-lg font-black text-slate-950">
-              {signedIn ? "Arkadaş sinyali bekleniyor" : "Arkadaş hareketleri için giriş yap"}
+              {signedIn ? "Arkadaş hareketleri yakında" : "Arkadaş hareketleri için giriş yap"}
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {signedIn
@@ -488,11 +488,11 @@ export function featuredCommunityLabel(community: any) {
   const events = community?.event_count ?? community?.events?.[0]?.count ?? 0;
 
   if (posts > 0) {
-    return `${posts} gündem sinyali`;
+    return `${posts} gündem başlığı`;
   }
 
   if (events > 0) {
-    return `${events} etkinlik sinyali`;
+    return `${events} etkinlik hareketi`;
   }
 
   return `${members} üye nabzı`;

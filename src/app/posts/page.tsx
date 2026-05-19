@@ -58,7 +58,7 @@ export default async function PostsPage({
   const topPost = data.posts[0];
   const boardItems = [
     {
-      title: `${data.posts.length} gündem sinyali`,
+      title: `${data.posts.length} gündem başlığı`,
       body: query.q || query.community ? "Filtre sonucundaki konuşmalar." : "Okulun son paylaşımları.",
       icon: MessageCircle,
       tone: "orange" as const,
@@ -95,7 +95,7 @@ export default async function PostsPage({
               Bugün okulda ne konuşuluyor?
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              Reddit gibi taranabilir, Instagram gibi canlı: soru, duyuru, etkinlik, anket ve sohbet sinyalleri tek akışta.
+              Reddit gibi taranabilir, Instagram gibi canlı: soru, duyuru, etkinlik, anket ve sohbet tek akışta.
             </p>
           </div>
           <Link
