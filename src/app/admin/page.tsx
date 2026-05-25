@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { BarChart3, Flag, Megaphone, ShieldCheck, UsersRound } from "lucide-react";
 import {
   createAnnouncementAction,
@@ -16,8 +15,9 @@ import {
 } from "@/lib/actions/admin";
 import { getAdminData } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
-import { Badge, Card, EmptyState, Field, LinkButton, Stat, TextArea } from "@/components/ui";
+import { Badge, Card, EmptyState, Field, LinkButton, TextArea } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
+import { PageTabs, RailItem, RailSection, SocialPage, StickyPageHeader } from "@/components/social-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -84,61 +84,29 @@ export default async function AdminPage({
   const activeTab = canModerate ? requestedTab : "content";
 
   return (
-    <div className="space-y-7">
-      <section className="rounded-lg border border-[var(--border-soft)] bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="flex size-12 items-center justify-center rounded-lg bg-slate-950 text-white">
-            <ShieldCheck className="size-6" />
-          </span>
-          <div>
-            <h1 className="text-3xl font-black text-slate-950">Yönetim paneli</h1>
-            <p className="text-sm leading-6 text-slate-600">
-              Admin ve moderator moderasyon yapar; öğretmenler duyuru ve anketi onaysız yayınlayabilir.
-            </p>
-          </div>
-        </div>
+    <SocialPage rail={<AdminRail data={data} canChangeRoles={canChangeRoles} canModerate={canModerate} />}>
+      <StickyPageHeader title="Yönetim" subtitle="Onaylar, raporlar ve kullanıcı işleri.">
+        <PageTabs
+          tabs={tabs.map((tab) => {
+            const disabled = !canModerate && tab.key !== "content";
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Toplam kullanıcı" value={data.stats.users} />
-          <Stat label="Toplam topluluk" value={data.stats.communities} />
-          <Stat label="Aktif etkinlik" value={data.stats.activeEvents} />
-          <Stat label="Toplam gönderi" value={data.stats.posts} />
-        </div>
-      </section>
+            return {
+              label: tab.label,
+              href: disabled ? "/admin?tab=content" : `/admin?tab=${tab.key}`,
+              active: activeTab === tab.key,
+            };
+          })}
+        />
+      </StickyPageHeader>
 
       {query.message ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+        <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           {query.message}
         </div>
       ) : null}
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const disabled = !canModerate && tab.key !== "content";
-          const isActive = activeTab === tab.key;
-
-          return (
-            <Link
-              key={tab.key}
-              href={disabled ? "/admin?tab=content" : `/admin?tab=${tab.key}`}
-              className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-bold transition ${
-                isActive
-                  ? "bg-[#f05a28] text-white"
-                  : disabled
-                    ? "border border-[var(--border-soft)] bg-white text-slate-400"
-                    : "border border-[var(--border-soft)] bg-white text-slate-700 hover:bg-orange-50"
-              }`}
-            >
-              <Icon className="size-4" />
-              {tab.label}
-            </Link>
-          );
-        })}
-      </div>
-
       {activeTab === "events" && canModerate ? (
-        <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+        <div className="grid gap-4 bg-white p-4 xl:grid-cols-[1fr_0.9fr]">
           <Panel title="Bekleyen etkinlikler">
             {data.pendingEvents.length ? (
               <div className="grid gap-3">
@@ -204,7 +172,7 @@ export default async function AdminPage({
       ) : null}
 
       {activeTab === "communities" && canModerate ? (
-        <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+        <div className="grid gap-4 bg-white p-4 xl:grid-cols-[1fr_0.9fr]">
           <Panel title="Bekleyen topluluklar">
             {data.pendingCommunities.length ? (
               <div className="grid gap-3">
@@ -266,7 +234,7 @@ export default async function AdminPage({
       ) : null}
 
       {activeTab === "reports" && canModerate ? (
-        <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
+        <div className="grid gap-4 bg-white p-4 xl:grid-cols-[1fr_0.8fr]">
           <Panel title="Raporlanan içerikler">
             {data.reports.length ? (
               <div className="grid gap-3">
@@ -331,6 +299,7 @@ export default async function AdminPage({
       ) : null}
 
       {activeTab === "users" && canModerate ? (
+        <div className="bg-white p-4">
         <Panel title="Kullanıcı yönetimi">
           <form className="mb-4 grid gap-3 rounded-2xl bg-slate-50 p-3 md:grid-cols-[1fr_180px_auto]" action="/admin">
             <input type="hidden" name="tab" value="users" />
@@ -472,10 +441,11 @@ export default async function AdminPage({
             </div>
           ) : null}
         </Panel>
+        </div>
       ) : null}
 
       {activeTab === "content" ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 bg-white p-4 lg:grid-cols-2">
           <Panel title="Admin duyurusu">
             <form action={createAnnouncementAction} className="grid gap-3">
               <Field label="Başlık" name="title" required />
@@ -506,15 +476,51 @@ export default async function AdminPage({
           </Panel>
         </div>
       ) : null}
-    </div>
+    </SocialPage>
+  );
+}
+
+function AdminRail({
+  data,
+  canChangeRoles,
+  canModerate,
+}: {
+  data: Awaited<ReturnType<typeof getAdminData>>;
+  canChangeRoles: boolean;
+  canModerate: boolean;
+}) {
+  return (
+    <>
+      <RailSection title="Durum">
+        <RailItem title={`${data.stats.users} kullanıcı`} meta="Toplam hesap" icon={UsersRound} />
+        <RailItem title={`${data.stats.communities} topluluk`} meta="Okuldaki alanlar" icon={ShieldCheck} />
+        <RailItem title={`${data.stats.activeEvents} aktif etkinlik`} meta="Yayında" icon={BarChart3} />
+        <RailItem title={`${data.stats.posts} gönderi`} meta="Akıştaki paylaşımlar" icon={Megaphone} />
+      </RailSection>
+
+      <RailSection title="Kuyruk">
+        <RailItem title={`${data.pendingEvents.length} etkinlik`} meta="Onay bekliyor" icon={BarChart3} href="/admin?tab=events" />
+        <RailItem title={`${data.pendingCommunities.length} topluluk`} meta="Başvuru bekliyor" icon={UsersRound} href="/admin?tab=communities" />
+        <RailItem title={`${data.reports.length} rapor`} meta="İnceleme bekliyor" icon={Flag} href="/admin?tab=reports" />
+      </RailSection>
+
+      <RailSection title="Yetki">
+        <RailItem
+          title={canChangeRoles ? "Admin yetkisi" : canModerate ? "Moderasyon yetkisi" : "Duyuru yetkisi"}
+          meta={canChangeRoles ? "Rol değiştirebilir" : "Rol değiştirme kapalı"}
+          icon={ShieldCheck}
+        />
+        <RailItem title="Duyuru / Anket" meta="Hızlı yayınlama" icon={Megaphone} href="/admin?tab=content" />
+      </RailSection>
+    </>
   );
 }
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <Card>
-      <h2 className="mb-4 text-xl font-black text-slate-950">{title}</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 className="mb-4 text-lg font-black text-slate-950">{title}</h2>
       {children}
-    </Card>
+    </section>
   );
 }

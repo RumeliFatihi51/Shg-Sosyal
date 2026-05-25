@@ -1,20 +1,34 @@
 import Link from "next/link";
-import { Clock, Compass, MessageCircle, Plus, Radio, Search, Send, Sparkles, TrendingUp } from "lucide-react";
-import { AnimatedSection, OrganicGrid } from "@/components/motion";
 import {
-  AgendaItem,
-  BentoCard,
-  CampusBoardPanel,
-  PulseBadge,
-  SignalMetric,
-  guessPostCategory,
-} from "@/components/radar";
+  ChevronDown,
+  ChevronUp,
+  Compass,
+  MessageCircle,
+  Plus,
+  Send,
+  Sparkles,
+} from "lucide-react";
 import { SubmitButton } from "@/components/submit-button";
-import { Button, Card, EmptyState, Field, LinkButton, TextArea } from "@/components/ui";
-import { PostCard, postScore } from "@/features/posts/post-card";
+import { Avatar, Button, LinkButton, TextArea } from "@/components/ui";
+import {
+  InlineEmpty,
+  PageTabs,
+  RailItem,
+  RailSection,
+  SearchBox,
+  SocialBadge,
+  SocialPage,
+  StickyPageHeader,
+  TimelineRow,
+  TimelineSurface,
+} from "@/components/social-ui";
 import { createPostAction } from "@/lib/actions/communities";
+import { votePostAction } from "@/lib/actions/posts";
 import { getPostFormData, getPostsFeedData } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
+import { cn, fullName } from "@/lib/utils";
+import { guessPostCategory } from "@/components/radar";
+import { postScore, userPostVote } from "@/features/posts/post-card";
 
 export const dynamic = "force-dynamic";
 
@@ -28,20 +42,18 @@ export default async function PostsPage({
 
   if (!profile) {
     return (
-      <AnimatedSection className="mx-auto max-w-3xl">
-        <BentoCard tone="purple" className="text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-3xl bg-purple-100 text-purple-700">
-            <Compass className="size-7" />
-          </div>
-          <h1 className="mt-5 text-3xl font-black text-slate-950">Okul gündemi girişten sonra açılır</h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
-            Topluluk gönderileri, beğeniler, eksi oylar ve yorumlar okul içi hesapla görüntülenir. Etkinlikler ise herkese açık kalır.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <LinkButton href="/login">Giriş yap</LinkButton>
-          </div>
-        </BentoCard>
-      </AnimatedSection>
+      <SocialPage
+        rail={<PublicRail />}
+      >
+        <StickyPageHeader title="Keşfet" subtitle="Okul gündemi, topluluk paylaşımları ve konuşulanlar." />
+        <TimelineSurface>
+          <InlineEmpty
+            title="Giriş yap"
+            body="Paylaşmak ve okul gündemini görmek için hesabına gir."
+            action={<LinkButton href="/login">Giriş yap</LinkButton>}
+          />
+        </TimelineSurface>
+      </SocialPage>
     );
   }
 
@@ -49,255 +61,266 @@ export default async function PostsPage({
   const formData = await getPostFormData();
   const sort = data.sort;
   const currentUrl = `/posts?sort=${sort}&q=${encodeURIComponent(query.q ?? "")}&community=${encodeURIComponent(query.community ?? "")}`;
-  const totalScore = data.posts.reduce((sum: number, post: any) => sum + postScore(post), 0);
-  const totalComments = data.posts.reduce(
-    (sum: number, post: any) =>
-      sum + (Array.isArray(post.comments) ? post.comments.length : post.comments?.[0]?.count ?? 0),
-    0,
-  );
-  const topPost = data.posts[0];
-  const boardItems = [
-    {
-      title: `${data.posts.length} gündem başlığı`,
-      body: query.q || query.community ? "Filtre sonucundaki konuşmalar." : "Okulun son paylaşımları.",
-      icon: MessageCircle,
-      tone: "orange" as const,
-    },
-    {
-      title: `${totalScore} net skor`,
-      body: "Beğeni ve eksi oy dengesi.",
-      icon: TrendingUp,
-      tone: "green" as const,
-    },
-    {
-      title: `${totalComments} yorum hareketi`,
-      body: "Sohbetin nerede yoğunlaştığını gösterir.",
-      icon: Radio,
-      tone: "blue" as const,
-    },
-    {
-      title: topPost ? guessPostCategory(topPost) : "Sohbet",
-      body: topPost?.title ?? "İlk gönderiyle okul gündemi canlanacak.",
-      icon: Sparkles,
-      tone: "purple" as const,
-    },
-  ];
+  const topPosts = [...data.posts].sort((a: any, b: any) => postScore(b) - postScore(a)).slice(0, 4);
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_370px]">
-      <section className="space-y-7">
-        <AnimatedSection className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <PulseBadge tone="purple" live>
-              Okulun Gündemi
-            </PulseBadge>
-            <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-slate-950 text-balance sm:text-5xl">
-              Bugün okulda ne konuşuluyor?
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              Reddit gibi taranabilir, Instagram gibi canlı: soru, duyuru, etkinlik, anket ve sohbet tek akışta.
-            </p>
-          </div>
-          <Link
-            href="#new-post"
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-[var(--primary)]"
+    <SocialPage
+      rail={
+        <PostsRail
+          posts={topPosts}
+          communities={data.communities}
+          formCommunities={formData.communities}
+        />
+      }
+    >
+      <StickyPageHeader title="Keşfet">
+        <PageTabs
+          tabs={[
+            { label: "Yeni", href: `/posts?sort=new&q=${encodeURIComponent(query.q ?? "")}&community=${encodeURIComponent(query.community ?? "")}`, active: sort === "new" },
+            { label: "Popüler", href: `/posts?sort=popular&q=${encodeURIComponent(query.q ?? "")}&community=${encodeURIComponent(query.community ?? "")}`, active: sort === "popular" },
+            { label: "Topluluklar", href: "/communities" },
+            { label: "Etkinlikler", href: "/events" },
+          ]}
+        />
+        <form className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input type="hidden" name="sort" value={sort} />
+          <SearchBox defaultValue={query.q} placeholder="Etkinlik, topluluk veya konu ara" />
+          <select
+            name="community"
+            defaultValue={query.community ?? ""}
+            className="h-11 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none"
           >
-            <Plus className="size-4" />
-            Gündeme konu bırak
-          </Link>
-        </AnimatedSection>
+            <option value="">Tümü</option>
+            {data.communities.map((community: any) => (
+              <option key={community.id} value={community.id}>
+                {community.name}
+              </option>
+            ))}
+          </select>
+          <Button variant="secondary">Ara</Button>
+        </form>
+      </StickyPageHeader>
 
-        <AnimatedSection>
-          <CampusBoardPanel
-            items={boardItems}
-            eyebrow="Gündem Panosu"
-            title="Okulun Konuşulanları"
-            description="Soru, duyuru, etkinlik ve sohbet başlıkları daha düzenli bir sosyal akış panosunda toplanır."
-            featured={
-              topPost
-                ? {
-                    title: topPost.title,
-                    body: `${guessPostCategory(topPost)} · ${topPost.communities?.name ?? "Topluluk"}`,
-                    href: `/posts/${topPost.id}`,
-                  }
-                : null
-            }
-          />
-        </AnimatedSection>
+      {query.message ? (
+        <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          {query.message}
+        </div>
+      ) : null}
 
-        <OrganicGrid className="grid gap-4 sm:grid-cols-3">
-          <SignalMetric icon={MessageCircle} label="gönderi" value={data.posts.length} tone="orange" />
-          <SignalMetric icon={TrendingUp} label="net skor" value={totalScore} tone="green" />
-          <SignalMetric icon={Clock} label="yorum hareketi" value={totalComments} tone="blue" />
-        </OrganicGrid>
-
-        {query.message ? (
-          <AnimatedSection>
-            <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
-              {query.message}
-            </div>
-          </AnimatedSection>
-        ) : null}
-
-        <AnimatedSection>
-          <Card className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <PulseBadge tone="blue">gündem filtresi</PulseBadge>
-                <h2 className="mt-2 text-xl font-black text-slate-950">Akışı tara</h2>
-              </div>
-              <div className="flex gap-2">
-                <Link
-                  href={`/posts?sort=new&q=${encodeURIComponent(query.q ?? "")}&community=${encodeURIComponent(query.community ?? "")}`}
-                  className={`inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-black transition ${
-                    sort === "new"
-                      ? "bg-slate-950 text-white"
-                      : "border border-white/80 bg-white/80 text-slate-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <Clock className="size-4" />
-                  En Yeni
-                </Link>
-                <Link
-                  href={`/posts?sort=popular&q=${encodeURIComponent(query.q ?? "")}&community=${encodeURIComponent(query.community ?? "")}`}
-                  className={`inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-black transition ${
-                    sort === "popular"
-                      ? "bg-slate-950 text-white"
-                      : "border border-white/80 bg-white/80 text-slate-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <TrendingUp className="size-4" />
-                  Popüler
-                </Link>
-              </div>
-            </div>
-
-            <form className="grid gap-3 md:grid-cols-[1fr_190px_auto]">
-              <label className="relative">
-                <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  name="q"
-                  defaultValue={query.q ?? ""}
-                  placeholder="Gönderi, soru veya duyuru ara"
-                  className="h-11 w-full rounded-2xl border border-white/80 bg-white/85 pl-11 pr-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-                />
-              </label>
+      {formData.communities.length ? (
+        <div className="border-b border-slate-100 bg-white px-4 py-4">
+          <form action={createPostAction} className="flex gap-3">
+            <Avatar firstName={profile.first_name} lastName={profile.last_name} size="sm" />
+            <div className="min-w-0 flex-1 space-y-3">
+              <input type="hidden" name="return_to" value="/posts" />
               <select
-                name="community"
-                defaultValue={query.community ?? ""}
-                className="h-11 rounded-2xl border border-white/80 bg-white/85 px-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
+                name="community_id"
+                required
+                className="h-9 rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-black text-slate-600 outline-none"
               >
-                <option value="">Tüm topluluklar</option>
-                {data.communities.map((community: any) => (
+                {formData.communities.map((community: any) => (
                   <option key={community.id} value={community.id}>
                     {community.name}
                   </option>
                 ))}
               </select>
-              <Button variant="secondary">Tara</Button>
-            </form>
-          </Card>
-        </AnimatedSection>
-
-        <AnimatedSection className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <PulseBadge tone="green" live={data.posts.length > 0}>
-                okul nabzı
-              </PulseBadge>
-              <h2 className="mt-3 text-3xl font-black text-slate-950">Gündem akışı</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Kategori rozetleri, skor ve yorum yoğunluğu hangi konunun öne çıktığını hızlı gösterir.
-              </p>
-            </div>
-          </div>
-
-          {data.posts.length ? (
-            <div className="grid gap-5">
-              <OrganicGrid className="grid gap-4 lg:grid-cols-2">
-                {data.posts.slice(0, 4).map((post: any) => (
-                  <AgendaItem
-                    key={`agenda-${post.id}`}
-                    category={guessPostCategory(post)}
-                    title={post.title}
-                    body={post.body}
-                    meta={post.communities?.name ?? "Topluluk"}
-                    href={`/posts/${post.id}`}
-                    score={postScore(post)}
-                    comments={Array.isArray(post.comments) ? post.comments.length : post.comments?.[0]?.count ?? 0}
-                  />
-                ))}
-              </OrganicGrid>
-              <OrganicGrid className="grid gap-4">
-                {data.posts.map((post: any) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    returnTo={currentUrl}
-                    currentUserId={data.profile.id}
-                    category={guessPostCategory(post)}
-                  />
-                ))}
-              </OrganicGrid>
-            </div>
-          ) : (
-            <EmptyState
-              title="İlk gündem başlığını sen aç"
-              body="Filtrelerde gönderi bulunamadı. Üyesi olduğun toplulukta soru, duyuru veya sohbet başlatabilirsin."
-              icon={<MessageCircle className="size-5" />}
-              action={<LinkButton href="#new-post">Gündeme konu bırak</LinkButton>}
-            />
-          )}
-        </AnimatedSection>
-      </section>
-
-      <aside className="space-y-4 xl:sticky xl:top-8 xl:self-start">
-        <AnimatedSection>
-          <Card id="new-post" className="space-y-4">
-            <div>
-              <PulseBadge tone="orange" live>
-                paylaşım paneli
-              </PulseBadge>
-              <h2 className="mt-3 text-2xl font-black text-slate-950">Gündeme konu bırak</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Üyesi olduğun toplulukta soru sor, duyuru yap veya sohbet başlat.
-              </p>
-            </div>
-            {formData.communities.length ? (
-              <form action={createPostAction} className="grid gap-4">
-                <input type="hidden" name="return_to" value="/posts" />
-                <label className="grid gap-2 text-sm font-bold text-slate-700">
-                  Topluluk
-                  <select
-                    name="community_id"
-                    required
-                    className="h-11 rounded-2xl border border-white/80 bg-white/85 px-4 outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-                  >
-                    {formData.communities.map((community: any) => (
-                      <option key={community.id} value={community.id}>
-                        {community.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Field label="Başlık" name="title" required placeholder="Örn. Turnuva için takım arıyoruz" />
-                <TextArea label="Metin" name="body" required rows={5} placeholder="Kısa, net ve okul gündemine uygun yaz." />
-                <SubmitButton pendingLabel="Gündeme ekleniyor...">
+              <input
+                name="title"
+                required
+                placeholder="Okulda ne konuşuluyor?"
+                className="w-full bg-transparent text-base font-semibold text-slate-950 outline-none placeholder:text-slate-400"
+              />
+              <TextArea
+                label="Metin"
+                name="body"
+                required
+                rows={2}
+                placeholder="Kısa yaz, detay isteyen gönderiye girsin."
+              />
+              <div className="flex justify-end">
+                <SubmitButton pendingLabel="Paylaşılıyor...">
                   <Send className="size-4" />
                   Paylaş
                 </SubmitButton>
-              </form>
-            ) : (
-              <EmptyState
-                title="Topluluk üyeliğin yok"
-                body="Gönderi paylaşmak için önce bir topluluğa katıl."
-                icon={<Compass className="size-5" />}
-                action={<LinkButton href="/communities">Topluluklara göz at</LinkButton>}
-              />
-            )}
-          </Card>
-        </AnimatedSection>
-      </aside>
-    </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
+      <TimelineSurface>
+        {data.posts.length ? (
+          data.posts.map((post: any) => (
+            <PostTimelineItem
+              key={post.id}
+              post={post}
+              currentUserId={data.profile.id}
+              returnTo={currentUrl}
+            />
+          ))
+        ) : (
+          <InlineEmpty
+            title="Henüz paylaşım yok"
+            body="Bu haftanın ilk gönderisini sen paylaş."
+            action={<LinkButton href="/communities" variant="secondary">Topluluklara bak</LinkButton>}
+          />
+        )}
+      </TimelineSurface>
+    </SocialPage>
   );
+}
+
+function PostTimelineItem({
+  post,
+  currentUserId,
+  returnTo,
+}: {
+  post: any;
+  currentUserId: string;
+  returnTo: string;
+}) {
+  const score = postScore(post);
+  const currentVote = userPostVote(post, currentUserId);
+  const comments = post.comment_count ?? (Array.isArray(post.comments)
+    ? post.comments.length
+    : post.comments?.[0]?.count ?? 0);
+  const category = guessPostCategory(post);
+
+  return (
+    <TimelineRow
+      avatar={<Avatar firstName={post.profiles?.first_name} lastName={post.profiles?.last_name} size="sm" />}
+      title={post.communities?.name ?? "Topluluk"}
+      meta={`· ${fullName(post.profiles)} · ${formatRelative(post.created_at)}`}
+      badge={<SocialBadge tone={categoryTone(category)}>{category}</SocialBadge>}
+      body={
+        <Link href={`/posts/${post.id}`} className="block">
+          <span className="block text-base font-semibold text-slate-950 hover:underline">{post.title}</span>
+          <span className="mt-1 line-clamp-3 block text-sm leading-6 text-slate-600">{post.body}</span>
+        </Link>
+      }
+      actions={
+        <>
+          <Link href={`/posts/${post.id}`} className="inline-flex items-center gap-1.5 hover:text-slate-950">
+            <MessageCircle className="size-4" />
+            Yanıtla {comments ? comments : ""}
+          </Link>
+          <VoteButton postId={post.id} direction={1} active={currentVote === 1} returnTo={returnTo} />
+          <span className="text-xs font-black text-slate-500">{score}</span>
+          <VoteButton postId={post.id} direction={-1} active={currentVote === -1} returnTo={returnTo} />
+          <Link href={`/posts/${post.id}`} className="hover:text-slate-950">Aç</Link>
+        </>
+      }
+    />
+  );
+}
+
+function VoteButton({
+  postId,
+  direction,
+  active,
+  returnTo,
+}: {
+  postId: string;
+  direction: 1 | -1;
+  active: boolean;
+  returnTo: string;
+}) {
+  const Icon = direction === 1 ? ChevronUp : ChevronDown;
+
+  return (
+    <form action={votePostAction}>
+      <input type="hidden" name="post_id" value={postId} />
+      <input type="hidden" name="direction" value={String(direction)} />
+      <input type="hidden" name="return_to" value={returnTo} />
+      <button
+        type="submit"
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full px-1 transition hover:text-orange-700",
+          active && "font-black text-orange-700",
+        )}
+      >
+        <Icon className="size-4" />
+        {direction === 1 ? "Beğen" : "Eksi"}
+      </button>
+    </form>
+  );
+}
+
+function PostsRail({
+  posts,
+  communities,
+  formCommunities,
+}: {
+  posts: any[];
+  communities: any[];
+  formCommunities: any[];
+}) {
+  return (
+    <>
+      <RailSection title="Konuşulanlar" actionHref="/posts?sort=popular">
+        {posts.length ? posts.map((post) => (
+          <RailItem
+            key={post.id}
+            title={post.title}
+            meta={`${post.communities?.name ?? "Topluluk"} · ${postScore(post)} skor`}
+            href={`/posts/${post.id}`}
+            icon={Sparkles}
+          />
+        )) : <RailItem title="Bugün henüz sakin." meta="İlk gönderiyi sen paylaş." icon={MessageCircle} />}
+      </RailSection>
+      <RailSection title="Aktif topluluklar" actionHref="/communities">
+        {communities.slice(0, 5).map((community: any) => (
+          <RailItem
+            key={community.id}
+            title={community.name}
+            meta="Topluluğu görüntüle"
+            href={`/communities/${community.slug}`}
+            icon={Compass}
+          />
+        ))}
+      </RailSection>
+      <RailSection title="Paylaş">
+        <div className="px-4 py-3 text-sm text-slate-600">
+          {formCommunities.length ? (
+            <Link href="#top" className="inline-flex items-center gap-2 font-black text-slate-950">
+              <Plus className="size-4" />
+              Gündeme gönderi bırak
+            </Link>
+          ) : (
+            <Link href="/communities" className="font-black text-sky-600">Önce bir topluluğa katıl</Link>
+          )}
+        </div>
+      </RailSection>
+    </>
+  );
+}
+
+function PublicRail() {
+  return (
+    <RailSection title="ŞHG Sosyal">
+      <RailItem title="Etkinlikleri herkes görebilir." meta="Gönderiler için giriş yap." icon={Compass} />
+    </RailSection>
+  );
+}
+
+function categoryTone(category: string) {
+  if (category === "Soru") return "blue";
+  if (category === "Duyuru") return "orange";
+  if (category === "Etkinlik") return "green";
+  if (category === "Anket") return "purple";
+  if (category === "Yardım") return "amber";
+  return "slate";
+}
+
+function formatRelative(value: string) {
+  const diff = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(0, Math.floor(diff / 60000));
+
+  if (minutes < 1) return "şimdi";
+  if (minutes < 60) return `${minutes} dk`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} sa`;
+
+  return `${Math.floor(hours / 24)} g`;
 }

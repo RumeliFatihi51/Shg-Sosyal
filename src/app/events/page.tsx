@@ -1,17 +1,24 @@
 import Link from "next/link";
-import { CalendarDays, Clock3, MapPin, Plus, Radio, Search, Sparkles, UsersRound } from "lucide-react";
-import { AnimatedSection, OrganicGrid } from "@/components/motion";
+import { CalendarDays, Clock3, MapPin, Plus, UsersRound } from "lucide-react";
+import { Button, LinkButton } from "@/components/ui";
 import {
-  BentoCard,
-  CampusBoardPanel,
-  FriendPulsePanel,
-  PulseBadge,
-  SignalMetric,
-} from "@/components/radar";
-import { Button, Card, EmptyState, LinkButton } from "@/components/ui";
-import { EventCard } from "@/features/events/event-card";
+  DateBlock,
+  FilterChips,
+  InlineEmpty,
+  PageTabs,
+  RailItem,
+  RailSection,
+  SearchBox,
+  SocialBadge,
+  SocialPage,
+  StickyPageHeader,
+  TimelineRow,
+  TimelineSurface,
+} from "@/components/social-ui";
+import { toggleEventParticipationAction } from "@/lib/actions/events";
 import { getEventsData } from "@/lib/data";
 import { formatDate, formatTime } from "@/lib/utils";
+import type { FriendAttendance } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -22,216 +29,205 @@ export default async function EventsPage({
 }) {
   const query = await searchParams;
   const data = await getEventsData(query);
-  const participantTotal = data.events.reduce(
-    (sum: number, event: any) =>
-      sum + (event.participant_count ?? event.event_participants?.[0]?.count ?? 0),
-    0,
-  );
-  const firstEvent = data.events[0];
-  const todayISO = new Date().toISOString().slice(0, 10);
-  const todayEvents = data.events.filter((event: any) => event.event_date === todayISO);
-  const capacitySignals = data.events.filter((event: any) => event.capacity).slice(0, 3);
-  const friendPulseItems = Array.from(data.friendAttendanceByEvent.entries())
-    .map(([eventId, friends]) => {
-      const event = data.events.find((item: any) => item.id === eventId);
-
-      if (!event) {
-        return null;
-      }
-
-      return {
-        title:
-          friends.length > 1
-            ? `${friends[0]?.first_name ?? "Bir arkadaşın"} ve ${friends.length - 1} arkadaşın gidiyor`
-            : `${friends[0]?.first_name ?? "Bir arkadaşın"} gidiyor`,
-        body: event.title,
-        href: `/events/${event.id}`,
-        friends,
-      };
-    })
-    .filter(Boolean) as Array<{
-      title: string;
-      body: string;
-      href: string;
-      friends: any[];
-    }>;
-
-  const boardItems = [
-    {
-      title: `${data.events.length} yaklaşan etkinlik`,
-      body: query.q || query.date || query.location ? "Filtre sonucundaki etkinlikler." : "Okulun yaklaşan programı.",
-      icon: CalendarDays,
-      tone: "orange" as const,
-    },
-    {
-      title: `${participantTotal} katılım hareketi`,
-      body: "Onaylı etkinliklerdeki toplam katılım sayısı.",
-      icon: UsersRound,
-      tone: "green" as const,
-    },
-    {
-      title: todayEvents.length ? `${todayEvents.length} etkinlik bugün` : "Bugün sakin görünüyor",
-      body: todayEvents[0]?.title ?? "Yeni etkinlik onaylanınca bugünün akışına düşer.",
-      icon: Clock3,
-      tone: "blue" as const,
-    },
-    {
-      title: friendPulseItems[0]?.title ?? "Arkadaşların",
-      body: friendPulseItems[0]?.body ?? "Giriş yapınca arkadaşlarının katıldığı etkinlikleri görebilirsin.",
-      icon: Radio,
-      tone: "purple" as const,
-    },
-  ];
+  const today = new Date().toISOString().slice(0, 10);
+  const todayEvents = data.events.filter((event: any) => event.event_date === today);
+  const popularEvents = [...data.events]
+    .sort((a: any, b: any) => participantCount(b) - participantCount(a))
+    .slice(0, 5);
+  const activeTab = query.date === today ? "Bugün" : query.q ? "Filtre" : "Yaklaşan";
 
   return (
-    <div className="space-y-8">
-      <AnimatedSection className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <PulseBadge tone="orange" live>
-            Etkinlik Akışı
-          </PulseBadge>
-          <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-slate-950 text-balance sm:text-5xl">
-            Okulda sıradaki hareket nerede?
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Etkinlikleri sadece tarih olarak değil, arkadaş katılımı ve kontenjan bilgisiyle birlikte oku.
-          </p>
-        </div>
-        <Link
-          href="/events/new"
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-[var(--primary)]"
-        >
-          <Plus className="size-4" />
-          Etkinlik Ekle
-        </Link>
-      </AnimatedSection>
-
-      <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <AnimatedSection>
-          <CampusBoardPanel
-            items={boardItems}
-            eyebrow="Etkinlik Panosu"
-            title="Yaklaşan Program"
-            description="Etkinlikleri daha sakin, okunabilir ve sosyal bağlamı güçlü bir panoda takip et."
-            featured={
-              firstEvent
-                ? {
-                    title: firstEvent.title,
-                    body: `${formatDate(firstEvent.event_date)} · ${formatTime(firstEvent.start_time)} · ${firstEvent.location}`,
-                    href: `/events/${firstEvent.id}`,
-                  }
-                : null
-            }
+    <SocialPage
+      rail={
+        <EventsRail
+          events={data.events}
+          todayEvents={todayEvents}
+          popularEvents={popularEvents}
+        />
+      }
+    >
+      <StickyPageHeader
+        title="Etkinlikler"
+        action={
+          <LinkButton href="/events/new" className="h-10 px-4">
+            <Plus className="size-4" />
+            Öner
+          </LinkButton>
+        }
+      >
+        <PageTabs
+          tabs={[
+            { label: "Yaklaşan", href: "/events", active: activeTab === "Yaklaşan" },
+            { label: "Bugün", href: `/events?date=${today}`, active: activeTab === "Bugün" },
+            { label: "Popüler", href: "/events?q=popüler", active: false },
+            { label: "Takvim", href: "/calendar" },
+          ]}
+        />
+        <form className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <SearchBox defaultValue={query.q} placeholder="Etkinlik ara" />
+          <input
+            name="date"
+            type="date"
+            defaultValue={query.date ?? ""}
+            className="h-11 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none"
           />
-        </AnimatedSection>
-        <AnimatedSection delay={0.08}>
-          <FriendPulsePanel items={friendPulseItems.slice(0, 4)} signedIn={Boolean(data.profile)} />
-        </AnimatedSection>
-      </div>
-
-      <OrganicGrid className="grid gap-4 md:grid-cols-3">
-        <SignalMetric icon={CalendarDays} label="listelenen etkinlik" value={data.events.length} tone="orange" />
-        <SignalMetric icon={Sparkles} label="katılım hareketi" value={participantTotal} tone="green" />
-        <SignalMetric icon={UsersRound} label="arkadaş vurgusu" value={data.profile ? "açık" : "giriş gerekli"} tone="blue" />
-      </OrganicGrid>
+          <input
+            name="location"
+            defaultValue={query.location ?? ""}
+            placeholder="Konum"
+            className="h-11 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none"
+          />
+          <Button variant="secondary">Ara</Button>
+        </form>
+        <div className="mt-3">
+          <FilterChips
+            chips={[
+              { label: "Tümü", href: "/events", active: !query.q && !query.date && !query.location },
+              { label: "Spor", href: "/events?q=spor", active: query.q === "spor" },
+              { label: "Kulüp", href: "/events?q=kulüp", active: query.q === "kulüp" },
+              { label: "Atölye", href: "/events?q=atölye", active: query.q === "atölye" },
+              { label: "Sosyal", href: "/events?q=sosyal", active: query.q === "sosyal" },
+              { label: "Yarışma", href: "/events?q=yarışma", active: query.q === "yarışma" },
+            ]}
+          />
+        </div>
+      </StickyPageHeader>
 
       {query.message ? (
-        <AnimatedSection>
-          <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
-            {query.message}
-          </div>
-        </AnimatedSection>
+        <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          {query.message}
+        </div>
       ) : null}
 
-      <AnimatedSection>
-        <Card className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <PulseBadge tone="blue">akış filtresi</PulseBadge>
-              <h2 className="mt-2 text-xl font-black text-slate-950">Etkinlikleri daralt</h2>
-            </div>
-            <LinkButton href="/events" variant="ghost">Filtreleri temizle</LinkButton>
-          </div>
-          <form className="grid gap-3 md:grid-cols-[1fr_160px_170px_auto]">
-            <label className="relative">
-              <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <input
-                name="q"
-                defaultValue={query.q ?? ""}
-                placeholder="Etkinlik ara"
-                className="h-11 w-full rounded-2xl border border-white/80 bg-white/85 pl-11 pr-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-              />
-            </label>
-            <input
-              name="date"
-              type="date"
-              defaultValue={query.date ?? ""}
-              className="h-11 rounded-2xl border border-white/80 bg-white/85 px-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-            />
-            <label className="relative">
-              <MapPin className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <input
-                name="location"
-                defaultValue={query.location ?? ""}
-                placeholder="Konum"
-                className="h-11 w-full rounded-2xl border border-white/80 bg-white/85 pl-11 pr-4 text-sm outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
-              />
-            </label>
-            <Button variant="secondary">Tara</Button>
-          </form>
-        </Card>
-      </AnimatedSection>
-
-      <AnimatedSection className="space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <PulseBadge tone="green" live={data.events.length > 0}>
-              yaklaşan program
-            </PulseBadge>
-            <h2 className="mt-3 text-3xl font-black text-slate-950">Etkinlik akışı</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Tarih kutusu, konum, kontenjan ve arkadaş vurgusu aynı kartta okunur.
-            </p>
-          </div>
-        </div>
-
+      <TimelineSurface>
         {data.events.length ? (
-          <OrganicGrid className="grid gap-4 lg:grid-cols-2">
-            {data.events.map((event: any) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                friends={data.friendAttendanceByEvent.get(event.id) ?? []}
-              />
-            ))}
-          </OrganicGrid>
+          data.events.map((event: any) => (
+            <EventTimelineItem
+              key={event.id}
+              event={event}
+              signedIn={Boolean(data.profile)}
+              friends={data.friendAttendanceByEvent.get(event.id) ?? []}
+            />
+          ))
         ) : (
-          <EmptyState
-            title="İlk hareketi sen başlat"
-            body="Filtrelerde etkinlik bulunamadı. Yeni bir etkinlik önerisi göndererek okul akışını hareketlendirebilirsin."
-            icon={<CalendarDays className="size-5" />}
-            action={<LinkButton href="/events/new">Etkinlik oluştur</LinkButton>}
+          <InlineEmpty
+            title="Etkinlik bulunamadı"
+            body="Bugün için etkinlik yok. Etkinlik öner."
+            action={<LinkButton href="/events/new">Etkinlik öner</LinkButton>}
           />
         )}
-      </AnimatedSection>
-
-      {capacitySignals.length ? (
-        <AnimatedSection className="grid gap-4 md:grid-cols-3">
-          {capacitySignals.map((event: any) => {
-            const count = event.participant_count ?? event.event_participants?.[0]?.count ?? 0;
-
-            return (
-              <BentoCard key={event.id} tone="amber">
-                <PulseBadge tone="amber">kontenjan nabzı</PulseBadge>
-                <h3 className="mt-4 text-xl font-black text-slate-950">{event.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {count}/{event.capacity} kontenjan dolu. Etkinlik yaklaştıkça hareket artabilir.
-                </p>
-              </BentoCard>
-            );
-          })}
-        </AnimatedSection>
-      ) : null}
-    </div>
+      </TimelineSurface>
+    </SocialPage>
   );
+}
+
+function EventTimelineItem({
+  event,
+  signedIn,
+  friends,
+}: {
+  event: any;
+  signedIn: boolean;
+  friends: FriendAttendance[];
+}) {
+  const count = participantCount(event);
+  const capacity = event.capacity ? `${count}/${event.capacity}` : `${count} katılımcı`;
+  const friendText = friends.length
+    ? `${friends[0]?.first_name ?? "Bir arkadaşın"}${friends.length > 1 ? ` ve ${friends.length - 1} arkadaşın` : ""} katılıyor`
+    : null;
+
+  return (
+    <TimelineRow
+      avatar={<DateBlock date={event.event_date} />}
+      title={event.title}
+      meta={`· ${event.communities?.name ?? "Okul"} · ${formatDate(event.event_date)}`}
+      badge={event.lifecycle && event.lifecycle !== "scheduled" ? (
+        <SocialBadge tone={event.lifecycle === "canceled" ? "red" : "amber"}>
+          {event.lifecycle === "canceled" ? "İptal" : "Ertelendi"}
+        </SocialBadge>
+      ) : <SocialBadge tone="orange">Etkinlik</SocialBadge>}
+      body={<span className="line-clamp-2">{event.description}</span>}
+      actions={
+        <>
+          <span className="inline-flex items-center gap-1.5"><Clock3 className="size-4" />{formatTime(event.start_time)}</span>
+          <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{event.location}</span>
+          <span className="inline-flex items-center gap-1.5"><UsersRound className="size-4" />{capacity}</span>
+          {signedIn ? (
+            <form action={toggleEventParticipationAction}>
+              <input type="hidden" name="event_id" value={event.id} />
+              <input type="hidden" name="is_joined" value="false" />
+              <button type="submit" className="font-black text-slate-950 hover:text-orange-700">
+                Katıl
+              </button>
+            </form>
+          ) : (
+            <Link href="/login" className="font-black text-slate-950 hover:text-orange-700">
+              Katıl
+            </Link>
+          )}
+          <Link href={`/events/${event.id}`} className="font-black text-slate-950 hover:text-orange-700">
+            Detay
+          </Link>
+        </>
+      }
+    >
+      {friendText ? (
+        <div className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+          {friendText}
+        </div>
+      ) : null}
+    </TimelineRow>
+  );
+}
+
+function EventsRail({
+  events,
+  todayEvents,
+  popularEvents,
+}: {
+  events: any[];
+  todayEvents: any[];
+  popularEvents: any[];
+}) {
+  return (
+    <>
+      <RailSection title="Bugün okulda" actionHref={`/events?date=${new Date().toISOString().slice(0, 10)}`}>
+        {todayEvents.length ? todayEvents.slice(0, 4).map((event) => (
+          <RailItem
+            key={event.id}
+            title={event.title}
+            meta={`${formatTime(event.start_time)} · ${event.location}`}
+            href={`/events/${event.id}`}
+            icon={CalendarDays}
+          />
+        )) : <RailItem title="Bugün henüz sakin." meta="Etkinlik öner." icon={CalendarDays} />}
+      </RailSection>
+      <RailSection title="Yakında" actionHref="/calendar">
+        {events.slice(0, 5).map((event) => (
+          <RailItem
+            key={event.id}
+            title={event.title}
+            meta={`${formatDate(event.event_date)} · ${formatTime(event.start_time)}`}
+            href={`/events/${event.id}`}
+            icon={Clock3}
+          />
+        ))}
+      </RailSection>
+      <RailSection title="İlgi görenler">
+        {popularEvents.length ? popularEvents.map((event) => (
+          <RailItem
+            key={event.id}
+            title={event.title}
+            meta={`${participantCount(event)} katılım`}
+            href={`/events/${event.id}`}
+            icon={UsersRound}
+          />
+        )) : <RailItem title="İlk katılımı sen başlat." icon={UsersRound} />}
+      </RailSection>
+    </>
+  );
+}
+
+function participantCount(event: any) {
+  return event.participant_count ?? event.event_participants?.[0]?.count ?? 0;
 }

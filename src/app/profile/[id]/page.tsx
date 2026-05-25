@@ -1,36 +1,142 @@
 import Link from "next/link";
+import { CalendarDays, MessageCircle, PenLine, Sparkles, UserPlus, UsersRound } from "lucide-react";
 import {
   cancelFriendRequestAction,
   removeFriendAction,
+  respondFriendRequestAction,
   sendFriendRequestAction,
 } from "@/features/friends/actions";
-import {
-  updateProfileAction,
-} from "@/lib/actions/profile";
 import { startDirectConversationAction } from "@/features/messages/actions";
+import { EventCard } from "@/features/events/event-card";
+import { FileUploadPreview } from "@/components/file-upload-preview";
+import { SubmitButton } from "@/components/submit-button";
+import { Avatar, Badge, Button, Field, LinkButton, TextArea } from "@/components/ui";
+import {
+  InlineEmpty,
+  PageTabs,
+  RailItem,
+  RailSection,
+  SocialPage,
+  StickyPageHeader,
+  TimelineRow,
+  TimelineSurface,
+} from "@/components/social-ui";
+import { updateProfileAction } from "@/lib/actions/profile";
 import { getProfileDetail } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
-import { Avatar, Badge, Button, Card, Field, LinkButton, TextArea } from "@/components/ui";
 import { fullName } from "@/lib/utils";
-import { FileUploadPreview } from "@/components/file-upload-preview";
-import { EventCard } from "@/features/events/event-card";
-import { PostCard } from "@/features/posts/post-card";
-import { SubmitButton } from "@/components/submit-button";
 
 export const dynamic = "force-dynamic";
 
-function FriendButton({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
+export default async function ProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ message?: string; tab?: string }>;
+}) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const current = await getCurrentProfile();
+
+  if (!current) {
+    return (
+      <SocialPage rail={<RailSection title="Profil"><RailItem title="Giriş yap" meta="Profilleri görmek için hesabına gir." icon={UsersRound} /></RailSection>}>
+        <StickyPageHeader title="Profil" />
+        <TimelineSurface>
+          <InlineEmpty title="Giriş yap" body="Profil ve arkadaşlık bilgileri okul hesabına bağlıdır." action={<LinkButton href="/login">Giriş yap</LinkButton>} />
+        </TimelineSurface>
+      </SocialPage>
+    );
+  }
+
+  const data = await getProfileDetail(id);
+  const isOwnProfile = data.current.id === data.target.id;
+  const tab = query.tab ?? "feed";
+
+  return (
+    <SocialPage
+      rail={<ProfileRail data={data} />}
+    >
+      <StickyPageHeader title={fullName(data.target)} />
+
+      {query.message ? (
+        <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          {query.message}
+        </div>
+      ) : null}
+
+      <section className="border-b border-slate-200 bg-white">
+        <div className="h-28 bg-gradient-to-r from-slate-950 via-slate-800 to-orange-500" />
+        <div className="px-4 pb-4">
+          <div className="-mt-10 flex items-end justify-between gap-3">
+            <Avatar
+              firstName={data.target.first_name}
+              lastName={data.target.last_name}
+              src={data.avatarUrl}
+              size="lg"
+            />
+            <div className="flex flex-wrap justify-end gap-2">
+              {isOwnProfile ? (
+                <LinkButton href={`/profile/${data.target.id}?tab=edit`} variant="secondary" className="h-10 px-4">
+                  <PenLine className="size-4" />
+                  Düzenle
+                </LinkButton>
+              ) : (
+                <FriendActions data={data} />
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <h1 className="text-2xl font-black text-slate-950">{fullName(data.target)}</h1>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              {data.target.tag ?? data.target.username ?? "Etiket yok"}
+              {data.target.class_name ? ` · ${data.target.class_name}` : ""}
+            </p>
+            {data.target.bio ? (
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-700">{data.target.bio}</p>
+            ) : null}
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
+              <span><b className="text-slate-950">{data.friends.length}</b> arkadaş</span>
+              <span><b className="text-slate-950">{data.attendedEvents.length}</b> etkinlik</span>
+              <span><b className="text-slate-950">{data.badges.length}</b> rozet</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-4">
+          <PageTabs
+            tabs={[
+              { label: "Akış", href: `/profile/${data.target.id}?tab=feed`, active: tab === "feed" },
+              { label: "Etkinlikler", href: `/profile/${data.target.id}?tab=events`, active: tab === "events" },
+              { label: "Arkadaşlar", href: `/profile/${data.target.id}?tab=friends`, active: tab === "friends" },
+              ...(isOwnProfile ? [{ label: "Düzenle", href: `/profile/${data.target.id}?tab=edit`, active: tab === "edit" }] : []),
+            ]}
+          />
+        </div>
+      </section>
+
+      {tab === "edit" && isOwnProfile ? <ProfileEdit data={data} /> : null}
+      {tab === "events" ? <ProfileEvents data={data} /> : null}
+      {tab === "friends" ? <ProfileFriends data={data} /> : null}
+      {tab === "feed" || (!isOwnProfile && tab === "edit") ? <ProfileFeed data={data} /> : null}
+    </SocialPage>
+  );
+}
+
+function FriendActions({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
   const { current, target, friendship } = data;
 
-  if (current.id === target.id) {
-    return null;
-  }
+  if (current.id === target.id) return null;
 
   if (!friendship) {
     return (
       <form action={sendFriendRequestAction}>
         <input type="hidden" name="receiver_id" value={target.id} />
-        <Button>Arkadaş ekle</Button>
+        <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
+        <Button className="h-10 px-4">
+          <UserPlus className="size-4" />
+          Arkadaş ekle
+        </Button>
       </form>
     );
   }
@@ -41,12 +147,13 @@ function FriendButton({ data }: { data: Awaited<ReturnType<typeof getProfileDeta
         <form action={startDirectConversationAction}>
           <input type="hidden" name="user_id" value={target.id} />
           <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
-          <Button>Mesaj yaz</Button>
+          <Button className="h-10 px-4">Mesaj</Button>
         </form>
         <form action={removeFriendAction}>
           <input type="hidden" name="friendship_id" value={friendship.id} />
           <input type="hidden" name="target_id" value={target.id} />
-          <Button variant="secondary">Arkadaşlıktan çıkar</Button>
+          <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
+          <Button variant="secondary" className="h-10 px-4">Çıkar</Button>
         </form>
       </>
     );
@@ -57,244 +164,136 @@ function FriendButton({ data }: { data: Awaited<ReturnType<typeof getProfileDeta
       <form action={cancelFriendRequestAction}>
         <input type="hidden" name="friendship_id" value={friendship.id} />
         <input type="hidden" name="target_id" value={target.id} />
-        <Button variant="secondary">İsteği iptal et</Button>
+        <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
+        <Button variant="secondary" className="h-10 px-4">İsteği iptal et</Button>
       </form>
     );
   }
 
   if (friendship.status === "pending") {
     return (
-      <Link
-        href="/friends?tab=requests"
-        className="inline-flex h-10 items-center justify-center rounded-md bg-blue-600 px-4 text-sm font-semibold text-white"
-      >
-        İsteği yanıtla
-      </Link>
+      <form action={respondFriendRequestAction} className="flex gap-2">
+        <input type="hidden" name="friendship_id" value={friendship.id} />
+        <input type="hidden" name="requester_id" value={target.id} />
+        <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
+        <button name="status" value="accepted" className="h-10 rounded-full bg-slate-950 px-4 text-sm font-black text-white">Kabul et</button>
+        <button name="status" value="rejected" className="h-10 rounded-full border border-slate-200 px-4 text-sm font-black text-slate-700">Reddet</button>
+      </form>
     );
   }
 
   return <Badge tone="slate">{friendship.status}</Badge>;
 }
 
-export default async function ProfilePage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ message?: string }>;
-}) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
-  const current = await getCurrentProfile();
-
-  if (!current) {
-    return (
-      <div className="mx-auto max-w-xl">
-        <Card className="space-y-4 text-center">
-          <h1 className="text-2xl font-black text-slate-950">Profiller için giriş yap</h1>
-          <p className="text-sm leading-6 text-slate-600">
-            Profil, arkadaşlık ve ilgi alanı bilgileri okul hesabıyla görüntülenir.
-          </p>
-          <LinkButton href="/login">Giriş yap</LinkButton>
-        </Card>
-      </div>
-    );
-  }
-
-  const data = await getProfileDetail(id);
-  const isOwnProfile = data.current.id === data.target.id;
-
+function ProfileFeed({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg border border-[var(--border-soft)] bg-white shadow-sm">
-        <div className="h-32 bg-gradient-to-r from-slate-950 via-[#f05a28] to-amber-300" />
-        <div className="px-5 pb-5">
-          <div className="-mt-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="flex items-end gap-4">
-              <Avatar
-                firstName={data.target.first_name}
-                lastName={data.target.last_name}
-                src={data.avatarUrl}
-                size="lg"
-              />
-              <div className="pb-1">
-                <h1 className="text-3xl font-black text-slate-950">{fullName(data.target)}</h1>
-                <p className="mt-1 text-sm font-semibold text-slate-600">
-                  {data.target.tag ?? data.target.username ?? "Etiket yok"} · {data.target.class_name} · No {data.target.school_number}
-                </p>
-                {data.target.bio ? (
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-700">{data.target.bio}</p>
-                ) : null}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge tone={data.target.role === "admin" ? "red" : data.target.role === "teacher" ? "green" : "blue"}>
-                {data.target.role}
-              </Badge>
-              <FriendButton data={data} />
-            </div>
-          </div>
+    <TimelineSurface>
+      {data.authoredPosts.length ? data.authoredPosts.map((post: any) => (
+        <TimelineRow
+          key={post.id}
+          avatar={<Avatar firstName={data.target.first_name} lastName={data.target.last_name} size="sm" />}
+          title={post.communities?.name ?? fullName(data.target)}
+          meta="· gönderi"
+          body={
+            <Link href={`/posts/${post.id}`} className="block">
+              <span className="block font-semibold text-slate-950">{post.title}</span>
+              <span className="mt-1 line-clamp-3 block text-sm text-slate-600">{post.body}</span>
+            </Link>
+          }
+          actions={<Link href={`/posts/${post.id}`} className="font-black text-slate-950 hover:text-orange-700">Aç</Link>}
+        />
+      )) : (
+        <InlineEmpty title="Henüz paylaşım yok" body="Profil akışı sakin." />
+      )}
+    </TimelineSurface>
+  );
+}
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md bg-orange-50 p-3">
-              <div className="text-2xl font-black text-slate-950">
-                {data.target.participation_points ?? 0}
-              </div>
-              <div className="text-sm font-semibold text-slate-600">katılım puanı</div>
-            </div>
-            <div className="rounded-md bg-blue-50 p-3">
-              <div className="text-2xl font-black text-slate-950">{data.friends.length}</div>
-              <div className="text-sm font-semibold text-slate-600">arkadaş</div>
-            </div>
-            <div className="rounded-md bg-emerald-50 p-3">
-              <div className="text-2xl font-black text-slate-950">{data.badges.length}</div>
-              <div className="text-sm font-semibold text-slate-600">rozet</div>
-            </div>
-          </div>
+function ProfileEvents({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
+  return (
+    <div className="bg-white px-4 py-4">
+      {data.attendedEvents.length ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {data.attendedEvents.map((event: any) => <EventCard key={event.id} event={event} />)}
         </div>
-      </section>
-
-      {query.message ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
-          {query.message}
-        </div>
-      ) : null}
-
-      <section className="grid gap-6 xl:grid-cols-[360px_1fr]">
-        <aside className="space-y-4">
-          <Card>
-            <h2 className="text-lg font-black text-slate-950">İlgi alanları</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(data.target.interests ?? []).length ? (
-                data.target.interests?.map((interest) => (
-                  <Badge key={interest}>{interest}</Badge>
-                ))
-              ) : (
-                <span className="text-sm text-slate-600">Henüz eklenmemiş.</span>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <h2 className="text-lg font-black text-slate-950">Rozetler</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {data.badges.length ? (
-                data.badges.map((item: any) => (
-                  <Badge key={item.badges?.code ?? item.badges?.name} tone="amber">
-                    {item.badges?.name}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-sm text-slate-600">Henüz rozet yok.</span>
-              )}
-            </div>
-          </Card>
-        </aside>
-
-        <div className="space-y-4">
-          {isOwnProfile ? (
-            <Card className="space-y-4">
-              <h2 className="text-xl font-black text-slate-950">Profili düzenle</h2>
-              <form action={updateProfileAction} className="grid gap-4 sm:grid-cols-2">
-                <Field label="Ad" name="first_name" defaultValue={data.target.first_name ?? ""} required />
-                <Field label="Soyad" name="last_name" defaultValue={data.target.last_name ?? ""} required />
-                <Field label="Kullanıcı etiketi" name="username" defaultValue={data.target.username ?? ""} placeholder="eymen2011" />
-                <Field label="Sınıf" name="class_name" defaultValue={data.target.class_name ?? ""} required />
-                <Field label="Okul numarası" name="school_number" defaultValue={data.target.school_number ?? ""} required />
-                <div className="sm:col-span-2">
-                  <TextArea
-                    label="Kısa bio"
-                    name="bio"
-                    defaultValue={data.target.bio ?? ""}
-                    placeholder="Robotik, tiyatro veya okul hayatında sevdiğin şeyler..."
-                    rows={3}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <Field
-                    label="İlgi alanları"
-                    name="interests"
-                    defaultValue={(data.target.interests ?? []).join(", ")}
-                    placeholder="robotik, tiyatro, yapay zeka"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <FileUploadPreview name="avatar" label="Profil fotoğrafı" />
-                </div>
-                <SubmitButton className="sm:col-span-2" pendingLabel="Profil güncelleniyor...">
-                  Güncelle
-                </SubmitButton>
-              </form>
-            </Card>
-          ) : null}
-
-          <Card>
-            <h2 className="text-xl font-black text-slate-950">Arkadaşlar</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {data.friends.length ? (
-                data.friends.map((friendship: any) => {
-                  const friend =
-                    friendship.requester_id === data.target.id
-                      ? friendship.receiver
-                      : friendship.requester;
-
-                  return (
-                    <Link
-                      key={friendship.id}
-                      href={`/profile/${friend?.id}`}
-                      className="flex items-center gap-2 rounded-md border border-[var(--border-soft)] p-3 hover:bg-orange-50"
-                    >
-                      <Avatar
-                        firstName={friend?.first_name}
-                        lastName={friend?.last_name}
-                        size="sm"
-                      />
-                      <span className="text-sm font-semibold">{fullName(friend)}</span>
-                    </Link>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-slate-600">Arkadaş listesi boş.</p>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <h2 className="text-xl font-black text-slate-950">Katıldığı etkinlikler</h2>
-            {data.attendedEvents.length ? (
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                {data.attendedEvents.map((event: any) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-slate-600">
-                Henüz katıldığı etkinlik görünmüyor.
-              </p>
-            )}
-          </Card>
-
-          <Card>
-            <h2 className="text-xl font-black text-slate-950">Son gönderiler</h2>
-            {data.authoredPosts.length ? (
-              <div className="mt-4 grid gap-4">
-                {data.authoredPosts.map((post: any) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    returnTo={`/profile/${data.target.id}`}
-                    currentUserId={data.current.id}
-                    compact
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-slate-600">
-                Henüz gönderi paylaşılmamış.
-              </p>
-            )}
-          </Card>
-        </div>
-      </section>
+      ) : (
+        <InlineEmpty title="Etkinlik yok" body="Katıldığı etkinlik görünmüyor." />
+      )}
     </div>
+  );
+}
+
+function ProfileFriends({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
+  return (
+    <TimelineSurface>
+      {data.friends.length ? data.friends.map((friendship: any) => {
+        const friend = friendship.requester_id === data.target.id ? friendship.receiver : friendship.requester;
+        if (!friend) return null;
+
+        return (
+          <TimelineRow
+            key={friendship.id}
+            avatar={<Avatar firstName={friend.first_name} lastName={friend.last_name} size="sm" />}
+            title={fullName(friend)}
+            meta={`· ${friend.tag ?? friend.username ?? "etiket yok"}`}
+            actions={<Link href={`/profile/${friend.id}`} className="font-black text-slate-950 hover:text-orange-700">Profil</Link>}
+          />
+        );
+      }) : <InlineEmpty title="Arkadaş listesi boş" />}
+    </TimelineSurface>
+  );
+}
+
+function ProfileEdit({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
+  return (
+    <div className="bg-white px-4 py-4">
+      <form action={updateProfileAction} className="grid gap-4 sm:grid-cols-2">
+        <Field label="Ad" name="first_name" defaultValue={data.target.first_name ?? ""} required />
+        <Field label="Soyad" name="last_name" defaultValue={data.target.last_name ?? ""} required />
+        <Field label="Kullanıcı etiketi" name="username" defaultValue={data.target.username ?? ""} placeholder="eymen2011" />
+        <Field label="Sınıf" name="class_name" defaultValue={data.target.class_name ?? ""} required />
+        <Field label="Okul numarası" name="school_number" defaultValue={data.target.school_number ?? ""} required />
+        <div className="sm:col-span-2">
+          <TextArea label="Kısa bio" name="bio" defaultValue={data.target.bio ?? ""} rows={3} />
+        </div>
+        <div className="sm:col-span-2">
+          <Field
+            label="İlgi alanları"
+            name="interests"
+            defaultValue={(data.target.interests ?? []).join(", ")}
+            placeholder="robotik, tiyatro, yapay zeka"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <FileUploadPreview name="avatar" label="Profil fotoğrafı" />
+        </div>
+        <SubmitButton className="sm:col-span-2" pendingLabel="Profil güncelleniyor...">
+          Güncelle
+        </SubmitButton>
+      </form>
+    </div>
+  );
+}
+
+function ProfileRail({ data }: { data: Awaited<ReturnType<typeof getProfileDetail>> }) {
+  return (
+    <>
+      <RailSection title="Profil bilgileri">
+        <RailItem title={`${data.target.participation_points ?? 0} katılım puanı`} meta="Katılım" icon={Sparkles} />
+        <RailItem title={`${data.friends.length} arkadaş`} meta="Sosyal bağ" icon={UsersRound} />
+        <RailItem title={`${data.attendedEvents.length} etkinlik`} meta="Katıldığı etkinlik" icon={CalendarDays} />
+      </RailSection>
+      <RailSection title="Rozetler">
+        {data.badges.length ? data.badges.slice(0, 6).map((item: any) => (
+          <RailItem key={item.badges?.code ?? item.badges?.name} title={item.badges?.name} meta={item.badges?.description} icon={Sparkles} />
+        )) : <RailItem title="Henüz rozet yok" icon={Sparkles} />}
+      </RailSection>
+      <RailSection title="Son aktiviteler">
+        {data.authoredPosts.slice(0, 4).map((post: any) => (
+          <RailItem key={post.id} title={post.title} meta="Gönderi" href={`/posts/${post.id}`} icon={MessageCircle} />
+        ))}
+        {!data.authoredPosts.length ? <RailItem title="Henüz paylaşım yok" icon={MessageCircle} /> : null}
+      </RailSection>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { Inbox, Search, Send, UserCheck } from "lucide-react";
+import { Inbox, MessageCircle, Search, Send, UserCheck, UserPlus, UsersRound } from "lucide-react";
 import {
   cancelFriendRequestAction,
   removeFriendAction,
@@ -11,15 +10,28 @@ import { startDirectConversationAction } from "@/features/messages/actions";
 import { searchUsersByTag } from "@/features/users/queries";
 import { getFriendsData } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
-import { Avatar, Button, Card, EmptyState, LinkButton } from "@/components/ui";
+import { Avatar, Button, LinkButton } from "@/components/ui";
+import {
+  InlineEmpty,
+  PageTabs,
+  RailItem,
+  RailSection,
+  SearchBox,
+  SocialBadge,
+  SocialPage,
+  StickyPageHeader,
+  TimelineRow,
+  TimelineSurface,
+} from "@/components/social-ui";
 import { fullName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 const tabs = [
-  { key: "friends", label: "Arkadaşlar", icon: UserCheck },
-  { key: "requests", label: "Gelen istekler", icon: Inbox },
-  { key: "sent", label: "Gönderilen", icon: Send },
+  { key: "friends", label: "Arkadaşlarım" },
+  { key: "requests", label: "İstekler" },
+  { key: "sent", label: "Gönderilenler" },
+  { key: "suggested", label: "Önerilenler" },
 ] as const;
 
 export default async function FriendsPage({
@@ -32,231 +44,202 @@ export default async function FriendsPage({
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-xl">
-        <Card className="space-y-4 text-center">
-          <UserCheck className="mx-auto size-10 text-[#f05a28]" />
-          <h1 className="text-2xl font-black text-slate-950">Arkadaşlarını görmek için giriş yap</h1>
-          <p className="text-sm leading-6 text-slate-600">
-            Arkadaşlık istekleri ve arkadaş katılım vurgusu okul hesabına bağlı çalışır.
-          </p>
-          <LinkButton href="/login">Giriş yap</LinkButton>
-        </Card>
-      </div>
+      <SocialPage rail={<RailSection title="Arkadaşlar"><RailItem title="Giriş yap" meta="Arkadaşlarını ve isteklerini gör." icon={UsersRound} /></RailSection>}>
+        <StickyPageHeader title="Arkadaşlar" />
+        <TimelineSurface>
+          <InlineEmpty
+            title="Giriş yap"
+            body="Giriş yapınca arkadaşlarının hareketlerini görebilirsin."
+            action={<LinkButton href="/login">Giriş yap</LinkButton>}
+          />
+        </TimelineSurface>
+      </SocialPage>
     );
   }
 
   const data = await getFriendsData();
   const searchResults = query.q ? await searchUsersByTag(query.q) : [];
-  const activeTab = tabs.some((tab) => tab.key === query.tab) ? query.tab : "friends";
+  const activeTab = tabs.some((tab) => tab.key === query.tab) ? query.tab! : "friends";
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border border-[var(--border-soft)] bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-black text-slate-950">Arkadaşlar</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          @etiket ile arkadaşlarını bul, istek gönder ve mesajlaş.
-        </p>
-        <form className="mt-5 flex flex-col gap-2 rounded-2xl bg-slate-50 p-3 sm:flex-row" action="/friends">
-          <input type="hidden" name="tab" value="friends" />
-          <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white px-4 ring-1 ring-slate-200">
-            <Search className="size-4 text-slate-400" />
-            <input
-              name="q"
-              defaultValue={query.q ?? ""}
-              placeholder="@eymen veya isim ara"
-              className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
-            />
-          </label>
+    <SocialPage
+      rail={<FriendsRail accepted={data.accepted} received={data.received} sent={data.sent} profileId={data.profile.id} />}
+    >
+      <StickyPageHeader title="Arkadaşlar">
+        <PageTabs
+          tabs={tabs.map((tab) => ({
+            label: tab.label,
+            href: `/friends?tab=${tab.key}${query.q ? `&q=${encodeURIComponent(query.q)}` : ""}`,
+            active: activeTab === tab.key,
+          }))}
+        />
+        <form className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input type="hidden" name="tab" value={activeTab} />
+          <SearchBox defaultValue={query.q} placeholder="@etiket veya isim ile kişi ara" />
           <Button variant="secondary">Ara</Button>
         </form>
-        {query.q ? (
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {searchResults.length ? (
-              searchResults.map((user) => (
-                <div key={user.id} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3">
-                  <Link href={`/profile/${user.id}`} className="flex min-w-0 items-center gap-2">
-                    <Avatar firstName={user.first_name} lastName={user.last_name} size="sm" />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{fullName(user)}</span>
-                      <span className="block truncate text-xs text-slate-500">{user.tag ?? user.username}</span>
-                    </span>
-                  </Link>
-                  <form action={sendFriendRequestAction}>
-                    <input type="hidden" name="receiver_id" value={user.id} />
-                    <input type="hidden" name="return_to" value={`/friends?q=${encodeURIComponent(query.q ?? "")}`} />
-                    <Button className="h-9 px-3">Ekle</Button>
+      </StickyPageHeader>
+
+      {query.q ? (
+        <TimelineSurface>
+          {searchResults.length ? searchResults.map((user) => (
+            <TimelineRow
+              key={user.id}
+              avatar={<Avatar firstName={user.first_name} lastName={user.last_name} size="sm" />}
+              title={fullName(user)}
+              meta={`· ${user.tag ?? user.username ?? "etiket yok"}${user.class_name ? ` · ${user.class_name}` : ""}`}
+              body={user.bio ?? "Topluluğa katılmak ve arkadaş olmak için istek gönderebilirsin."}
+              actions={
+                <form action={sendFriendRequestAction}>
+                  <input type="hidden" name="receiver_id" value={user.id} />
+                  <input type="hidden" name="return_to" value={`/friends?q=${encodeURIComponent(query.q ?? "")}`} />
+                  <button type="submit" className="font-black text-slate-950 hover:text-orange-700">
+                    Arkadaş ekle
+                  </button>
+                </form>
+              }
+            />
+          )) : <InlineEmpty title="Kullanıcı bulunamadı" body="Etiketi kontrol edip tekrar ara." />}
+        </TimelineSurface>
+      ) : null}
+
+      {!query.q && activeTab === "requests" ? (
+        <TimelineSurface>
+          {data.received.length ? data.received.map((item) => (
+            <TimelineRow
+              key={item.id}
+              avatar={<Avatar firstName={item.requester?.first_name} lastName={item.requester?.last_name} size="sm" />}
+              title={fullName(item.requester ?? undefined)}
+              meta={`· ${item.requester?.tag ?? item.requester?.username ?? "etiket yok"}`}
+              badge={<SocialBadge tone="blue">İstek</SocialBadge>}
+              body="Sana arkadaşlık isteği gönderdi."
+              actions={
+                <>
+                  <form action={respondFriendRequestAction}>
+                    <input type="hidden" name="friendship_id" value={item.id} />
+                    <input type="hidden" name="requester_id" value={item.requester?.id} />
+                    <input type="hidden" name="status" value="accepted" />
+                    <button type="submit" className="font-black text-slate-950 hover:text-orange-700">Kabul et</button>
                   </form>
-                </div>
-              ))
-            ) : (
-              <div className="md:col-span-2 xl:col-span-3">
-                <EmptyState title="Kullanıcı bulunamadı" body="Etiketi kontrol edip tekrar ara." />
-              </div>
-            )}
-          </div>
-        ) : null}
-        <div className="mt-5 flex flex-wrap gap-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.key;
+                  <form action={respondFriendRequestAction}>
+                    <input type="hidden" name="friendship_id" value={item.id} />
+                    <input type="hidden" name="requester_id" value={item.requester?.id} />
+                    <input type="hidden" name="status" value="rejected" />
+                    <button type="submit" className="hover:text-slate-950">Reddet</button>
+                  </form>
+                </>
+              }
+            />
+          )) : <InlineEmpty title="Gelen istek yok" />}
+        </TimelineSurface>
+      ) : null}
+
+      {!query.q && activeTab === "sent" ? (
+        <TimelineSurface>
+          {data.sent.length ? data.sent.map((item) => (
+            <TimelineRow
+              key={item.id}
+              avatar={<Avatar firstName={item.receiver?.first_name} lastName={item.receiver?.last_name} size="sm" />}
+              title={fullName(item.receiver ?? undefined)}
+              meta={`· ${item.receiver?.tag ?? item.receiver?.username ?? "etiket yok"}`}
+              badge={<SocialBadge tone="amber">Bekliyor</SocialBadge>}
+              body="Arkadaşlık isteğin beklemede."
+              actions={
+                <form action={cancelFriendRequestAction}>
+                  <input type="hidden" name="friendship_id" value={item.id} />
+                  <input type="hidden" name="target_id" value={item.receiver?.id} />
+                  <button type="submit" className="font-black text-slate-950 hover:text-orange-700">İptal et</button>
+                </form>
+              }
+            />
+          )) : <InlineEmpty title="Gönderilen istek yok" />}
+        </TimelineSurface>
+      ) : null}
+
+      {!query.q && activeTab === "suggested" ? (
+        <TimelineSurface>
+          <InlineEmpty
+            title="Kişi ara"
+            body="@etiket veya isim yazarak arkadaşlarını bul."
+            action={<Link href="/friends?tab=suggested&q=@" className="inline-flex items-center gap-2 font-black text-sky-600"><Search className="size-4" /> Aramaya başla</Link>}
+          />
+        </TimelineSurface>
+      ) : null}
+
+      {!query.q && activeTab === "friends" ? (
+        <TimelineSurface>
+          {data.accepted.length ? data.accepted.map((item) => {
+            const friend = item.requester_id === data.profile.id ? item.receiver : item.requester;
+
+            if (!friend) return null;
 
             return (
-              <Link
-                key={tab.key}
-                href={`/friends?tab=${tab.key}`}
-                className={`inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-bold transition ${
-                  isActive
-                    ? "bg-[#f05a28] text-white"
-                    : "border border-[var(--border-soft)] bg-white text-slate-700 hover:bg-orange-50"
-                }`}
-              >
-                <Icon className="size-4" />
-                {tab.label}
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {activeTab === "requests" ? (
-        <FriendPanel title="Gelen istekler" count={data.received.length}>
-          {data.received.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {data.received.map((item: any) => (
-                <div key={item.id} className="rounded-md border border-[var(--border-soft)] bg-white p-4">
-                  <Link
-                    href={`/profile/${item.requester?.id}`}
-                    className="flex items-center gap-2 font-semibold"
-                  >
-                    <Avatar
-                      firstName={item.requester?.first_name}
-                      lastName={item.requester?.last_name}
-                      size="sm"
-                    />
-                    {fullName(item.requester)}
-                  </Link>
-                  <div className="mt-3 flex gap-2">
-                    <form action={respondFriendRequestAction}>
-                      <input type="hidden" name="friendship_id" value={item.id} />
-                      <input type="hidden" name="requester_id" value={item.requester?.id} />
-                      <input type="hidden" name="status" value="accepted" />
-                      <Button>Onayla</Button>
+              <TimelineRow
+                key={item.id}
+                avatar={<Avatar firstName={friend.first_name} lastName={friend.last_name} size="sm" />}
+                title={fullName(friend)}
+                meta={`· ${friend.tag ?? friend.username ?? "etiket yok"}${friend.class_name ? ` · ${friend.class_name}` : ""}`}
+                badge={<SocialBadge tone="green">Arkadaş</SocialBadge>}
+                body={friend.bio ?? "Arkadaşın."}
+                actions={
+                  <>
+                    <form action={startDirectConversationAction}>
+                      <input type="hidden" name="user_id" value={friend.id} />
+                      <input type="hidden" name="return_to" value="/friends" />
+                      <button type="submit" className="font-black text-slate-950 hover:text-orange-700">Mesaj</button>
                     </form>
-                    <form action={respondFriendRequestAction}>
-                      <input type="hidden" name="friendship_id" value={item.id} />
-                      <input type="hidden" name="requester_id" value={item.requester?.id} />
-                      <input type="hidden" name="status" value="rejected" />
-                      <Button variant="secondary">Reddet</Button>
-                    </form>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="İstek yok" body="Yeni arkadaşlık isteği yok." />
-          )}
-        </FriendPanel>
-      ) : null}
-
-      {activeTab === "sent" ? (
-        <FriendPanel title="Gönderilen istekler" count={data.sent.length}>
-          {data.sent.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {data.sent.map((item: any) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-[var(--border-soft)] bg-white p-4"
-                >
-                  <Link
-                    href={`/profile/${item.receiver?.id}`}
-                    className="flex items-center gap-2 font-semibold"
-                  >
-                    <Avatar
-                      firstName={item.receiver?.first_name}
-                      lastName={item.receiver?.last_name}
-                      size="sm"
-                    />
-                    {fullName(item.receiver)}
-                  </Link>
-                  <form action={cancelFriendRequestAction}>
-                    <input type="hidden" name="friendship_id" value={item.id} />
-                    <input type="hidden" name="target_id" value={item.receiver?.id} />
-                    <Button variant="secondary">İptal</Button>
-                  </form>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="Bekleyen istek yok" body="Gönderdiğin açık istek yok." />
-          )}
-        </FriendPanel>
-      ) : null}
-
-      {activeTab === "friends" ? (
-        <FriendPanel title="Arkadaş listem" count={data.accepted.length}>
-          {data.accepted.length ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {data.accepted.map((item: any) => {
-                const friend =
-                  item.requester_id === data.profile.id ? item.receiver : item.requester;
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-md border border-[var(--border-soft)] bg-white p-4"
-                  >
-                    <Link
-                      href={`/profile/${friend?.id}`}
-                      className="flex min-w-0 items-center gap-2 font-semibold"
-                    >
-                      <Avatar
-                        firstName={friend?.first_name}
-                        lastName={friend?.last_name}
-                        size="sm"
-                      />
-                      <span className="truncate">{fullName(friend)}</span>
-                    </Link>
+                    <Link href={`/profile/${friend.id}`} className="hover:text-slate-950">Profil</Link>
                     <form action={removeFriendAction}>
                       <input type="hidden" name="friendship_id" value={item.id} />
-                      <input type="hidden" name="target_id" value={friend?.id} />
-                      <Button variant="ghost">Çıkar</Button>
+                      <input type="hidden" name="target_id" value={friend.id} />
+                      <button type="submit" className="hover:text-red-600">Çıkar</button>
                     </form>
-                    <form action={startDirectConversationAction}>
-                      <input type="hidden" name="user_id" value={friend?.id} />
-                      <input type="hidden" name="return_to" value="/friends" />
-                      <Button variant="secondary" className="h-9 px-3">Yaz</Button>
-                    </form>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState title="Liste boş" body="Arkadaşlarını profillerden ekleyebilirsin." />
+                  </>
+                }
+              />
+            );
+          }) : (
+            <InlineEmpty title="Henüz arkadaş yok" body="@etiket ile kişi ara ve arkadaşlık isteği gönder." />
           )}
-        </FriendPanel>
+        </TimelineSurface>
       ) : null}
-    </div>
+    </SocialPage>
   );
 }
 
-function FriendPanel({
-  title,
-  count,
-  children,
+function FriendsRail({
+  accepted,
+  received,
+  sent,
+  profileId,
 }: {
-  title: string;
-  count: number;
-  children: ReactNode;
+  accepted: any[];
+  received: any[];
+  sent: any[];
+  profileId: string;
 }) {
   return (
-    <Card>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-black text-slate-950">{title}</h2>
-        <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-[#f05a28]">
-          {count}
-        </span>
-      </div>
-      {children}
-    </Card>
+    <>
+      <RailSection title="Kısa durum">
+        <RailItem title={`${accepted.length} arkadaş`} meta="Arkadaş listesi" icon={UserCheck} />
+        <RailItem title={`${received.length} gelen istek`} meta="Yanıt bekliyor" href="/friends?tab=requests" icon={Inbox} />
+        <RailItem title={`${sent.length} gönderilen`} meta="Bekleyen istek" href="/friends?tab=sent" icon={Send} />
+      </RailSection>
+      <RailSection title="Mesajlaş">
+        {accepted.slice(0, 5).map((item) => {
+          const friend = item.requester_id === profileId ? item.receiver : item.requester;
+          return friend ? (
+            <RailItem
+              key={item.id}
+              title={fullName(friend)}
+              meta={friend.tag ?? friend.username ?? "etiket yok"}
+              href={`/profile/${friend.id}`}
+              icon={MessageCircle}
+            />
+          ) : null;
+        })}
+        {!accepted.length ? <RailItem title="Arkadaş ekle" meta="Mesajlaşmak için arkadaş ol." icon={UserPlus} /> : null}
+      </RailSection>
+    </>
   );
 }
