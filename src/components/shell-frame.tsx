@@ -30,7 +30,7 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { href: "/", label: "Ana akış", icon: Home },
+  { href: "/", label: "Ana Akış", icon: Home },
   { href: "/posts", label: "Keşfet", icon: Compass },
   { href: "/events", label: "Etkinlikler", icon: CalendarDays },
   { href: "/communities", label: "Topluluklar", icon: UsersRound },
@@ -54,9 +54,13 @@ export function ShellFrame({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = showAdmin
-    ? [...nav, { href: "/admin", label: "Admin", icon: ShieldCheck }]
-    : nav;
+  const profileItem = profile
+    ? [{ href: `/profile/${profile.id}`, label: "Profil", icon: UserRound }]
+    : [];
+  const adminItems = showAdmin
+    ? [{ href: "/admin", label: "Admin", icon: ShieldCheck }]
+    : [];
+  const items = [...nav, ...profileItem, ...adminItems];
 
   return (
     <div className="min-h-screen text-slate-950">
@@ -65,7 +69,6 @@ export function ShellFrame({
           <LogoMark />
           <span className="hidden min-w-0 xl:block">
             <span className="block truncate text-lg font-black leading-5">{displayName}</span>
-            <span className="block truncate text-xs font-semibold text-slate-500">Okulun ana akışı</span>
           </span>
         </Link>
 
@@ -121,7 +124,6 @@ export function ShellFrame({
             <LogoMark />
             <span>
               <span className="block text-sm font-black leading-4">{displayName}</span>
-              <span className="block text-[10px] font-bold text-slate-500">Okulun ana akışı</span>
             </span>
           </Link>
           <div className="flex items-center gap-3">
@@ -213,7 +215,7 @@ function DockLink({
       )}
     >
       <Icon className={cn("size-6", active && "stroke-[2.8]")} />
-      <span className="hidden text-xl xl:inline">{item.label}</span>
+      <span className="hidden text-xl font-medium xl:inline">{item.label}</span>
       {badge ? (
         <span className="absolute left-10 top-1 rounded-full bg-slate-950 px-1.5 text-[10px] font-black text-white xl:left-8">
           {badge > 99 ? "99+" : badge}

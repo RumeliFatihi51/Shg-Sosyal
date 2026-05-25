@@ -21,9 +21,6 @@ export default async function HomePage() {
       left={<LeftSidebar signedIn={signedIn} />}
       feed={
         <MainFeed
-          todayCount={data.todayCount}
-          participantCount={data.participantCount}
-          weekPostCount={data.weekPostCount ?? data.posts.length}
           items={feedItems}
           signedIn={signedIn}
         />
