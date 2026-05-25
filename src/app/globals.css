@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbf5ee;
+  --background: #f8fafc;
   --foreground: #181411;
   --card: #ffffff;
   --primary: #f05a28;
@@ -31,26 +31,13 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 12% 9%, rgba(240, 90, 40, 0.17), transparent 30%),
-    radial-gradient(circle at 88% 4%, rgba(14, 165, 233, 0.12), transparent 28%),
-    radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.09), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(251, 245, 238, 0.96)),
-    repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.028) 0 1px, transparent 1px 104px),
-    repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.018) 0 1px, transparent 1px 104px);
+    radial-gradient(circle at 16% 0%, rgba(240, 90, 40, 0.08), transparent 28%),
+    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.98));
 }
 
 body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.34;
-  background-image:
-    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(to bottom, transparent, black 18%, black 78%, transparent);
+  content: none;
 }
 
 ::selection {

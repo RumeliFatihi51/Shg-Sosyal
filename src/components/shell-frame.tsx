@@ -12,6 +12,7 @@ import {
   ListChecks,
   LogOut,
   Menu,
+  PenLine,
   ShieldCheck,
   UserRound,
   UsersRound,
@@ -29,13 +30,13 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { href: "/", label: "Ana Akış", icon: Home },
+  { href: "/", label: "Ana akış", icon: Home },
   { href: "/posts", label: "Keşfet", icon: Compass },
-  { href: "/events", label: "Etkinlik", icon: CalendarDays },
-  { href: "/communities", label: "Topluluk", icon: UsersRound },
+  { href: "/events", label: "Etkinlikler", icon: CalendarDays },
+  { href: "/communities", label: "Topluluklar", icon: UsersRound },
   { href: "/calendar", label: "Takvim", icon: ListChecks },
-  { href: "/friends", label: "Arkadaş", icon: UserRound },
-  { href: "/notifications", label: "Bildirim", icon: Bell },
+  { href: "/friends", label: "Arkadaşlar", icon: UserRound },
+  { href: "/notifications", label: "Bildirimler", icon: Bell },
 ];
 
 export function ShellFrame({
@@ -59,13 +60,16 @@ export function ShellFrame({
 
   return (
     <div className="min-h-screen text-slate-950">
-      <aside className="fixed inset-y-4 left-4 z-30 hidden w-24 flex-col items-center rounded-[2rem] border border-white/60 bg-[#11100f]/92 px-3 py-4 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)] backdrop-blur-2xl lg:flex">
-        <Link href="/" className="group flex flex-col items-center gap-2" aria-label={displayName}>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-24 flex-col border-r border-slate-200 bg-white/92 px-3 py-4 backdrop-blur-xl lg:flex xl:w-72 xl:px-5">
+        <Link href="/" className="mb-4 flex h-12 items-center gap-3 rounded-full px-2 transition hover:bg-slate-100" aria-label={displayName}>
           <LogoMark />
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">ŞHG</span>
+          <span className="hidden min-w-0 xl:block">
+            <span className="block truncate text-lg font-black leading-5">{displayName}</span>
+            <span className="block truncate text-xs font-semibold text-slate-500">Okulun ana akışı</span>
+          </span>
         </Link>
 
-        <nav className="mt-8 flex flex-1 flex-col items-center gap-2">
+        <nav className="flex flex-1 flex-col gap-1">
           {items.map((item) => (
             <DockLink
               key={item.href}
@@ -74,30 +78,44 @@ export function ShellFrame({
               unreadCount={unreadCount}
             />
           ))}
+          <Link
+            href={profile ? "/posts" : "/login"}
+            className="mt-3 flex h-12 items-center justify-center gap-3 rounded-full bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 xl:justify-start xl:px-5"
+          >
+            <PenLine className="size-5" />
+            <span className="hidden xl:inline">Paylaş</span>
+          </Link>
         </nav>
 
-        <div className="mt-5 w-full">
+        <div className="mt-5">
           {profile ? (
-            <Link
-              href={`/profile/${profile.id}`}
-              className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/10 transition hover:bg-white/16"
-              title={fullName(profile)}
-            >
-              <Avatar firstName={profile.first_name} lastName={profile.last_name} size="sm" />
-            </Link>
+            <div className="rounded-full p-2 transition hover:bg-slate-100 xl:rounded-2xl">
+              <Link href={`/profile/${profile.id}`} className="flex items-center justify-center gap-3 xl:justify-start">
+                <Avatar firstName={profile.first_name} lastName={profile.last_name} size="sm" />
+                <span className="hidden min-w-0 flex-1 xl:block">
+                  <span className="block truncate text-sm font-black">{fullName(profile)}</span>
+                  <span className="block truncate text-xs font-semibold text-slate-500">{profile.role}</span>
+                </span>
+              </Link>
+            </div>
           ) : (
-            <Link
-              href="/login"
-              className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white text-slate-950 transition hover:bg-orange-50"
-              title="Giriş"
-            >
-              <UserRound className="size-5" />
-            </Link>
+            <div className="grid gap-2">
+              <LinkButton href="/login" variant="secondary" className="hidden xl:flex">
+                Giriş
+              </LinkButton>
+              <Link
+                href="/login"
+                className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-950 text-white transition hover:bg-slate-800 xl:hidden"
+                title="Giriş"
+              >
+                <UserRound className="size-5" />
+              </Link>
+            </div>
           )}
         </div>
       </aside>
 
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/70 bg-white/78 shadow-sm backdrop-blur-2xl lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/92 backdrop-blur-xl lg:hidden">
         <div className="flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <LogoMark />
@@ -110,7 +128,7 @@ export function ShellFrame({
             <Link href="/notifications" className="relative text-slate-700">
               <Bell className="size-5" />
               {unreadCount ? (
-                <span className="absolute -right-2 -top-2 rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-black text-white">
+                <span className="absolute -right-2 -top-2 rounded-full bg-slate-950 px-1.5 text-[10px] font-black text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               ) : null}
@@ -118,7 +136,7 @@ export function ShellFrame({
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="inline-flex size-10 items-center justify-center rounded-2xl border border-white/80 bg-white/80 shadow-sm"
+              className="inline-flex size-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm"
               aria-label="Menüyü aç"
             >
               <Menu className="size-5" />
@@ -135,8 +153,8 @@ export function ShellFrame({
             aria-label="Menüyü kapat"
             onClick={() => setOpen(false)}
           />
-          <div className="relative flex h-full w-80 max-w-[84vw] flex-col border-r border-white/70 bg-white/90 shadow-2xl backdrop-blur-2xl">
-            <div className="flex h-16 items-center justify-between border-b border-white/70 px-4">
+          <div className="relative flex h-full w-80 max-w-[84vw] flex-col border-r border-slate-200 bg-white shadow-2xl">
+            <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
               <div className="flex items-center gap-2">
                 <LogoMark />
                 <span className="font-black">{displayName}</span>
@@ -144,7 +162,7 @@ export function ShellFrame({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="inline-flex size-10 items-center justify-center rounded-2xl hover:bg-orange-50"
+                className="inline-flex size-10 items-center justify-center rounded-full hover:bg-slate-100"
                 aria-label="Menüyü kapat"
               >
                 <X className="size-5" />
@@ -161,8 +179,8 @@ export function ShellFrame({
         </div>
       ) : null}
 
-      <main className="min-h-screen pt-16 lg:ml-28 lg:pt-0">
-        <div className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:py-8">
+      <main className="min-h-screen pt-16 lg:ml-24 lg:pt-0 xl:ml-72">
+        <div className="mx-auto w-full max-w-[1440px] px-0 lg:px-4 xl:px-6">
           {children}
         </div>
       </main>
@@ -190,18 +208,14 @@ function DockLink({
       href={item.href}
       title={item.label}
       className={cn(
-        "group relative flex size-[3.25rem] items-center justify-center rounded-[1.25rem] transition",
-        active
-          ? "bg-white text-slate-950 shadow-[0_12px_30px_rgba(255,255,255,0.12)]"
-          : "text-slate-400 hover:bg-white/10 hover:text-white",
+        "group relative flex h-12 items-center justify-center gap-4 rounded-full px-3 text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 xl:justify-start xl:px-4",
+        active && "font-black text-slate-950",
       )}
     >
-      <Icon className="size-5" />
-      <span className="pointer-events-none absolute left-[4.2rem] top-1/2 hidden -translate-y-1/2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-black text-white opacity-0 shadow-xl transition group-hover:translate-x-1 group-hover:opacity-100 xl:block">
-        {item.label}
-      </span>
+      <Icon className={cn("size-6", active && "stroke-[2.8]")} />
+      <span className="hidden text-xl xl:inline">{item.label}</span>
       {badge ? (
-        <span className="absolute -right-1 -top-1 rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-black text-white">
+        <span className="absolute left-10 top-1 rounded-full bg-slate-950 px-1.5 text-[10px] font-black text-white xl:left-8">
           {badge > 99 ? "99+" : badge}
         </span>
       ) : null}
@@ -236,19 +250,19 @@ function MobileDrawerNav({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex h-12 items-center gap-3 rounded-2xl px-4 text-sm font-black transition",
+              "flex h-12 items-center gap-3 rounded-full px-4 text-sm font-black transition",
               active
-                ? "bg-slate-950 text-white shadow-lg shadow-slate-950/15"
-                : "text-slate-700 hover:bg-white/82 hover:text-slate-950",
+                ? "bg-slate-950 text-white"
+                : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
             )}
           >
-            <Icon className="size-4 shrink-0" />
+            <Icon className="size-5 shrink-0" />
             <span>{item.label}</span>
             {badge ? (
               <span
                 className={cn(
                   "ml-auto rounded-full px-1.5 text-[10px] font-black",
-                  active ? "bg-white/20 text-white" : "bg-[var(--primary)] text-white",
+                  active ? "bg-white/20 text-white" : "bg-slate-950 text-white",
                 )}
               >
                 {badge > 99 ? "99+" : badge}
@@ -269,13 +283,13 @@ function DrawerProfile({
   onNavigate?: () => void;
 }) {
   return (
-    <div className="border-t border-white/70 p-4">
+    <div className="border-t border-slate-200 p-4">
       {profile ? (
-        <div className="space-y-3 rounded-3xl bg-white/65 p-3 shadow-inner shadow-slate-950/[0.03]">
+        <div className="space-y-3 rounded-3xl bg-slate-50 p-3">
           <Link
             href={`/profile/${profile.id}`}
             onClick={onNavigate}
-            className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-orange-50"
+            className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-white"
           >
             <Avatar firstName={profile.first_name} lastName={profile.last_name} size="sm" />
             <span className="min-w-0">
@@ -291,7 +305,7 @@ function DrawerProfile({
           </form>
         </div>
       ) : (
-        <div className="grid gap-2 rounded-3xl bg-white/65 p-3">
+        <div className="grid gap-2 rounded-3xl bg-slate-50 p-3">
           <LinkButton href="/login" variant="secondary" className="w-full">
             Giriş
           </LinkButton>
@@ -308,11 +322,10 @@ function LogoMark() {
   return (
     <span
       aria-hidden="true"
-      className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-orange-500 via-amber-400 to-sky-400 shadow-lg shadow-orange-900/20"
+      className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-white shadow-sm"
     >
-      <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.65),transparent_28%)]" />
-      <span className="relative size-3.5 rounded-full bg-white" />
-      <span className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-white/85" />
+      <span className="text-sm font-black">Ş</span>
+      <span className="absolute right-2 top-2 size-2 rounded-full bg-orange-400" />
     </span>
   );
 }
