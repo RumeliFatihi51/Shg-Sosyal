@@ -108,7 +108,7 @@ export default async function FriendsPage({
               ))}
             </div>
           ) : (
-            <EmptyState title="İstek yok" body="Yeni arkadaşlık istekleri burada görünür." />
+            <EmptyState title="İstek yok" body="Yeni arkadaşlık isteği yok." />
           )}
         </FriendPanel>
       ) : null}
@@ -142,7 +142,7 @@ export default async function FriendsPage({
               ))}
             </div>
           ) : (
-            <EmptyState title="Bekleyen istek yok" body="Gönderdiğin istekler listelenir." />
+            <EmptyState title="Bekleyen istek yok" body="Gönderdiğin açık istek yok." />
           )}
         </FriendPanel>
       ) : null}

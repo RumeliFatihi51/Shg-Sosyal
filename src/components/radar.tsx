@@ -219,15 +219,15 @@ export function CampusBoardPanel({
               öne çıkan
             </PulseBadge>
             <h2 className="mt-5 text-3xl font-black leading-tight text-balance sm:text-4xl">
-              {featured?.title ?? "Okulun öne çıkan hareketi burada görünür"}
+              {featured?.title ?? "Bugün henüz sakin."}
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
-              {featured?.body ?? "Etkinlik, gönderi veya topluluk hareketi oluştuğunda bu alan ana odak kartı gibi çalışır."}
+              {featured?.body ?? "İlk etkinliği sen öner."}
             </p>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
             <div className="rounded-3xl bg-white/10 px-4 py-3 text-sm font-black ring-1 ring-white/15">
-              Bugünün akışı okunabilir, sade ve canlı.
+              Bugün
             </div>
             {featured?.href ? (
               <LinkButton href={featured.href} className="bg-white text-slate-950 hover:bg-orange-50">

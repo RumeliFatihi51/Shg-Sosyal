@@ -10,11 +10,19 @@ import type { FriendAttendance } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+type HomeTab = "for-you" | "today" | "events" | "communities";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const tab = normalizeTab(params.tab);
   const data = await getHomeData();
   const signedIn = Boolean(data.profile);
   const friendItems = buildFriendItems(data);
-  const feedItems = buildFeedItems(data, friendItems);
+  const feedItems = buildFeedItems(data, friendItems, tab, signedIn);
 
   return (
     <FeedLayout
@@ -23,6 +31,7 @@ export default async function HomePage() {
         <MainFeed
           items={feedItems}
           signedIn={signedIn}
+          activeTab={tab}
         />
       }
       right={
@@ -41,8 +50,63 @@ export default async function HomePage() {
 function buildFeedItems(
   data: Awaited<ReturnType<typeof getHomeData>>,
   friendItems: Array<{ title: string; body: string; href?: string; friends?: FriendAttendance[] }>,
+  tab: HomeTab,
+  signedIn: boolean,
 ) {
   const items: FeedItem[] = [];
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (tab === "events") {
+    data.events.forEach((event: any) => {
+      items.push({
+        type: "event",
+        event,
+        friends: data.friendAttendanceByEvent.get(event.id) ?? [],
+      });
+    });
+
+    return items.slice(0, 12);
+  }
+
+  if (tab === "communities") {
+    data.communities.forEach((community: any) => {
+      items.push({ type: "community", community });
+    });
+    data.posts.slice(0, 4).forEach((post: any) => {
+      items.push({ type: "post", post });
+    });
+
+    return items.slice(0, 12);
+  }
+
+  if (tab === "today") {
+    data.events
+      .filter((event: any) => event.event_date === today)
+      .forEach((event: any) => {
+        items.push({
+          type: "event",
+          event,
+          friends: data.friendAttendanceByEvent.get(event.id) ?? [],
+        });
+      });
+    data.announcements.slice(0, 2).forEach((announcement: any) => {
+      items.push({ type: "announcement", announcement });
+    });
+    data.posts
+      .filter((post: any) => post.created_at?.slice(0, 10) === today)
+      .slice(0, 4)
+      .forEach((post: any) => {
+        items.push({ type: "post", post });
+      });
+    data.polls.slice(0, 1).forEach((poll: any) => {
+      items.push({ type: "poll", poll });
+    });
+    if (signedIn && friendItems[0]) {
+      items.push({ type: "friend", ...friendItems[0] });
+    }
+
+    return items.slice(0, 12);
+  }
 
   if (data.events[0]) {
     items.push({
@@ -68,7 +132,7 @@ function buildFeedItems(
     items.push({ type: "community", community: data.communities[0] });
   }
 
-  if (friendItems[0]) {
+  if (signedIn && friendItems[0]) {
     items.push({ type: "friend", ...friendItems[0] });
   }
 
@@ -89,6 +153,16 @@ function buildFeedItems(
   });
 
   return items.slice(0, 12);
+}
+
+function normalizeTab(value: string | string[] | undefined): HomeTab {
+  const tab = Array.isArray(value) ? value[0] : value;
+
+  if (tab === "today" || tab === "events" || tab === "communities") {
+    return tab;
+  }
+
+  return "for-you";
 }
 
 function buildFriendItems(data: Awaited<ReturnType<typeof getHomeData>>) {

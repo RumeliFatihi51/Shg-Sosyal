@@ -76,8 +76,8 @@ export default async function EventsPage({
       tone: "blue" as const,
     },
     {
-      title: friendPulseItems[0]?.title ?? "Arkadaş katılımı bekleniyor",
-      body: friendPulseItems[0]?.body ?? "Giriş yapınca kabul edilmiş arkadaşların vurgulanır.",
+      title: friendPulseItems[0]?.title ?? "Arkadaşların",
+      body: friendPulseItems[0]?.body ?? "Giriş yapınca arkadaşlarının katıldığı etkinlikleri görebilirsin.",
       icon: Radio,
       tone: "purple" as const,
     },

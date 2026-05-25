@@ -120,7 +120,7 @@ export default async function PollsPage({
       ) : (
         <EmptyState
           title="Anket yok"
-          body="Admin veya öğretmenler okul geneli anket açtığında burada görünür."
+          body="Yeni anket açıldığında listene düşer."
         />
       )}
     </div>

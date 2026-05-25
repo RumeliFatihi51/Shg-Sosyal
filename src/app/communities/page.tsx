@@ -240,8 +240,8 @@ export default async function CommunitiesPage({
           </OrganicGrid>
         ) : (
           <EmptyState
-            title="İlk topluluk hareketi bekleniyor"
-            body="Onaylanan ilk topluluk burada üyeleri, takipçileri ve son aktivite bilgisiyle okulun aktif alanına dönüşecek."
+            title="Topluluklar hareketlenmeye hazır"
+            body="İlk topluluğu kur veya aktif toplulukları keşfet."
             icon={<UsersRound className="size-5" />}
             action={<LinkButton href="/communities/new">Topluluk kur</LinkButton>}
           />

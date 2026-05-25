@@ -69,10 +69,10 @@ export async function getHomeData() {
       recommendations: [],
       friendAttendanceByEvent: new Map<string, FriendAttendance[]>(),
       liveCards: [
-        "Supabase bağlantısı bekleniyor",
-        "Migration çalışınca ana sayfa canlı verilerle dolacak",
-        "Topluluklar admin onayından sonra yayınlanacak",
-        "Bildirimler site içinde gösterilecek",
+        "Bugün henüz sakin.",
+        "İlk gönderiyi sen paylaş.",
+        "İlk etkinliği sen öner.",
+        "Topluluklar hareketlenmeye hazır.",
       ],
     };
   }
@@ -165,10 +165,10 @@ export async function getHomeData() {
 
   const latestCommunity = Array.isArray(posts) && posts[0]?.communities?.name
     ? `${posts[0].communities.name} yeni duyuru paylaştı`
-    : "Topluluk akışı hazır";
+    : "Henüz yeni duyuru yok";
   const firstEvent = Array.isArray(events) && events[0]?.event_date === today
     ? "Etkinlik bugün başlıyor"
-    : "Etkinlik takvimi güncel";
+    : "Yakında etkinlik yok";
 
   const summaryRow = summary as
     | {
@@ -201,9 +201,9 @@ export async function getHomeData() {
     recommendations: getInterestRecommendations(profile, events ?? [], posts ?? []),
     friendAttendanceByEvent,
     liveCards: [
-      `Bugün kampüste ${todayCount ?? 0} etkinlik var`,
+      todayCount ? `Bugün okulda ${todayCount} etkinlik var` : "Bugün henüz sakin.",
       latestCommunity,
-      `${events?.length ?? 0} yaklaşan etkinlik listeleniyor`,
+      events?.length ? `${events.length} etkinlik yaklaşıyor` : "İlk etkinliği sen öner.",
       firstEvent,
     ],
   };

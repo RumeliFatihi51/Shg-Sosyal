@@ -13,14 +13,13 @@ import {
   Repeat2,
   Search,
   Send,
-  Share2,
   Sparkles,
   UsersRound,
   Vote,
 } from "lucide-react";
 import { AnimatedSection, StaggeredGrid } from "@/components/motion";
 import { SubmitButton } from "@/components/submit-button";
-import { Avatar, Badge, LinkButton } from "@/components/ui";
+import { Avatar, LinkButton } from "@/components/ui";
 import { joinCommunityAction } from "@/lib/actions/communities";
 import { toggleEventParticipationAction } from "@/lib/actions/events";
 import { cn, formatDate, formatTime, fullName } from "@/lib/utils";
@@ -29,6 +28,7 @@ import type { FriendAttendance } from "@/lib/types";
 
 type IconType = ComponentType<{ className?: string }>;
 type Tone = "ember" | "sky" | "mint" | "violet" | "sun" | "ink";
+type HomeTab = "for-you" | "today" | "events" | "communities";
 
 type FeedItem =
   | { type: "event"; event: any; friends: FriendAttendance[] }
@@ -110,20 +110,29 @@ export function LeftSidebar({ signedIn }: { signedIn: boolean }) {
 export function MainFeed({
   items,
   signedIn,
+  activeTab,
 }: {
   items: FeedItem[];
   signedIn: boolean;
+  activeTab: HomeTab;
 }) {
   return (
     <main className="min-w-0">
-      <TimelineHeader />
+      <TimelineHeader activeTab={activeTab} />
       <ComposerPrompt signedIn={signedIn} />
-      <MainSchoolFeed items={items} signedIn={signedIn} />
+      <MainSchoolFeed items={items} signedIn={signedIn} activeTab={activeTab} />
     </main>
   );
 }
 
-export function TimelineHeader() {
+export function TimelineHeader({ activeTab }: { activeTab: HomeTab }) {
+  const tabs: Array<{ key: HomeTab; label: string; href: string }> = [
+    { key: "for-you", label: "Sana göre", href: "/?tab=for-you" },
+    { key: "today", label: "Bugün", href: "/?tab=today" },
+    { key: "events", label: "Etkinlikler", href: "/?tab=events" },
+    { key: "communities", label: "Topluluklar", href: "/?tab=communities" },
+  ];
+
   return (
     <header className="sticky top-16 z-20 border-b border-slate-200/80 bg-white/88 backdrop-blur-xl lg:top-0">
       <div className="px-4 py-3 sm:px-5">
@@ -141,24 +150,22 @@ export function TimelineHeader() {
         </div>
       </div>
       <div className="grid grid-cols-4 border-t border-slate-100 text-center text-sm font-semibold">
-        {[
-          { label: "Sana göre", href: "/posts" },
-          { label: "Bugün", href: "/" },
-          { label: "Etkinlikler", href: "/events" },
-          { label: "Topluluklar", href: "/communities" },
-        ].map((tab, index) => (
+        {tabs.map((tab) => {
+          const active = activeTab === tab.key;
+
+          return (
           <Link
             key={tab.label}
             href={tab.href}
             className={cn(
               "relative py-3 text-slate-500 transition hover:bg-slate-50 hover:text-slate-950",
-              index === 0 && "text-slate-950",
+              active && "text-slate-950",
             )}
           >
             {tab.label}
-            {index === 0 ? <span className="absolute inset-x-10 bottom-0 h-1 rounded-full bg-slate-950" /> : null}
+            {active ? <span className="absolute inset-x-10 bottom-0 h-1 rounded-full bg-slate-950" /> : null}
           </Link>
-        ))}
+        )})}
       </div>
     </header>
   );
@@ -193,14 +200,11 @@ export function ComposerPrompt({ signedIn }: { signedIn: boolean }) {
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-sm text-slate-600">Giriş yapınca paylaşabilirsin.</p>
-              <div className="mt-3 flex gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-sm text-slate-600">Paylaşmak ve arkadaşlarının hareketlerini görmek için giriş yap.</p>
+              <div className="flex gap-2">
                 <Link href="/login" className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white">
                   Giriş yap
-                </Link>
-                <Link href="/register" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700">
-                  Kayıt ol
                 </Link>
               </div>
             </div>
@@ -231,16 +235,22 @@ function QuickComposerLink({
 export function MainSchoolFeed({
   items,
   signedIn,
+  activeTab,
 }: {
   items: FeedItem[];
   signedIn: boolean;
+  activeTab: HomeTab;
 }) {
   if (!items.length) {
+    const empty = getEmptyTimelineCopy(activeTab, signedIn);
+
     return (
       <EmptyTimelineItem
         signedIn={signedIn}
-        title="Bugün henüz sakin."
-        body="İlk etkinliği öner, bir topluluk kur ya da okul gündemine ilk paylaşımı bırak."
+        title={empty.title}
+        body={empty.body}
+        href={empty.href}
+        action={empty.action}
       />
     );
   }
@@ -297,7 +307,6 @@ function TimelineItem({
   author,
   handle,
   time,
-  toneName = "ink",
   children,
   actions,
 }: {
@@ -305,7 +314,6 @@ function TimelineItem({
   author: string;
   handle: string;
   time?: string;
-  toneName?: Tone;
   children: ReactNode;
   actions?: ReactNode;
 }) {
@@ -316,14 +324,12 @@ function TimelineItem({
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1 text-sm">
             <span className="truncate font-semibold text-slate-950">{author}</span>
-            <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold", tone[toneName].chip)}>
-              {handle}
-            </span>
+            <span className="shrink-0 truncate text-xs text-slate-500">{handle}</span>
             {time ? <span className="truncate text-xs font-semibold text-slate-500">· {time}</span> : null}
             <MoreHorizontal className="ml-auto size-4 shrink-0 text-slate-400" />
           </div>
           <div className="mt-2">{children}</div>
-          {actions ?? <TimelineActions />}
+          {actions}
         </div>
       </div>
     </article>
@@ -339,77 +345,75 @@ function EventTweet({
   friends: FriendAttendance[];
   signedIn: boolean;
 }) {
-  const { day, month } = getDateParts(event.event_date);
-  const participantCount = getParticipantCount(event);
-  const capacity = Number(event.capacity ?? 0);
-  const hasCapacity = capacity > 0;
-  const fill = hasCapacity ? Math.min(100, Math.round((participantCount / capacity) * 100)) : 100;
-
   return (
     <TimelineItem
       avatar={<TimelineIcon toneName="ember" icon={CalendarDays} />}
-      author="Etkinlik Takvimi"
-      handle="@takvim"
+      author={cleanText(event.communities?.name, "Etkinlik Takvimi")}
+      handle="@etkinlik"
       time={formatDate(event.event_date)}
-      toneName="ember"
+      actions={null}
     >
-      <Link href={`/events/${event.id}`} className="block">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition group-hover:border-slate-300">
-          <div className="grid sm:grid-cols-[6rem_1fr]">
-            <div className="flex min-h-24 flex-row items-center gap-3 bg-slate-950 p-4 text-white sm:flex-col sm:items-start sm:justify-between">
-              <span className="rounded-full bg-white/12 px-2 py-1 text-[11px] font-semibold uppercase text-orange-100">Etkinlik</span>
-              <span>
-                <span className="block text-3xl font-bold leading-none">{day}</span>
-                <span className="block text-xs font-semibold uppercase tracking-wide text-orange-100">{month}</span>
-              </span>
-            </div>
-            <div className="p-4">
-              <h2 className="text-lg font-semibold leading-tight text-slate-950">{cleanText(event.title, "Yeni etkinlik")}</h2>
-              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
-                {cleanText(event.description, "Etkinlik detayları yakında paylaşılacak.")}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-600">
-                <InfoPill icon={Clock3}>{formatTime(event.start_time)}</InfoPill>
-                <InfoPill icon={MapPin}>{cleanText(event.location, "Konum yakında")}</InfoPill>
-                <InfoPill icon={UsersRound}>{cleanText(event.communities?.name, "Okul etkinliği")}</InfoPill>
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between gap-3 text-xs font-semibold text-slate-600">
-                  <span>{participantCount ? `${participantCount} kişi katılıyor` : "İlk katılımı sen başlat"}</span>
-                  <span>{hasCapacity ? `${capacity} kontenjan` : "Kontenjan açık"}</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-300" style={{ width: `${Math.max(fill, participantCount ? 8 : 18)}%` }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Link>
-
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <AvatarStack friends={friends} fallback />
-          <span className="truncate text-xs font-semibold text-slate-500">
-            {friends.length ? `${friends.length} arkadaşın gidiyor` : "Arkadaş katılımı burada görünür"}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          {signedIn ? (
-            <form action={toggleEventParticipationAction}>
-              <input type="hidden" name="event_id" value={event.id} />
-              <input type="hidden" name="is_joined" value="false" />
-              <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary" className="h-9 px-4 text-xs">
-                Katılıyorum
-              </SubmitButton>
-            </form>
-          ) : null}
-          <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"} className="h-9 px-4 text-xs">
-            Detay
-          </LinkButton>
-        </div>
-      </div>
+      <p className="text-base font-semibold leading-tight text-slate-950">{cleanText(event.title, "Yeni etkinlik")}</p>
+      <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-700">
+        {cleanText(event.description, "Detaylar yakında paylaşılacak.")}
+      </p>
+      <EventPreview event={event} friends={friends} signedIn={signedIn} />
     </TimelineItem>
+  );
+}
+
+function EventPreview({
+  event,
+  friends,
+  signedIn,
+}: {
+  event: any;
+  friends: FriendAttendance[];
+  signedIn: boolean;
+}) {
+  const { day, month } = getDateParts(event.event_date);
+  const participantCount = getParticipantCount(event);
+  const capacity = Number(event.capacity ?? 0);
+  const participantText = participantCount
+    ? `${participantCount}${capacity ? `/${capacity}` : ""} kişi katılıyor`
+    : "Bu etkinliğe ilk katılan sen ol.";
+
+  return (
+    <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <Link href={`/events/${event.id}`} className="grid grid-cols-[3.25rem_1fr] gap-3">
+        <span className="flex h-14 flex-col items-center justify-center rounded-xl bg-white text-slate-950 ring-1 ring-slate-200">
+          <span className="text-lg font-bold leading-none">{day}</span>
+          <span className="text-[10px] font-semibold uppercase text-slate-500">{month}</span>
+        </span>
+        <span className="min-w-0">
+          <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-600">
+            <span className="inline-flex items-center gap-1"><Clock3 className="size-3.5" />{formatTime(event.start_time)}</span>
+            <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" />{cleanText(event.location, "Konum yakında")}</span>
+          </span>
+          <span className="mt-1 block text-xs text-slate-500">{participantText}</span>
+          {friends.length ? (
+            <span className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-600">
+              <AvatarStack friends={friends} />
+              {friends.length === 1 ? "1 arkadaşın gidiyor" : `${friends.length} arkadaşın gidiyor`}
+            </span>
+          ) : null}
+        </span>
+      </Link>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {signedIn ? (
+          <form action={toggleEventParticipationAction}>
+            <input type="hidden" name="event_id" value={event.id} />
+            <input type="hidden" name="is_joined" value="false" />
+            <SubmitButton pendingLabel="Kaydediliyor..." variant="secondary" className="h-8 px-3 text-xs">
+              Katıl
+            </SubmitButton>
+          </form>
+        ) : null}
+        <LinkButton href={`/events/${event.id}`} variant={signedIn ? "ghost" : "secondary"} className="h-8 px-3 text-xs">
+          Etkinliği görüntüle
+        </LinkButton>
+      </div>
+    </div>
   );
 }
 
@@ -427,12 +431,15 @@ function PostTweet({ post }: { post: any }) {
       <Link href={`/posts/${post.id}`} className="block">
         <h2 className="text-base font-semibold leading-tight text-slate-950">{cleanText(post.title, "Yeni gönderi")}</h2>
         <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
-          {cleanText(post.body, "Bu haftanın ilk paylaşımı burada öne çıkabilir.")}
+          {cleanText(post.body, "İlk gönderiyi sen paylaş.")}
         </p>
       </Link>
       <TimelineActions
-        comments={commentCount ? String(commentCount) : "Yorum"}
-        likes={score ? String(score) : "Beğen"}
+        items={[
+          { label: commentCount ? `${commentCount}` : "Yanıtla", icon: MessageCircle, href: `/posts/${post.id}` },
+          { label: "Paylaş", icon: Repeat2 },
+          { label: score ? `${score}` : "Beğen", icon: Heart, href: `/posts/${post.id}` },
+        ]}
       />
     </TimelineItem>
   );
@@ -445,15 +452,12 @@ function AnnouncementTweet({ announcement }: { announcement: any }) {
       author="Okul duyurusu"
       handle="@duyuru"
       time={relativeDate(announcement.created_at)}
-      toneName="violet"
+      actions={<TimelineActions items={[{ label: "Paylaş", icon: Repeat2 }]} />}
     >
-      <div className="rounded-[1.25rem] border border-violet-200 bg-violet-50/70 p-4">
-        <div className="flex items-center gap-2">
-          <Badge tone="purple">Sabitlendi</Badge>
-          <span className="text-xs font-bold text-violet-700">Duyuru</span>
-        </div>
-        <h2 className="mt-3 text-base font-semibold leading-tight text-slate-950">{cleanText(announcement.title, "Yeni duyuru")}</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-700">{cleanText(announcement.body, "Duyurular yakında burada.")}</p>
+      <div className="border-l-2 border-violet-300 pl-3">
+        <span className="text-xs font-semibold text-violet-700">Duyuru</span>
+        <h2 className="mt-1 text-base font-semibold leading-tight text-slate-950">{cleanText(announcement.title, "Yeni duyuru")}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-700">{cleanText(announcement.body, "Henüz yeni duyuru yok.")}</p>
       </div>
     </TimelineItem>
   );
@@ -467,7 +471,7 @@ function PollTweet({ poll }: { poll: any }) {
   );
   const pollOptions = options.length
     ? options
-    : [{ id: "empty", label: "İlk seçenek hazırlanıyor", poll_votes: [] }];
+    : [{ id: "empty", label: "Seçenekler yakında", poll_votes: [] }];
 
   return (
     <TimelineItem
@@ -475,32 +479,48 @@ function PollTweet({ poll }: { poll: any }) {
       author="Okul anketi"
       handle="@anket"
       time={poll.closes_at ? `kapanış ${formatDate(poll.closes_at.slice(0, 10))}` : "açık"}
-      toneName="sky"
+      actions={<TimelineActions items={[{ label: "Paylaş", icon: Repeat2 }]} />}
     >
-      <div className="rounded-[1.25rem] border border-sky-200 bg-sky-50/70 p-4">
-        <h2 className="text-base font-semibold leading-tight text-slate-950">{cleanText(poll.title, "Yeni anket")}</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-600">{cleanText(poll.description, "Okul gündemine dair kısa bir anket.")}</p>
-        <div className="mt-4 grid gap-2">
-          {pollOptions.slice(0, 4).map((option: any) => {
-            const votes = Array.isArray(option.poll_votes) ? option.poll_votes.length : 0;
-            const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 0;
-
-            return (
-              <div key={option.id} className="rounded-2xl border border-white bg-white/80 p-3">
-                <div className="flex justify-between gap-3 text-xs font-black text-slate-700">
-                  <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
-                  <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-sky-500" style={{ width: `${totalVotes ? Math.max(percent, 8) : 16}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-3 text-xs font-black text-sky-700">{totalVotes ? `${totalVotes} oy kullanıldı` : "İlk oyu sen ver"}</div>
-      </div>
+      <PollPreview poll={poll} pollOptions={pollOptions} totalVotes={totalVotes} />
     </TimelineItem>
+  );
+}
+
+function PollPreview({
+  poll,
+  pollOptions,
+  totalVotes,
+}: {
+  poll: any;
+  pollOptions: any[];
+  totalVotes: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <h2 className="text-base font-semibold leading-tight text-slate-950">{cleanText(poll.title, "Yeni anket")}</h2>
+      {poll.description ? (
+        <p className="mt-1 text-sm leading-6 text-slate-600">{cleanText(poll.description)}</p>
+      ) : null}
+      <div className="mt-3 grid gap-2">
+        {pollOptions.slice(0, 4).map((option: any) => {
+          const votes = Array.isArray(option.poll_votes) ? option.poll_votes.length : 0;
+          const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 0;
+
+          return (
+            <div key={option.id} className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200">
+              <div className="flex justify-between gap-3 text-xs font-medium text-slate-700">
+                <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
+                <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-sky-500" style={{ width: `${totalVotes ? Math.max(percent, 8) : 12}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-3 text-xs font-medium text-slate-500">{totalVotes ? `${totalVotes} oy kullanıldı` : "İlk oyu sen ver"}</div>
+    </div>
   );
 }
 
@@ -513,23 +533,23 @@ function CommunityTweet({
 }) {
   const { members, posts } = getCommunityStats(community);
   const initials = communityInitials(cleanText(community.name, "Topluluk"));
+  const status = getCommunityStatus(members, posts);
 
   return (
     <TimelineItem
       avatar={<CommunityMonogram>{initials}</CommunityMonogram>}
       author={cleanText(community.name, "Topluluk")}
       handle="@topluluk"
-      time="bugün aktif"
-      toneName="mint"
+      time={status}
       actions={null}
     >
       <p className="line-clamp-3 text-sm leading-6 text-slate-700">
-        {cleanText(community.description, "Bu topluluk okul akışında yeni hareketler başlatabilir.")}
+        {cleanText(community.description, "Topluluğu görüntüle.")}
       </p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-slate-600">
-        <span className="rounded-full bg-slate-100 px-3 py-1.5">{members ? `${members} üye` : "Yeni üyeler bekleniyor"}</span>
-        <span className="rounded-full bg-slate-100 px-3 py-1.5">{posts ? `${posts} paylaşım` : "İlk paylaşım bekleniyor"}</span>
-        <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-emerald-700">Bugün aktif</span>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
+        {members ? <span className="rounded-full bg-slate-100 px-3 py-1.5">{members} üye</span> : null}
+        <span className="rounded-full bg-slate-100 px-3 py-1.5">{posts ? `${posts} paylaşım` : "Henüz paylaşım yok"}</span>
+        <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-700">{status}</span>
       </div>
       <div className="mt-4 flex gap-2">
         {signedIn ? (
@@ -544,7 +564,7 @@ function CommunityTweet({
           <LinkButton href="/login" variant="secondary" className="h-9 px-4 text-xs">Giriş yap</LinkButton>
         )}
         <LinkButton href={`/communities/${community.slug}`} variant="ghost" className="h-9 px-4 text-xs">
-          Aç
+          Topluluğu görüntüle
         </LinkButton>
       </div>
     </TimelineItem>
@@ -569,14 +589,13 @@ function FriendTweet({
       avatar={<TimelineIcon toneName="sun" icon={UsersRound} />}
       author="Arkadaş hareketi"
       handle="@arkadaşlar"
-      toneName="sun"
       actions={null}
     >
-      <Link href={href ?? (signedIn ? "/friends" : "/login")} className="flex items-center gap-3 rounded-[1.25rem] border border-amber-200 bg-amber-50/80 p-3 transition hover:bg-amber-50">
-        <AvatarStack friends={friends ?? []} fallback />
+      <Link href={href ?? (signedIn ? "/friends" : "/login")} className="flex items-center gap-3 rounded-2xl bg-amber-50 px-3 py-2 transition hover:bg-amber-100/70">
+        <AvatarStack friends={friends ?? []} />
         <span className="min-w-0">
-          <span className="block line-clamp-1 text-sm font-black text-slate-950">{cleanText(title, "Arkadaşların ne yapıyor?")}</span>
-          <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-slate-600">{cleanText(body, "Giriş yapınca arkadaşlarının katıldığı etkinlikleri burada görebilirsin.")}</span>
+          <span className="block line-clamp-1 text-sm font-semibold text-slate-950">{cleanText(title, "Arkadaşların ne yapıyor?")}</span>
+          <span className="mt-0.5 block line-clamp-1 text-xs text-slate-600">{cleanText(body, "Etkinlik")}</span>
         </span>
       </Link>
     </TimelineItem>
@@ -587,20 +606,24 @@ function EmptyTimelineItem({
   signedIn,
   title,
   body,
+  href,
+  action,
 }: {
   signedIn: boolean;
   title: string;
   body: string;
+  href: string;
+  action: string;
 }) {
   return (
     <article className="px-4 py-10 text-center sm:px-5">
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-slate-100 text-slate-700">
         <Sparkles className="size-6" />
       </div>
-      <h2 className="mt-4 text-xl font-black text-slate-950">{title}</h2>
+      <h2 className="mt-4 text-lg font-semibold text-slate-950">{title}</h2>
       <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-600">{body}</p>
       <div className="mt-5 flex justify-center">
-        <LinkButton href={signedIn ? "/events/new" : "/login"}>İlk hareketi başlat</LinkButton>
+        <LinkButton href={signedIn ? href : "/login"}>{signedIn ? action : "Giriş yap"}</LinkButton>
       </div>
     </article>
   );
@@ -686,9 +709,9 @@ function TodayWidget({
 
 function SearchWidget() {
   return (
-    <Link href="/posts" className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 text-sm font-semibold text-slate-500 transition hover:bg-white">
+    <Link href="/posts" className="flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-500 transition hover:bg-slate-50">
       <Search className="size-5" />
-      Okul akışında ara
+      Akışta ara
     </Link>
   );
 }
@@ -719,8 +742,7 @@ function UpcomingWidget({ events, signedIn }: { events: any[]; signedIn: boolean
         </div>
       ) : (
         <WidgetEmpty
-          title="Etkinlik hazırlanıyor."
-          body="Takvimde etkinlik yok."
+          title="Yakında etkinlik yok."
           href={signedIn ? "/events/new" : "/login"}
           action="Etkinlik öner"
         />
@@ -733,7 +755,7 @@ function TrendingWidget({ events, communities }: { events: any[]; communities: a
   const topics = [
     events[0] ? { label: cleanText(events[0].title, "Yakındaki etkinlik"), href: `/events/${events[0].id}` } : null,
     communities[0] ? { label: cleanText(communities[0].name, "Aktif topluluk"), href: `/communities/${communities[0].slug}` } : null,
-    { label: "Bu haftanın ilk paylaşımı", href: "/posts" },
+    { label: "İlk gönderiyi sen paylaş", href: "/posts" },
   ].filter(Boolean) as Array<{ label: string; href: string }>;
 
   return (
@@ -764,7 +786,7 @@ function CommunitiesWidget({ communities }: { communities: any[] }) {
                 <CommunityMonogram small>{initials}</CommunityMonogram>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-slate-950">{cleanText(community.name, "Topluluk")}</span>
-                  <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">{members ? `${members} üye` : "Yeni üyeler bekleniyor"}</span>
+                  <span className="mt-0.5 block truncate text-xs font-medium text-slate-500">{members ? `${members} üye` : "Bugün aktif"}</span>
                 </span>
                 <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">Aç</span>
               </Link>
@@ -772,7 +794,7 @@ function CommunitiesWidget({ communities }: { communities: any[] }) {
           })}
         </div>
       ) : (
-        <WidgetEmpty title="Topluluklar hareketlenmeye hazır." body="Onaylanan ilk topluluk burada görünecek." />
+        <WidgetEmpty title="Topluluklar hareketlenmeye hazır." href="/communities" action="Topluluklara bak" />
       )}
     </Widget>
   );
@@ -801,8 +823,9 @@ function FriendsWidget({
         </div>
       ) : (
         <WidgetEmpty
-          title={signedIn ? "Arkadaş hareketleri yakında." : "Giriş yapınca görürsün."}
-          body={signedIn ? "Katılımlar burada görünür." : "Arkadaşlarının hareketleri burada görünür."}
+          title={signedIn ? "Bugün arkadaş hareketi yok." : "Giriş yapınca arkadaşlarının katıldığı etkinlikleri görebilirsin."}
+          href={signedIn ? "/friends" : "/login"}
+          action={signedIn ? "Arkadaşlar" : "Giriş yap"}
         />
       )}
     </Widget>
@@ -844,9 +867,9 @@ function Widget({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+        <h2 className="text-base font-semibold text-slate-950">{title}</h2>
         <Link href={href} className="text-xs font-semibold text-sky-600">Tümü</Link>
       </div>
       <div className="px-4 pb-4">{children}</div>
@@ -861,14 +884,14 @@ function WidgetEmpty({
   action,
 }: {
   title: string;
-  body: string;
+  body?: string;
   href?: string;
   action?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4">
-      <div className="text-sm font-semibold text-slate-950">{title}</div>
-      <p className="mt-1 text-xs leading-5 text-slate-500">{body}</p>
+    <div className="py-2">
+      <div className="text-sm text-slate-600">{title}</div>
+      {body ? <p className="mt-1 text-xs leading-5 text-slate-500">{body}</p> : null}
       {href && action ? (
         <Link href={href} className="mt-3 inline-flex text-xs font-semibold text-sky-600">
           {action}
@@ -910,27 +933,30 @@ export function MobileBottomNav({ signedIn }: { signedIn: boolean }) {
 }
 
 function TimelineActions({
-  comments = "Yorum",
-  likes = "Beğen",
+  items,
 }: {
-  comments?: string;
-  likes?: string;
+  items: Array<{ label: string; icon: IconType; href?: string }>;
 }) {
-  const actions = [
-    { label: comments, icon: MessageCircle },
-    { label: "Paylaş", icon: Repeat2 },
-    { label: likes, icon: Heart },
-    { label: "Gönder", icon: Share2 },
-  ];
-
   return (
-    <div className="mt-3 flex max-w-md justify-between gap-3 text-xs font-bold text-slate-500">
-      {actions.map((action) => (
-        <span key={action.label} className="inline-flex items-center gap-1.5 rounded-full py-1 transition group-hover:text-slate-700">
-          <action.icon className="size-4" />
-          {action.label}
-        </span>
-      ))}
+    <div className="mt-3 flex max-w-sm justify-between gap-3 text-xs font-medium text-slate-500">
+      {items.map((action) => {
+        const content = (
+          <>
+            <action.icon className="size-4" />
+            {action.label}
+          </>
+        );
+
+        return action.href ? (
+          <Link key={`${action.label}-${action.href}`} href={action.href} className="inline-flex items-center gap-1.5 rounded-full py-1 transition hover:text-slate-800">
+            {content}
+          </Link>
+        ) : (
+          <span key={action.label} className="inline-flex items-center gap-1.5 rounded-full py-1 transition group-hover:text-slate-700">
+            {content}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -958,15 +984,6 @@ function CommunityMonogram({
 }) {
   return (
     <span className={cn("flex shrink-0 items-center justify-center rounded-full bg-slate-950 font-black text-white", small ? "size-10 text-xs" : "size-11 text-sm")}>
-      {children}
-    </span>
-  );
-}
-
-function InfoPill({ icon: Icon, children }: { icon: IconType; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
-      <Icon className="size-3.5" />
       {children}
     </span>
   );
@@ -1039,6 +1056,54 @@ function getCommunityStats(community: any) {
   return {
     members: community.community_members?.[0]?.count ?? community.member_count ?? 0,
     posts: community.posts?.[0]?.count ?? community.post_count ?? 0,
+  };
+}
+
+function getCommunityStatus(members: number, posts: number) {
+  if (posts > 0) {
+    return "Yeni paylaşım var";
+  }
+
+  if (members > 0) {
+    return "Bugün aktif";
+  }
+
+  return "Topluluğu görüntüle";
+}
+
+function getEmptyTimelineCopy(tab: HomeTab, signedIn: boolean) {
+  if (!signedIn) {
+    return {
+      title: "Bugün henüz sakin.",
+      body: "Paylaşmak ve arkadaşlarının hareketlerini görmek için giriş yap.",
+      href: "/login",
+      action: "Giriş yap",
+    };
+  }
+
+  if (tab === "events") {
+    return {
+      title: "Yakında etkinlik yok.",
+      body: "İlk etkinliği sen öner.",
+      href: "/events/new",
+      action: "Etkinlik öner",
+    };
+  }
+
+  if (tab === "communities") {
+    return {
+      title: "Henüz paylaşım yok.",
+      body: "Toplulukları keşfet veya yeni bir topluluk kur.",
+      href: "/communities",
+      action: "Topluluklara bak",
+    };
+  }
+
+  return {
+    title: "Bugün henüz sakin.",
+    body: "İlk gönderiyi sen paylaş.",
+    href: "/posts",
+    action: "Gönderi paylaş",
   };
 }
 
