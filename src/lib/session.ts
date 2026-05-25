@@ -13,6 +13,24 @@ const roleRank: Record<UserRole, number> = {
   admin: 4,
 };
 
+function profileUsernameSeed(email?: string | null, userId?: string) {
+  const base = (email?.split("@")[0] || `ogrenci_${userId?.slice(0, 6) || "shg"}`)
+    .toLocaleLowerCase("tr-TR")
+    .replace(/^@+/, "")
+    .replaceAll("ş", "s")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replaceAll("ı", "i")
+    .replace(/[^a-z0-9._]+/g, "")
+    .replace(/[._]{2,}/g, ".")
+    .replace(/^[._]+|[._]+$/g, "")
+    .slice(0, 24);
+
+  return base.length >= 3 ? base : `ogrenci_${userId?.slice(0, 6) || "shg"}`;
+}
+
 export const getCurrentUser = cache(async () => {
   if (!hasSupabaseConfig()) {
     return null;
@@ -69,6 +87,9 @@ export const getCurrentProfile = cache(async () => {
     id: user.id,
     first_name: String(user.user_metadata?.first_name ?? ""),
     last_name: String(user.user_metadata?.last_name ?? ""),
+    email: user.email ?? null,
+    username: profileUsernameSeed(user.email, user.id),
+    tag: `@${profileUsernameSeed(user.email, user.id)}`,
     class_name: String(user.user_metadata?.class_name ?? ""),
     school_number: String(user.user_metadata?.school_number ?? ""),
     interests: [],

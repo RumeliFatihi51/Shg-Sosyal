@@ -11,6 +11,7 @@ import {
   Home,
   ListChecks,
   LogOut,
+  MessageCircle,
   Menu,
   PenLine,
   ShieldCheck,
@@ -36,6 +37,7 @@ const nav: NavItem[] = [
   { href: "/communities", label: "Topluluklar", icon: UsersRound },
   { href: "/calendar", label: "Takvim", icon: ListChecks },
   { href: "/friends", label: "Arkadaşlar", icon: UserRound },
+  { href: "/messages", label: "Mesajlar", icon: MessageCircle },
   { href: "/notifications", label: "Bildirimler", icon: Bell },
 ];
 

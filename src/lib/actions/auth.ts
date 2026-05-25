@@ -84,6 +84,7 @@ export async function signUpAction(formData: FormData) {
         id: data.user.id,
         first_name: parsed.data.first_name,
         last_name: parsed.data.last_name,
+        email: parsed.data.email,
         class_name: parsed.data.class_name,
         school_number: parsed.data.school_number,
         interests: [],

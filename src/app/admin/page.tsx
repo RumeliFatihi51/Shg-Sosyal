@@ -34,7 +34,7 @@ const tabs = [
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; tab?: string }>;
+  searchParams: Promise<{ message?: string; tab?: string; q?: string; role?: string; page?: string }>;
 }) {
   const query = await searchParams;
   const current = await getCurrentProfile();
@@ -69,7 +69,15 @@ export default async function AdminPage({
     );
   }
 
-  const data = await getAdminData();
+  const page = Number.parseInt(query.page ?? "1", 10);
+  const data = await getAdminData({
+    users: {
+      q: query.q ?? "",
+      role: query.role ?? "",
+      page: Number.isFinite(page) && page > 0 ? page : 1,
+      pageSize: 25,
+    },
+  });
   const canChangeRoles = data.profile.role === "admin";
   const canModerate = ["admin", "moderator"].includes(data.profile.role);
   const requestedTab = tabs.some((tab) => tab.key === query.tab) ? query.tab : "events";
@@ -324,13 +332,44 @@ export default async function AdminPage({
 
       {activeTab === "users" && canModerate ? (
         <Panel title="Kullanıcı yönetimi">
+          <form className="mb-4 grid gap-3 rounded-2xl bg-slate-50 p-3 md:grid-cols-[1fr_180px_auto]" action="/admin">
+            <input type="hidden" name="tab" value="users" />
+            <Field
+              label="Kullanıcı ara"
+              name="q"
+              defaultValue={query.q ?? ""}
+              placeholder="ad, e-posta, @etiket veya sınıf"
+            />
+            <label className="grid gap-2 text-sm font-bold text-slate-700">
+              Rol
+              <select
+                name="role"
+                defaultValue={query.role ?? ""}
+                className="h-11 rounded-2xl border border-white/80 bg-white/85 px-4 text-slate-950 outline-none"
+              >
+                <option value="">Tüm roller</option>
+                {roleLabels.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex items-end">
+              <SubmitButton variant="secondary" pendingLabel="Aranıyor...">
+                Ara
+              </SubmitButton>
+            </div>
+          </form>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-500">
                   <th className="py-2">Kullanıcı</th>
+                  <th className="py-2">Etiket</th>
+                  <th className="py-2">E-posta</th>
                   <th className="py-2">Sınıf</th>
-                  <th className="py-2">Puan</th>
+                  <th className="py-2">Son aktivite</th>
                   <th className="py-2">Rol</th>
                   <th className="py-2">İşlem</th>
                 </tr>
@@ -340,10 +379,16 @@ export default async function AdminPage({
                   <tr key={user.id} className="border-b border-slate-100">
                     <td className="py-3 font-semibold">
                       {user.first_name} {user.last_name}
-                      {user.is_suspended ? <Badge tone="red">askıda</Badge> : null}
-                    </td>
+                        {user.is_suspended ? <Badge tone="red">askıda</Badge> : null}
+                      </td>
+                    <td className="py-3 text-slate-600">{user.tag ?? "Etiket yok"}</td>
+                    <td className="py-3 text-slate-600">{user.email ?? "E-posta yok"}</td>
                     <td className="py-3 text-slate-600">{user.class_name}</td>
-                    <td className="py-3 text-slate-600">{user.participation_points ?? 0}</td>
+                    <td className="py-3 text-slate-600">
+                      {user.last_seen_at
+                        ? new Date(user.last_seen_at).toLocaleDateString("tr-TR")
+                        : "Henüz yok"}
+                    </td>
                     <td className="py-3">
                       <Badge tone={user.role === "admin" ? "red" : user.role === "teacher" ? "green" : "blue"}>
                         {user.role}
@@ -396,6 +441,36 @@ export default async function AdminPage({
               </tbody>
             </table>
           </div>
+          {!data.users.length ? (
+            <div className="mt-4">
+              <EmptyState title="Kullanıcı bulunamadı" body="Aramaya uyan gerçek kullanıcı yok." />
+            </div>
+          ) : null}
+          {data.userCount > data.userPageSize ? (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+              <span>
+                {data.userCount} kullanıcı · Sayfa {data.userPage}
+              </span>
+              <div className="flex gap-2">
+                {data.userPage > 1 ? (
+                  <LinkButton
+                    href={`/admin?tab=users&q=${encodeURIComponent(query.q ?? "")}&role=${encodeURIComponent(query.role ?? "")}&page=${data.userPage - 1}`}
+                    variant="secondary"
+                  >
+                    Önceki
+                  </LinkButton>
+                ) : null}
+                {data.userPage * data.userPageSize < data.userCount ? (
+                  <LinkButton
+                    href={`/admin?tab=users&q=${encodeURIComponent(query.q ?? "")}&role=${encodeURIComponent(query.role ?? "")}&page=${data.userPage + 1}`}
+                    variant="secondary"
+                  >
+                    Sonraki
+                  </LinkButton>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </Panel>
       ) : null}
 

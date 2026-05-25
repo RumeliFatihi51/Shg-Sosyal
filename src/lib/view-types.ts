@@ -4,7 +4,7 @@ export type CountRelation = { count: number }[];
 
 export type ProfileLite = Pick<
   Profile,
-  "id" | "first_name" | "last_name" | "avatar_path"
+  "id" | "first_name" | "last_name" | "avatar_path" | "username" | "tag"
 >;
 
 export type CommunityLite = Pick<Community, "id" | "name" | "slug"> & {

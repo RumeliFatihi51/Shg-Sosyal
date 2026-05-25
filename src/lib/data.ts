@@ -6,6 +6,8 @@ import { hasSupabaseAdminConfig, hasSupabaseConfig } from "@/lib/env";
 import { getCurrentProfile, requireProfile, requireRole } from "@/lib/session";
 import type { Announcement, Community, Event, FriendAttendance, Notification, Poll, Post, Profile } from "@/lib/types";
 import type { EventListItem, ParticipantRow, PostListItem } from "@/lib/view-types";
+import { getAdminStats, getAdminUsers } from "@/features/admin/queries";
+import { getFriendsData as getFriendsFeatureData } from "@/features/friends/queries";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -78,56 +80,76 @@ export async function getHomeData() {
   }
 
   const supabase = await createClient();
-  const profile = await getCurrentProfile();
   const today = todayISO();
-  const { count: todayCount } = await supabase
-    .from("events")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "approved")
-    .eq("event_date", today);
-  const { data: events } = await supabase
-    .from("events")
-    .select("*, communities(name, slug), event_participants(count)")
-    .eq("status", "approved")
-    .gte("event_date", today)
-    .order("event_date", { ascending: true })
-    .order("start_time", { ascending: true })
-    .limit(6);
-  const { data: communities } = await supabase
-    .from("communities")
-    .select("*, community_members(count), community_followers(count), posts(count), events(count)")
-    .eq("status", "approved")
-    .eq("is_suspended", false)
-    .order("created_at", { ascending: false })
-    .limit(6);
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("*, profiles(first_name,last_name,avatar_path), communities(name,slug), comments(id), post_votes(direction,user_id)")
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false })
-    .limit(6);
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - 7);
-  const { count: weekPostCount } = await supabase
-    .from("posts")
-    .select("id", { count: "exact", head: true })
-    .is("deleted_at", null)
-    .gte("created_at", weekStart.toISOString());
-  const { data: announcements } = await supabase
-    .from("announcements")
-    .select("*, profiles(first_name,last_name)")
-    .order("created_at", { ascending: false })
-    .limit(3);
-  const { data: polls } = await supabase
-    .from("polls")
-    .select("*, poll_options(id,label,poll_votes(id))")
-    .eq("status", "open")
-    .order("created_at", { ascending: false })
-    .limit(2);
-  const { data: summary } = await supabase
-    .from("home_summary_view")
-    .select("*")
-    .maybeSingle();
+  const [
+    profile,
+    todayCountResult,
+    eventsResult,
+    communitiesResult,
+    postsResult,
+    weekPostCountResult,
+    announcementsResult,
+    pollsResult,
+    summaryResult,
+  ] = await Promise.all([
+    getCurrentProfile(),
+    supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "approved")
+      .eq("event_date", today),
+    supabase
+      .from("events")
+      .select("*, communities(name, slug), event_participants(count)")
+      .eq("status", "approved")
+      .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(6),
+    supabase
+      .from("communities")
+      .select("*, community_members(count), community_followers(count), posts(count), events(count)")
+      .eq("status", "approved")
+      .eq("is_suspended", false)
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("posts")
+      .select("*, profiles(first_name,last_name,avatar_path,username,tag), communities(name,slug), comments(id), post_votes(direction,user_id)")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .gte("created_at", weekStart.toISOString()),
+    supabase
+      .from("announcements")
+      .select("*, profiles(first_name,last_name,username,tag)")
+      .order("created_at", { ascending: false })
+      .limit(3),
+    supabase
+      .from("polls")
+      .select("*, poll_options(id,label,poll_votes(id))")
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(2),
+    supabase
+      .from("home_summary_view")
+      .select("*")
+      .maybeSingle(),
+  ]);
+  const todayCount = todayCountResult.count ?? 0;
+  const events = eventsResult.data ?? [];
+  const communities = communitiesResult.data ?? [];
+  const posts = postsResult.data ?? [];
+  const weekPostCount = weekPostCountResult.count ?? 0;
+  const announcements = announcementsResult.data ?? [];
+  const polls = pollsResult.data ?? [];
+  const summary = summaryResult.data;
 
   const friendAttendanceByEvent = new Map<string, FriendAttendance[]>();
 
@@ -719,7 +741,7 @@ export async function getProfileDetail(id: string) {
       .maybeSingle(),
     supabase
       .from("friendships")
-      .select("id,requester_id,receiver_id, requester:profiles!friendships_requester_id_fkey(id,first_name,last_name,avatar_path), receiver:profiles!friendships_receiver_id_fkey(id,first_name,last_name,avatar_path)")
+      .select("id,requester_id,receiver_id, requester:profiles!friendships_requester_id_fkey(id,first_name,last_name,avatar_path,username,tag), receiver:profiles!friendships_receiver_id_fkey(id,first_name,last_name,avatar_path,username,tag)")
       .eq("status", "accepted")
       .or(`requester_id.eq.${id},receiver_id.eq.${id}`)
       .limit(12),
@@ -757,32 +779,7 @@ export async function getProfileDetail(id: string) {
 }
 
 export async function getFriendsData() {
-  const profile = await requireProfile();
-  const supabase = await createClient();
-  const [{ data: received }, { data: sent }, { data: accepted }] = await Promise.all([
-    supabase
-      .from("friendships")
-      .select("*, requester:profiles!friendships_requester_id_fkey(id,first_name,last_name,avatar_path)")
-      .eq("receiver_id", profile.id)
-      .eq("status", "pending"),
-    supabase
-      .from("friendships")
-      .select("*, receiver:profiles!friendships_receiver_id_fkey(id,first_name,last_name,avatar_path)")
-      .eq("requester_id", profile.id)
-      .eq("status", "pending"),
-    supabase
-      .from("friendships")
-      .select("*, requester:profiles!friendships_requester_id_fkey(id,first_name,last_name,avatar_path), receiver:profiles!friendships_receiver_id_fkey(id,first_name,last_name,avatar_path)")
-      .eq("status", "accepted")
-      .or(`requester_id.eq.${profile.id},receiver_id.eq.${profile.id}`),
-  ]);
-
-  return {
-    profile,
-    received: received ?? [],
-    sent: sent ?? [],
-    accepted: accepted ?? [],
-  };
+  return getFriendsFeatureData();
 }
 
 export async function getNotificationsData() {
@@ -801,7 +798,14 @@ export async function getNotificationsData() {
   };
 }
 
-export async function getAdminData() {
+export async function getAdminData(filters: {
+  users?: {
+    q?: string;
+    role?: string;
+    page?: number;
+    pageSize?: number;
+  };
+} = {}) {
   const profile = await requireRole(["admin", "moderator", "teacher"]);
 
   if (!hasSupabaseAdminConfig()) {
@@ -811,6 +815,9 @@ export async function getAdminData() {
       pendingCommunities: [],
       reports: [],
       users: [],
+      userCount: 0,
+      userPage: 1,
+      userPageSize: filters.users?.pageSize ?? 25,
       approvedEvents: [],
       approvedCommunities: [],
       suspendedCommunities: [],
@@ -830,11 +837,6 @@ export async function getAdminData() {
     pendingEvents,
     pendingCommunities,
     reports,
-    users,
-    userStats,
-    communityStats,
-    eventStats,
-    postStats,
   ] = await Promise.all([
     admin
       .from("events")
@@ -851,21 +853,15 @@ export async function getAdminData() {
       .select("*, reporter:profiles!reports_reporter_id_fkey(first_name,last_name)")
       .eq("status", "open")
       .order("created_at", { ascending: false }),
-    admin
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(80),
-    admin.from("profiles").select("id", { count: "exact", head: true }),
-    admin.from("communities").select("id", { count: "exact", head: true }),
-    admin
-      .from("events")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "approved")
-      .gte("event_date", today),
-    admin.from("posts").select("id", { count: "exact", head: true }).is("deleted_at", null),
   ]);
-  const [approvedEvents, approvedCommunities, suspendedCommunities, auditLogs] = await Promise.all([
+  const [
+    approvedEvents,
+    approvedCommunities,
+    suspendedCommunities,
+    auditLogs,
+    usersResult,
+    stats,
+  ] = await Promise.all([
     admin
       .from("events")
       .select("id,title,lifecycle,event_date,location")
@@ -889,6 +885,8 @@ export async function getAdminData() {
       .select("*, actor:profiles!audit_logs_actor_id_fkey(first_name,last_name)")
       .order("created_at", { ascending: false })
       .limit(20),
+    getAdminUsers(filters.users ?? {}),
+    getAdminStats(today),
   ]);
 
   return {
@@ -896,16 +894,19 @@ export async function getAdminData() {
     pendingEvents: pendingEvents.data ?? [],
     pendingCommunities: pendingCommunities.data ?? [],
     reports: reports.data ?? [],
-    users: users.data ?? [],
+    users: usersResult.users,
+    userCount: usersResult.count,
+    userPage: usersResult.page,
+    userPageSize: usersResult.pageSize,
     approvedEvents: approvedEvents.data ?? [],
     approvedCommunities: approvedCommunities.data ?? [],
     suspendedCommunities: suspendedCommunities.data ?? [],
     auditLogs: auditLogs.data ?? [],
     stats: {
-      users: userStats.count ?? 0,
-      communities: communityStats.count ?? 0,
-      activeEvents: eventStats.count ?? 0,
-      posts: postStats.count ?? 0,
+      users: stats.users,
+      communities: stats.communities,
+      activeEvents: stats.activeEvents,
+      posts: stats.posts,
     },
   };
 }

@@ -3,11 +3,14 @@ import {
   cancelFriendRequestAction,
   removeFriendAction,
   sendFriendRequestAction,
+} from "@/features/friends/actions";
+import {
   updateProfileAction,
 } from "@/lib/actions/profile";
+import { startDirectConversationAction } from "@/features/messages/actions";
 import { getProfileDetail } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
-import { Avatar, Badge, Button, Card, Field, LinkButton } from "@/components/ui";
+import { Avatar, Badge, Button, Card, Field, LinkButton, TextArea } from "@/components/ui";
 import { fullName } from "@/lib/utils";
 import { FileUploadPreview } from "@/components/file-upload-preview";
 import { EventCard } from "@/features/events/event-card";
@@ -34,11 +37,18 @@ function FriendButton({ data }: { data: Awaited<ReturnType<typeof getProfileDeta
 
   if (friendship.status === "accepted") {
     return (
-      <form action={removeFriendAction}>
-        <input type="hidden" name="friendship_id" value={friendship.id} />
-        <input type="hidden" name="target_id" value={target.id} />
-        <Button variant="secondary">Arkadaşlıktan çıkar</Button>
-      </form>
+      <>
+        <form action={startDirectConversationAction}>
+          <input type="hidden" name="user_id" value={target.id} />
+          <input type="hidden" name="return_to" value={`/profile/${target.id}`} />
+          <Button>Mesaj yaz</Button>
+        </form>
+        <form action={removeFriendAction}>
+          <input type="hidden" name="friendship_id" value={friendship.id} />
+          <input type="hidden" name="target_id" value={target.id} />
+          <Button variant="secondary">Arkadaşlıktan çıkar</Button>
+        </form>
+      </>
     );
   }
 
@@ -109,8 +119,11 @@ export default async function ProfilePage({
               <div className="pb-1">
                 <h1 className="text-3xl font-black text-slate-950">{fullName(data.target)}</h1>
                 <p className="mt-1 text-sm font-semibold text-slate-600">
-                  {data.target.class_name} · No {data.target.school_number}
+                  {data.target.tag ?? data.target.username ?? "Etiket yok"} · {data.target.class_name} · No {data.target.school_number}
                 </p>
+                {data.target.bio ? (
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-700">{data.target.bio}</p>
+                ) : null}
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -184,8 +197,18 @@ export default async function ProfilePage({
               <form action={updateProfileAction} className="grid gap-4 sm:grid-cols-2">
                 <Field label="Ad" name="first_name" defaultValue={data.target.first_name ?? ""} required />
                 <Field label="Soyad" name="last_name" defaultValue={data.target.last_name ?? ""} required />
+                <Field label="Kullanıcı etiketi" name="username" defaultValue={data.target.username ?? ""} placeholder="eymen2011" />
                 <Field label="Sınıf" name="class_name" defaultValue={data.target.class_name ?? ""} required />
                 <Field label="Okul numarası" name="school_number" defaultValue={data.target.school_number ?? ""} required />
+                <div className="sm:col-span-2">
+                  <TextArea
+                    label="Kısa bio"
+                    name="bio"
+                    defaultValue={data.target.bio ?? ""}
+                    placeholder="Robotik, tiyatro veya okul hayatında sevdiğin şeyler..."
+                    rows={3}
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <Field
                     label="İlgi alanları"

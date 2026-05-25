@@ -17,7 +17,22 @@ export const profileSchema = z.object({
   last_name: z.string().min(2).max(60),
   class_name: z.string().min(1).max(20),
   school_number: z.string().min(1).max(30),
+  username: z.string().max(40).optional(),
+  bio: z.string().max(280).optional(),
   interests: z.array(z.string().min(1).max(40)).max(12),
+});
+
+export const usernameSchema = z.object({
+  username: z.string().min(3).max(40),
+});
+
+export const messageSchema = z.object({
+  conversation_id: z.string().uuid(),
+  content: z.string().trim().min(1).max(2000),
+});
+
+export const messageEditSchema = messageSchema.extend({
+  message_id: z.string().uuid(),
 });
 
 export const communitySchema = z.object({

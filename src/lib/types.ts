@@ -24,6 +24,8 @@ export type NotificationType =
   | "daily_events"
   | "admin_decision"
   | "friend_request"
+  | "friend_accept"
+  | "dm_message"
   | "announcement"
   | "poll"
   | "friend_event"
@@ -36,11 +38,18 @@ export type Profile = {
   last_name: string | null;
   class_name: string | null;
   school_number: string | null;
+  username?: string | null;
+  tag?: string | null;
+  email?: string | null;
+  bio?: string | null;
   interests: string[] | null;
   avatar_path: string | null;
+  avatar_url?: string | null;
   role: UserRole;
   is_suspended?: boolean;
   suspension_reason?: string | null;
+  onboarding_completed?: boolean;
+  last_seen_at?: string | null;
   participation_points?: number;
   created_at: string;
   updated_at: string;
@@ -155,4 +164,41 @@ export type Poll = {
   closes_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Conversation = {
+  id: string;
+  type: "direct";
+  direct_key: string | null;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string | null;
+};
+
+export type Message = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string | null;
+  status: "sent" | "edited" | "deleted";
+  created_at: string;
+  edited_at: string | null;
+  deleted_at: string | null;
+};
+
+export type ConversationSummary = {
+  user_id: string;
+  conversation_id: string;
+  last_message_at: string | null;
+  other_user_id: string;
+  other_first_name: string | null;
+  other_last_name: string | null;
+  other_username: string | null;
+  other_tag: string | null;
+  other_avatar_path: string | null;
+  last_message_id: string | null;
+  last_message_sender_id: string | null;
+  last_message_content: string | null;
+  last_message_created_at: string | null;
+  unread_count: number;
 };

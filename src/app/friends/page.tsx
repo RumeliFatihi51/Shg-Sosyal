@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Inbox, Send, UserCheck } from "lucide-react";
+import { Inbox, Search, Send, UserCheck } from "lucide-react";
 import {
   cancelFriendRequestAction,
   removeFriendAction,
   respondFriendRequestAction,
-} from "@/lib/actions/profile";
+  sendFriendRequestAction,
+} from "@/features/friends/actions";
+import { startDirectConversationAction } from "@/features/messages/actions";
+import { searchUsersByTag } from "@/features/users/queries";
 import { getFriendsData } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/session";
 import { Avatar, Button, Card, EmptyState, LinkButton } from "@/components/ui";
@@ -22,7 +25,7 @@ const tabs = [
 export default async function FriendsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string }>;
 }) {
   const query = await searchParams;
   const profile = await getCurrentProfile();
@@ -43,6 +46,7 @@ export default async function FriendsPage({
   }
 
   const data = await getFriendsData();
+  const searchResults = query.q ? await searchUsersByTag(query.q) : [];
   const activeTab = tabs.some((tab) => tab.key === query.tab) ? query.tab : "friends";
 
   return (
@@ -50,8 +54,47 @@ export default async function FriendsPage({
       <section className="rounded-lg border border-[var(--border-soft)] bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-black text-slate-950">Arkadaşlar</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Kabul edilmiş arkadaşların etkinliklerde özel olarak vurgulanır.
+          @etiket ile arkadaşlarını bul, istek gönder ve mesajlaş.
         </p>
+        <form className="mt-5 flex flex-col gap-2 rounded-2xl bg-slate-50 p-3 sm:flex-row" action="/friends">
+          <input type="hidden" name="tab" value="friends" />
+          <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white px-4 ring-1 ring-slate-200">
+            <Search className="size-4 text-slate-400" />
+            <input
+              name="q"
+              defaultValue={query.q ?? ""}
+              placeholder="@eymen veya isim ara"
+              className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+          </label>
+          <Button variant="secondary">Ara</Button>
+        </form>
+        {query.q ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {searchResults.length ? (
+              searchResults.map((user) => (
+                <div key={user.id} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3">
+                  <Link href={`/profile/${user.id}`} className="flex min-w-0 items-center gap-2">
+                    <Avatar firstName={user.first_name} lastName={user.last_name} size="sm" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold">{fullName(user)}</span>
+                      <span className="block truncate text-xs text-slate-500">{user.tag ?? user.username}</span>
+                    </span>
+                  </Link>
+                  <form action={sendFriendRequestAction}>
+                    <input type="hidden" name="receiver_id" value={user.id} />
+                    <input type="hidden" name="return_to" value={`/friends?q=${encodeURIComponent(query.q ?? "")}`} />
+                    <Button className="h-9 px-3">Ekle</Button>
+                  </form>
+                </div>
+              ))
+            ) : (
+              <div className="md:col-span-2 xl:col-span-3">
+                <EmptyState title="Kullanıcı bulunamadı" body="Etiketi kontrol edip tekrar ara." />
+              </div>
+            )}
+          </div>
+        ) : null}
         <div className="mt-5 flex flex-wrap gap-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -95,11 +138,13 @@ export default async function FriendsPage({
                   <div className="mt-3 flex gap-2">
                     <form action={respondFriendRequestAction}>
                       <input type="hidden" name="friendship_id" value={item.id} />
+                      <input type="hidden" name="requester_id" value={item.requester?.id} />
                       <input type="hidden" name="status" value="accepted" />
                       <Button>Onayla</Button>
                     </form>
                     <form action={respondFriendRequestAction}>
                       <input type="hidden" name="friendship_id" value={item.id} />
+                      <input type="hidden" name="requester_id" value={item.requester?.id} />
                       <input type="hidden" name="status" value="rejected" />
                       <Button variant="secondary">Reddet</Button>
                     </form>
@@ -175,6 +220,11 @@ export default async function FriendsPage({
                       <input type="hidden" name="friendship_id" value={item.id} />
                       <input type="hidden" name="target_id" value={friend?.id} />
                       <Button variant="ghost">Çıkar</Button>
+                    </form>
+                    <form action={startDirectConversationAction}>
+                      <input type="hidden" name="user_id" value={friend?.id} />
+                      <input type="hidden" name="return_to" value="/friends" />
+                      <Button variant="secondary" className="h-9 px-3">Yaz</Button>
                     </form>
                   </div>
                 );
