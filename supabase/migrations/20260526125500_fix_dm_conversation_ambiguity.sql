@@ -1,4 +1,4 @@
-create or replace function public.is_conversation_member(p_conversation_id uuid)
+create or replace function public.is_conversation_member(target_conversation_id uuid)
 returns boolean
 language sql
 stable
@@ -8,7 +8,7 @@ as $$
   select exists (
     select 1
     from public.conversation_members cm
-    where cm.conversation_id = p_conversation_id
+    where cm.conversation_id = target_conversation_id
       and cm.user_id = auth.uid()
   )
 $$;
