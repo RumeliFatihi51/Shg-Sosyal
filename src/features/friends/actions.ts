@@ -7,6 +7,7 @@ import { hasSupabaseAdminConfig } from "@/lib/env";
 import { requireProfile } from "@/lib/session";
 import { formString, notifyUser, redirectWithMessage } from "@/lib/actions/shared";
 import { fullName } from "@/lib/utils";
+import { awardPoints } from "@/features/rewards/actions";
 
 function friendReturnPath(formData: FormData, fallback = "/friends") {
   const value = formString(formData, "return_to");
@@ -114,14 +115,28 @@ async function respondFriendRequest(
   }
 
   if (status === "accepted" && requesterId) {
-    await notifyUser({
-      userId: requesterId,
-      type: "friend_accept",
-      title: "Arkadaşlık isteğin kabul edildi",
-      body: `${fullName(profile)} arkadaşlık isteğini kabul etti.`,
-      href: `/profile/${profile.id}`,
-      digestKey: `friend-accept:${friendshipId}`,
-    });
+    await Promise.all([
+      notifyUser({
+        userId: requesterId,
+        type: "friend_accept",
+        title: "Arkadaşlık isteğin kabul edildi",
+        body: `${fullName(profile)} arkadaşlık isteğini kabul etti.`,
+        href: `/profile/${profile.id}`,
+        digestKey: `friend-accept:${friendshipId}`,
+      }),
+      awardPoints({
+        userId: profile.id,
+        actionType: "friend_accept",
+        targetType: "profile",
+        targetId: requesterId,
+      }),
+      awardPoints({
+        userId: requesterId,
+        actionType: "friend_accept",
+        targetType: "profile",
+        targetId: profile.id,
+      }),
+    ]);
   }
 
   revalidatePath("/friends");

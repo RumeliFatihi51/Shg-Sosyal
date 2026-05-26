@@ -8,6 +8,7 @@ import { profileSchema } from "@/lib/validators/forms";
 import { formFile, formString, redirectWithMessage, uploadImage } from "@/lib/actions/shared";
 import { toInterests } from "@/lib/utils";
 import { normalizeUsernameInput } from "@/features/users/queries";
+import { awardPoints } from "@/features/rewards/actions";
 
 export async function updateProfileAction(formData: FormData) {
   const profile = await requireProfile();
@@ -62,6 +63,13 @@ export async function updateProfileAction(formData: FormData) {
   if (error) {
     redirectWithMessage(`/profile/${profile.id}`, `Profil güncellenemedi: ${error.message}`);
   }
+  await awardPoints({
+    userId: profile.id,
+    actionType: "profile_complete",
+    targetType: "profile",
+    targetId: profile.id,
+    metadata: { source: "profile_complete" },
+  });
   revalidatePath(`/profile/${profile.id}`);
   revalidatePath("/");
   redirect(`/profile/${profile.id}?message=Profil güncellendi.`);

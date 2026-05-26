@@ -15,6 +15,7 @@ import {
 import { isMissingRpc, notifyAcceptedFriends, recordActivity } from "@/lib/activity";
 import { announcementSchema, pollSchema } from "@/lib/validators/forms";
 import type { UserRole } from "@/lib/types";
+import { awardPoints } from "@/features/rewards/actions";
 
 function displayName(profile?: { first_name?: string | null; last_name?: string | null } | null) {
   return [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Bir arkadaşın";
@@ -62,6 +63,12 @@ export async function reviewCommunityAction(formData: FormData) {
       .update({ role: "community_admin" })
       .eq("id", data.created_by)
       .eq("role", "student");
+    await awardPoints({
+      userId: data.created_by,
+      actionType: "community_approved",
+      targetType: "community",
+      targetId: communityId,
+    });
   }
 
   if (data?.created_by) {
@@ -135,6 +142,13 @@ export async function reviewEventAction(formData: FormData) {
     });
 
     if (status === "approved") {
+      await awardPoints({
+        userId: data.created_by,
+        actionType: "event_approved",
+        targetType: "event",
+        targetId: eventId,
+      });
+
       const { data: creator } = await admin
         .from("profiles")
         .select("first_name,last_name")
@@ -516,6 +530,14 @@ export async function createPollAction(formData: FormData) {
         path: "/polls",
         metadata: { source: "poll_create" },
       }),
+      typeof pollId === "string"
+        ? awardPoints({
+            userId: actor.id,
+            actionType: "poll_create",
+            targetType: "poll",
+            targetId: pollId,
+          })
+        : Promise.resolve(0),
     ]);
 
     revalidatePath("/polls");
@@ -559,6 +581,12 @@ export async function createPollAction(formData: FormData) {
     await auditLog({
       actorId: actor.id,
       action: "poll.create",
+      targetType: "poll",
+      targetId: poll.id,
+    });
+    await awardPoints({
+      userId: actor.id,
+      actionType: "poll_create",
       targetType: "poll",
       targetId: poll.id,
     });

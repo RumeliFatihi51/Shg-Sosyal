@@ -12,7 +12,7 @@ export function Card({
   return (
     <section
       className={cn(
-        "rounded-3xl border border-white/70 bg-white/78 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-xl",
+        "rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-xl",
         "transition-colors duration-300",
         className,
       )}
@@ -33,9 +33,9 @@ export function Button({
 }) {
   const variants = {
     primary:
-      "bg-[var(--primary)] text-white shadow-lg shadow-orange-900/15 hover:bg-[#db4d1f]",
+      "bg-[var(--primary)] text-slate-950 shadow-lg shadow-cyan-950/15 hover:brightness-105",
     secondary:
-      "border border-white/75 bg-white/80 text-slate-900 shadow-sm hover:border-orange-200 hover:bg-orange-50",
+      "border border-[var(--border)] bg-[var(--surface-muted)] text-slate-900 shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
     danger: "bg-red-600 text-white shadow-lg shadow-red-900/15 hover:bg-red-700",
     ghost: "text-slate-700 hover:bg-white/70 hover:text-slate-950",
   };
@@ -68,9 +68,9 @@ export function LinkButton({
 }) {
   const variants = {
     primary:
-      "bg-[var(--primary)] text-white shadow-lg shadow-orange-900/15 hover:bg-[#db4d1f]",
+      "bg-[var(--primary)] text-slate-950 shadow-lg shadow-cyan-950/15 hover:brightness-105",
     secondary:
-      "border border-white/75 bg-white/80 text-slate-900 shadow-sm hover:border-orange-200 hover:bg-orange-50",
+      "border border-[var(--border)] bg-[var(--surface-muted)] text-slate-900 shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
     ghost: "text-slate-700 hover:bg-white/70 hover:text-slate-950",
   };
 

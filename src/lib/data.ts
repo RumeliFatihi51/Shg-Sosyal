@@ -669,12 +669,24 @@ export async function getEventDetail(id: string) {
       .filter(Boolean) as FriendAttendance[];
   }
 
+  const { data: similarEvents } = await supabase
+    .from("events")
+    .select("id,title,event_date,start_time,location,communities(name,slug),event_participants(count)")
+    .eq("status", "approved")
+    .neq("lifecycle", "canceled")
+    .neq("id", id)
+    .gte("event_date", todayISO())
+    .order("event_date", { ascending: true })
+    .order("start_time", { ascending: true })
+    .limit(4);
+
   return {
     profile,
     event: typedEvent,
     participants,
     isJoined,
     friendParticipants,
+    similarEvents: similarEvents ?? [],
   };
 }
 
@@ -729,6 +741,7 @@ export async function getProfileDetail(id: string) {
     { data: friendship },
     { data: friends },
     { data: badges },
+    { data: points },
     { data: attendedEvents },
     { data: authoredPosts },
   ] = await Promise.all([
@@ -747,8 +760,13 @@ export async function getProfileDetail(id: string) {
       .limit(12),
     supabase
       .from("user_badges")
-      .select("badges(name,description,code)")
+      .select("awarded_at,badges(name,description,code,icon,category)")
       .eq("user_id", id),
+    supabase
+      .from("user_points")
+      .select("user_id,total_points,weekly_points,daily_points,updated_at")
+      .eq("user_id", id)
+      .maybeSingle(),
     supabase
       .from("event_participants")
       .select("status, events(*, communities(name,slug), event_participants(count))")
@@ -771,6 +789,7 @@ export async function getProfileDetail(id: string) {
     friendship,
     friends: friends ?? [],
     badges: badges ?? [],
+    points,
     attendedEvents: (attendedEvents ?? []).map((row: any) =>
       Array.isArray(row.events) ? row.events[0] : row.events,
     ).filter(Boolean),

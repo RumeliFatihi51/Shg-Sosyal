@@ -1,21 +1,19 @@
 # ŞHG Sosyal
 
-Okul içi sosyal etkinlik ve topluluk platformu. Next.js App Router, TypeScript, Tailwind CSS ve Supabase ile hazırlanmış production'a yakın MVP.
+Okul içi sosyal etkinlik ve topluluk platformu. Next.js App Router, TypeScript, Tailwind CSS ve Supabase ile hazırlanmış production'a yakın sosyal uygulama.
 
 ## Özellikler
 
 - Supabase Auth ile kayıt/giriş, e-posta doğrulama ve profil sistemi
 - Roller: `student`, `community_admin`, `teacher`, `moderator`, `admin`
-- Yayınlanmış etkinlikleri anonim görüntüleme
 - Topluluk başvurusu, admin/moderator onayı, üyelik ve takip sistemi
-- Etkinlik oluşturma, onay akışı, kontenjan/yedek liste, iptal/erteleme
+- Etkinlik oluşturma, onay akışı, kontenjan/yedek liste, iptal/erteleme ve ilgi durumu
 - Gönderi, yorum, beğeni/eksi oy, raporlama ve trend skoru
-- Site içi bildirimler, arkadaş aktivitesi bildirimleri, okul duyuruları ve anketler
-- Activity tracking: etkinlik görüntüleme, gönderi görüntüleme, topluluk ziyareti, arama, katılım, oy ve rapor hareketleri
-- Counter cache ve güvenli RPC akışları: etkinlik katılımı, post oyu, topluluk başvurusu, anket oluşturma
-- Katılım puanı, rozetler, audit log ve moderasyon geçmişi
+- Arkadaş sistemi, site içi bildirimler ve birebir DM mesajlaşma
+- Ödül puanı, rozet kataloğu ve günlük/haftalık/genel sıralama
+- Activity tracking, counter cache ve güvenli RPC akışları
 - Aylık/haftalık/liste etkinlik takvimi
-- Supabase Storage bucket/policy kurulumu
+- Dark ağırlıklı modern sosyal uygulama teması
 
 ## Kurulum
 
@@ -47,6 +45,8 @@ Migration sırası:
 3. `supabase/migrations/20260514212000_shg_sosyal_role_bootstrap_fix.sql`
 4. `supabase/migrations/20260516093000_backend_security_hardening.sql`
 5. `supabase/migrations/20260516110000_data_processing_intelligence.sql`
+6. `supabase/migrations/20260525213000_backend_social_core.sql`
+7. `supabase/migrations/20260526103000_engagement_rewards_calendar_core.sql`
 
 Supabase CLI kullanıyorsanız:
 
@@ -55,7 +55,7 @@ supabase link --project-ref <project-ref>
 supabase db push
 ```
 
-Bu makinede Supabase CLI kurulu değilse Supabase Dashboard > SQL Editor içinde migration dosyalarını yukarıdaki sırayla çalıştırın.
+Bu makinede Supabase CLI kurulu değilse Supabase Dashboard > SQL Editor içinde migration dosyalarını yukarıdaki sırayla çalıştırın. En son migration ödül puanı, rozet kriterleri, leaderboard view'ları, etkinlik ilgi durumları ve DM izinlerini tamamlar.
 
 Supabase Auth ayarlarında **Authentication > Providers > Email > Confirm email** seçeneğini açık tutun. Uygulama, korumalı sayfalarda doğrulanmamış e-posta ile devam edilmesini engeller.
 
@@ -75,7 +75,7 @@ Storage bucketları migration ile oluşturulur:
 supabase/seed/demo.sql
 ```
 
-Bu seed ilk profili demo toplulukların sahibi olarak kullanır; topluluk, etkinlik, gönderi, yorum, oy, duyuru ve anket örnekleri üretir.
+Bu seed ilk profili demo topluluklarının sahibi olarak kullanır; topluluk, etkinlik, gönderi, yorum, oy, duyuru ve anket örnekleri üretir.
 
 ## QA
 
@@ -120,7 +120,3 @@ Node version: 24
 ```
 
 Netlify environment variables bölümüne `.env.example` içindeki değerleri ekleyin. Production URL için `NEXT_PUBLIC_SITE_URL` değerini Netlify domaininizle değiştirin.
-
-## MVP Dışı
-
-Bu sürümde özel mesajlaşma ve push notification yoktur. Bildirimler yalnızca site içi çalışır.

@@ -17,6 +17,7 @@ import { isMissingRpc, notifyAcceptedFriends, recordActivity } from "@/lib/activ
 import { requireProfile } from "@/lib/session";
 import { communitySchema, postSchema } from "@/lib/validators/forms";
 import { slugify } from "@/lib/utils";
+import { awardPoints } from "@/features/rewards/actions";
 
 function displayName(profile: { first_name?: string | null; last_name?: string | null }) {
   return [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Bir arkadaşın";
@@ -105,6 +106,12 @@ export async function joinCommunityAction(formData: FormData) {
     targetType: "community",
     targetId: communityId,
     path: `/communities/${slug}`,
+  });
+  await awardPoints({
+    userId: profile.id,
+    actionType: "community_join",
+    targetType: "community",
+    targetId: communityId,
   });
 
   revalidatePath(`/communities/${slug}`);
@@ -264,6 +271,15 @@ export async function createPostAction(formData: FormData) {
           metadata: { community_id: parsed.data.community_id },
         })
       : Promise.resolve(),
+    data
+      ? awardPoints({
+          userId: profile.id,
+          actionType: "post_create",
+          targetType: "post",
+          targetId: data.id,
+          metadata: { community_id: parsed.data.community_id },
+        })
+      : Promise.resolve(0),
     data
       ? auditLog({
           actorId: profile.id,

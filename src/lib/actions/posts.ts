@@ -7,6 +7,7 @@ import { formString, notifyUser, redirectWithMessage } from "@/lib/actions/share
 import { isMissingRpc, recordActivity } from "@/lib/activity";
 import { requireProfile } from "@/lib/session";
 import { commentSchema, reportSchema } from "@/lib/validators/forms";
+import { awardPoints } from "@/features/rewards/actions";
 
 export async function addCommentAction(formData: FormData) {
   const profile = await requireProfile();
@@ -41,6 +42,12 @@ export async function addCommentAction(formData: FormData) {
     targetType: "post",
     targetId: parsed.data.post_id,
     path: `/posts/${parsed.data.post_id}`,
+  });
+  await awardPoints({
+    userId: profile.id,
+    actionType: "comment_create",
+    targetType: "post",
+    targetId: parsed.data.post_id,
   });
 
   if (post?.author_id && post.author_id !== profile.id) {

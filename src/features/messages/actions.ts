@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
 import { formString, notifyUser, redirectWithMessage } from "@/lib/actions/shared";
 import { fullName } from "@/lib/utils";
+import { messageEditSchema, messageSchema } from "@/lib/validators/forms";
 
 export async function startDirectConversationAction(formData: FormData) {
   const profile = await requireProfile();
@@ -22,7 +23,13 @@ export async function startDirectConversationAction(formData: FormData) {
   });
 
   if (error || !data) {
-    redirectWithMessage(returnTo, `Mesajlaşma başlatılamadı: ${error?.message ?? "Bilinmeyen hata"}`);
+    const message = error?.message?.includes("Only friends")
+      ? "Mesajlaşmak için önce arkadaş olmalısın."
+      : error?.message?.includes("blocked")
+        ? "Bu kullanıcıyla mesajlaşma engellenmiş."
+        : (error?.message ?? "Bilinmeyen hata");
+
+    redirectWithMessage(returnTo, `Mesajlaşma başlatılamadı: ${message}`);
   }
 
   redirect(`/messages/${data}`);
@@ -30,28 +37,35 @@ export async function startDirectConversationAction(formData: FormData) {
 
 export async function sendMessageAction(formData: FormData) {
   const profile = await requireProfile();
-  const conversationId = formString(formData, "conversation_id");
-  const content = formString(formData, "content");
+  const parsed = messageSchema.safeParse({
+    conversation_id: formString(formData, "conversation_id"),
+    content: formString(formData, "content"),
+  });
 
-  if (!conversationId || !content || content.length > 2000) {
-    redirectWithMessage(`/messages/${conversationId || ""}`, "Mesaj 1-2000 karakter olmalı.");
+  if (!parsed.success) {
+    const fallbackId = formString(formData, "conversation_id");
+    redirectWithMessage(`/messages/${fallbackId || ""}`, "Mesaj 1-2000 karakter olmalı.");
   }
 
   const supabase = await createClient();
   const { error } = await supabase.from("messages").insert({
-    conversation_id: conversationId,
+    conversation_id: parsed.data.conversation_id,
     sender_id: profile.id,
-    content,
+    content: parsed.data.content,
   });
 
   if (error) {
-    redirectWithMessage(`/messages/${conversationId}`, `Mesaj gönderilemedi: ${error.message}`);
+    const message = error.message.includes("row-level security")
+      ? "Bu konuşmaya mesaj gönderme yetkin yok."
+      : error.message;
+
+    redirectWithMessage(`/messages/${parsed.data.conversation_id}`, `Mesaj gönderilemedi: ${message}`);
   }
 
   const { data: recipients } = await supabase
     .from("conversation_members")
     .select("user_id")
-    .eq("conversation_id", conversationId)
+    .eq("conversation_id", parsed.data.conversation_id)
     .neq("user_id", profile.id);
 
   await Promise.all(
@@ -61,15 +75,15 @@ export async function sendMessageAction(formData: FormData) {
         type: "dm_message",
         title: "Yeni mesaj",
         body: `${fullName(profile)} sana mesaj gönderdi.`,
-        href: `/messages/${conversationId}`,
-        digestKey: `dm:${conversationId}:${recipient.user_id}`,
+        href: `/messages/${parsed.data.conversation_id}`,
+        digestKey: `dm:${parsed.data.conversation_id}:${recipient.user_id}`,
       }),
     ),
   );
 
   revalidatePath("/messages");
-  revalidatePath(`/messages/${conversationId}`);
-  redirect(`/messages/${conversationId}`);
+  revalidatePath(`/messages/${parsed.data.conversation_id}`);
+  redirect(`/messages/${parsed.data.conversation_id}`);
 }
 
 export async function markConversationReadAction(formData: FormData) {
@@ -92,32 +106,35 @@ export async function markConversationReadAction(formData: FormData) {
 
 export async function editMessageAction(formData: FormData) {
   const profile = await requireProfile();
-  const messageId = formString(formData, "message_id");
-  const conversationId = formString(formData, "conversation_id");
-  const content = formString(formData, "content");
+  const parsed = messageEditSchema.safeParse({
+    message_id: formString(formData, "message_id"),
+    conversation_id: formString(formData, "conversation_id"),
+    content: formString(formData, "content"),
+  });
 
-  if (!messageId || !conversationId || !content || content.length > 2000) {
-    redirectWithMessage(`/messages/${conversationId || ""}`, "Mesaj 1-2000 karakter olmalı.");
+  if (!parsed.success) {
+    const fallbackId = formString(formData, "conversation_id");
+    redirectWithMessage(`/messages/${fallbackId || ""}`, "Mesaj 1-2000 karakter olmalı.");
   }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("messages")
     .update({
-      content,
+      content: parsed.data.content,
       edited_at: new Date().toISOString(),
       status: "edited",
     })
-    .eq("id", messageId)
+    .eq("id", parsed.data.message_id)
     .eq("sender_id", profile.id)
     .is("deleted_at", null);
 
   if (error) {
-    redirectWithMessage(`/messages/${conversationId}`, `Mesaj düzenlenemedi: ${error.message}`);
+    redirectWithMessage(`/messages/${parsed.data.conversation_id}`, `Mesaj düzenlenemedi: ${error.message}`);
   }
 
-  revalidatePath(`/messages/${conversationId}`);
-  redirect(`/messages/${conversationId}`);
+  revalidatePath(`/messages/${parsed.data.conversation_id}`);
+  redirect(`/messages/${parsed.data.conversation_id}`);
 }
 
 export async function deleteMessageAction(formData: FormData) {

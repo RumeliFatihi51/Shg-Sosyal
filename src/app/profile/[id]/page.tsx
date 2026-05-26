@@ -100,6 +100,7 @@ export default async function ProfilePage({
               <span><b className="text-slate-950">{data.friends.length}</b> arkadaş</span>
               <span><b className="text-slate-950">{data.attendedEvents.length}</b> etkinlik</span>
               <span><b className="text-slate-950">{data.badges.length}</b> rozet</span>
+              <span><b className="text-slate-950">{data.points?.weekly_points ?? 0}</b> haftalık puan</span>
             </div>
           </div>
         </div>
@@ -109,6 +110,7 @@ export default async function ProfilePage({
               { label: "Akış", href: `/profile/${data.target.id}?tab=feed`, active: tab === "feed" },
               { label: "Etkinlikler", href: `/profile/${data.target.id}?tab=events`, active: tab === "events" },
               { label: "Arkadaşlar", href: `/profile/${data.target.id}?tab=friends`, active: tab === "friends" },
+              { label: "Rozetler", href: "/badges", active: false },
               ...(isOwnProfile ? [{ label: "Düzenle", href: `/profile/${data.target.id}?tab=edit`, active: tab === "edit" }] : []),
             ]}
           />
@@ -279,14 +281,14 @@ function ProfileRail({ data }: { data: Awaited<ReturnType<typeof getProfileDetai
   return (
     <>
       <RailSection title="Profil bilgileri">
-        <RailItem title={`${data.target.participation_points ?? 0} katılım puanı`} meta="Katılım" icon={Sparkles} />
+        <RailItem title={`${data.points?.total_points ?? data.target.participation_points ?? 0} toplam puan`} meta={`${data.points?.weekly_points ?? 0} haftalık`} icon={Sparkles} href="/leaderboard" />
         <RailItem title={`${data.friends.length} arkadaş`} meta="Sosyal bağ" icon={UsersRound} />
         <RailItem title={`${data.attendedEvents.length} etkinlik`} meta="Katıldığı etkinlik" icon={CalendarDays} />
       </RailSection>
       <RailSection title="Rozetler">
         {data.badges.length ? data.badges.slice(0, 6).map((item: any) => (
-          <RailItem key={item.badges?.code ?? item.badges?.name} title={item.badges?.name} meta={item.badges?.description} icon={Sparkles} />
-        )) : <RailItem title="Henüz rozet yok" icon={Sparkles} />}
+          <RailItem key={item.badges?.code ?? item.badges?.name} title={item.badges?.name} meta={item.badges?.description} icon={Sparkles} href="/badges" />
+        )) : <RailItem title="Henüz rozet yok" meta="Rozetleri keşfet" href="/badges" icon={Sparkles} />}
       </RailSection>
       <RailSection title="Son aktiviteler">
         {data.authoredPosts.slice(0, 4).map((post: any) => (

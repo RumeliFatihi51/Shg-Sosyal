@@ -15,6 +15,9 @@ import {
   Menu,
   PenLine,
   ShieldCheck,
+  Sparkles,
+  Sun,
+  Trophy,
   UserRound,
   UsersRound,
   X,
@@ -38,6 +41,7 @@ const nav: NavItem[] = [
   { href: "/calendar", label: "Takvim", icon: ListChecks },
   { href: "/friends", label: "Arkadaşlar", icon: UserRound },
   { href: "/messages", label: "Mesajlar", icon: MessageCircle },
+  { href: "/leaderboard", label: "Sıralama", icon: Trophy },
   { href: "/notifications", label: "Bildirimler", icon: Bell },
 ];
 
@@ -63,6 +67,13 @@ export function ShellFrame({
     ? [{ href: "/admin", label: "Admin", icon: ShieldCheck }]
     : [];
   const items = [...nav, ...profileItem, ...adminItems];
+
+  function toggleTheme() {
+    const nextTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
+    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    document.documentElement.classList.toggle("light", nextTheme === "light");
+    window.localStorage.setItem("theme", nextTheme);
+  }
 
   return (
     <div className="min-h-screen text-slate-950">
@@ -94,13 +105,17 @@ export function ShellFrame({
 
         <div className="mt-5">
           {profile ? (
-            <div className="rounded-full p-2 transition hover:bg-slate-100 xl:rounded-2xl">
+            <div className="space-y-2 rounded-full p-2 transition hover:bg-slate-100 xl:rounded-2xl">
               <Link href={`/profile/${profile.id}`} className="flex items-center justify-center gap-3 xl:justify-start">
                 <Avatar firstName={profile.first_name} lastName={profile.last_name} size="sm" />
                 <span className="hidden min-w-0 flex-1 xl:block">
                   <span className="block truncate text-sm font-black">{fullName(profile)}</span>
                   <span className="block truncate text-xs font-semibold text-slate-500">{profile.role}</span>
                 </span>
+              </Link>
+              <Link href="/badges" className="hidden h-9 items-center gap-2 rounded-full px-3 text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-950 xl:flex">
+                <Sparkles className="size-4" />
+                Rozetler
               </Link>
             </div>
           ) : (
@@ -117,6 +132,14 @@ export function ShellFrame({
               </Link>
             </div>
           )}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 text-sm font-black text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+          >
+            <Sun className="size-4" />
+            <span className="hidden xl:inline">Tema</span>
+          </button>
         </div>
       </aside>
 
@@ -137,6 +160,14 @@ export function ShellFrame({
                 </span>
               ) : null}
             </Link>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex size-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm"
+              aria-label="Tema değiştir"
+            >
+              <Sun className="size-5" />
+            </button>
             <button
               type="button"
               onClick={() => setOpen(true)}

@@ -13,7 +13,7 @@ export type ReportStatus = "open" | "reviewed" | "dismissed";
 
 export type EventLifecycle = "scheduled" | "postponed" | "canceled";
 
-export type EventParticipationStatus = "going" | "waitlisted";
+export type EventParticipationStatus = "going" | "waitlisted" | "interested" | "not_going";
 
 export type PollStatus = "draft" | "open" | "closed";
 

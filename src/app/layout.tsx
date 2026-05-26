@@ -29,6 +29,21 @@ export default function RootLayout({
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.classList.toggle('dark', theme !== 'light');
+                document.documentElement.classList.toggle('light', theme === 'light');
+              } catch (_) {
+                document.documentElement.classList.add('dark');
+              }
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full">
         <AppShell>{children}</AppShell>
       </body>

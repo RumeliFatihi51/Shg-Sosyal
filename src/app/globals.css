@@ -8,6 +8,29 @@
   --primary-soft: #fff1e8;
   --border-soft: #eadfd2;
   --ink-soft: #64748b;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-strong: #0f172a;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --accent: #22d3ee;
+}
+
+html.dark {
+  color-scheme: dark;
+  --background: #050914;
+  --foreground: #e5eefb;
+  --card: #101827;
+  --primary: #22d3ee;
+  --primary-soft: rgba(34, 211, 238, 0.14);
+  --border-soft: rgba(148, 163, 184, 0.22);
+  --ink-soft: #94a3b8;
+  --surface: rgba(15, 23, 42, 0.88);
+  --surface-muted: rgba(15, 23, 42, 0.55);
+  --surface-strong: #e2e8f0;
+  --border: rgba(148, 163, 184, 0.22);
+  --muted: #94a3b8;
+  --accent: #22d3ee;
 }
 
 @theme inline {
@@ -34,6 +57,13 @@ body::before {
     radial-gradient(circle at 16% 0%, rgba(240, 90, 40, 0.08), transparent 28%),
     radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.08), transparent 28%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.98));
+}
+
+html.dark body::before {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(34, 211, 238, 0.13), transparent 28%),
+    radial-gradient(circle at 90% 6%, rgba(168, 85, 247, 0.13), transparent 28%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.94), rgba(5, 9, 20, 0.99));
 }
 
 body::after {
@@ -69,4 +99,68 @@ button {
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 22px 70px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(18px);
+}
+
+html.dark .bg-white,
+html.dark .bg-white\/95,
+html.dark .bg-white\/92,
+html.dark .bg-white\/90,
+html.dark .bg-white\/85,
+html.dark .bg-white\/80,
+html.dark .bg-white\/78,
+html.dark .bg-white\/70 {
+  background-color: var(--surface) !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/55,
+html.dark .bg-slate-100 {
+  background-color: var(--surface-muted) !important;
+}
+
+html.dark .text-slate-950,
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-800,
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark .border-slate-50,
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-white\/70,
+html.dark .border-white\/75,
+html.dark .border-white\/80 {
+  border-color: var(--border) !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: rgba(15, 23, 42, 0.82);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark .shadow-sm,
+html.dark .shadow-lg,
+html.dark .shadow-2xl,
+html.dark [class*="shadow-"] {
+  box-shadow: none;
 }

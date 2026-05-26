@@ -14,6 +14,7 @@ import {
 import { isMissingRpc, notifyAcceptedFriends, recordActivity } from "@/lib/activity";
 import { canPublishWithoutApproval, requireProfile } from "@/lib/session";
 import { eventSchema } from "@/lib/validators/forms";
+import { awardPoints } from "@/features/rewards/actions";
 
 function displayName(profile: { first_name?: string | null; last_name?: string | null }) {
   return [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Bir arkadaşın";
@@ -98,6 +99,20 @@ export async function createEventAction(formData: FormData) {
         targetId: data.id,
         path: `/events/${data.id}`,
       }),
+      awardPoints({
+        userId: profile.id,
+        actionType: "event_suggest",
+        targetType: "event",
+        targetId: data.id,
+      }),
+      autoApprove
+        ? awardPoints({
+            userId: profile.id,
+            actionType: "event_approved",
+            targetType: "event",
+            targetId: data.id,
+          })
+        : Promise.resolve(0),
       autoApprove
         ? notifyAcceptedFriends({
             actorId: profile.id,
@@ -124,12 +139,36 @@ export async function toggleEventParticipationAction(formData: FormData) {
   const profile = await requireProfile();
   const eventId = formString(formData, "event_id");
   const isJoined = formString(formData, "is_joined") === "true";
+  const requestedStatus = formString(formData, "participation_status");
+  const status = ["going", "interested", "not_going"].includes(requestedStatus)
+    ? requestedStatus
+    : "";
 
   if (!eventId) {
     redirectWithMessage("/events", "Etkinlik bulunamadı.");
   }
 
-  if (isJoined) {
+  if (status) {
+    if (status === "going") {
+      await joinEvent(eventId);
+      await awardPoints({
+        userId: profile.id,
+        actionType: "event_join",
+        targetType: "event",
+        targetId: eventId,
+      });
+    } else {
+      await setEventParticipation(eventId, status as "interested" | "not_going");
+    }
+
+    await recordActivity({
+      action: status === "going" ? "event_join" : "click",
+      targetType: "event",
+      targetId: eventId,
+      path: `/events/${eventId}`,
+      metadata: { status },
+    });
+  } else if (isJoined) {
     const supabase = await createClient();
     const { error } = await supabase
       .from("event_participants")
@@ -149,6 +188,12 @@ export async function toggleEventParticipationAction(formData: FormData) {
     });
   } else {
     await joinEvent(eventId);
+    await awardPoints({
+      userId: profile.id,
+      actionType: "event_join",
+      targetType: "event",
+      targetId: eventId,
+    });
     await recordActivity({
       action: "event_join",
       targetType: "event",
@@ -162,8 +207,45 @@ export async function toggleEventParticipationAction(formData: FormData) {
   revalidatePath(`/events/${eventId}`);
   redirectWithMessage(
     `/events/${eventId}`,
-    isJoined ? "Katılım kaldırıldı." : "Katılım kaydedildi.",
+    status === "interested"
+      ? "İlgileniyorum olarak kaydedildi."
+      : status === "not_going"
+        ? "Katılım durumun güncellendi."
+        : isJoined && !status
+          ? "Katılım kaldırıldı."
+          : "Katılım kaydedildi.",
   );
+}
+
+async function setEventParticipation(eventId: string, status: "interested" | "not_going") {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+  const { data: event } = await supabase
+    .from("events")
+    .select("lifecycle,status")
+    .eq("id", eventId)
+    .single();
+
+  if (!event || event.status !== "approved") {
+    redirectWithMessage(`/events/${eventId}`, "Etkinlik yayında değil.");
+  }
+
+  if (event.lifecycle === "canceled") {
+    redirectWithMessage(`/events/${eventId}`, "İptal edilmiş etkinlik için durum güncellenemez.");
+  }
+
+  const { error } = await supabase.from("event_participants").upsert(
+    {
+      event_id: eventId,
+      user_id: profile.id,
+      status,
+    },
+    { onConflict: "event_id,user_id" },
+  );
+
+  if (error) {
+    redirectWithMessage(`/events/${eventId}`, `Katılım durumu kaydedilemedi: ${error.message}`);
+  }
 }
 
 async function joinEvent(eventId: string) {

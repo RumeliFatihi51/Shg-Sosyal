@@ -38,13 +38,7 @@ export default async function EventsPage({
 
   return (
     <SocialPage
-      rail={
-        <EventsRail
-          events={data.events}
-          todayEvents={todayEvents}
-          popularEvents={popularEvents}
-        />
-      }
+      rail={<EventsRail events={data.events} todayEvents={todayEvents} popularEvents={popularEvents} />}
     >
       <StickyPageHeader
         title="Etkinlikler"
@@ -153,19 +147,16 @@ function EventTimelineItem({
           <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{event.location}</span>
           <span className="inline-flex items-center gap-1.5"><UsersRound className="size-4" />{capacity}</span>
           {signedIn ? (
-            <form action={toggleEventParticipationAction}>
-              <input type="hidden" name="event_id" value={event.id} />
-              <input type="hidden" name="is_joined" value="false" />
-              <button type="submit" className="font-black text-slate-950 hover:text-orange-700">
-                Katıl
-              </button>
-            </form>
+            <>
+              <ParticipationButton eventId={event.id} status="going" label="Katıl" strong />
+              <ParticipationButton eventId={event.id} status="interested" label="İlgileniyorum" />
+            </>
           ) : (
-            <Link href="/login" className="font-black text-slate-950 hover:text-orange-700">
+            <Link href="/login" className="font-black text-slate-950 hover:text-cyan-500">
               Katıl
             </Link>
           )}
-          <Link href={`/events/${event.id}`} className="font-black text-slate-950 hover:text-orange-700">
+          <Link href={`/events/${event.id}`} className="font-black text-slate-950 hover:text-cyan-500">
             Detay
           </Link>
         </>
@@ -177,6 +168,29 @@ function EventTimelineItem({
         </div>
       ) : null}
     </TimelineRow>
+  );
+}
+
+function ParticipationButton({
+  eventId,
+  status,
+  label,
+  strong = false,
+}: {
+  eventId: string;
+  status: "going" | "interested";
+  label: string;
+  strong?: boolean;
+}) {
+  return (
+    <form action={toggleEventParticipationAction}>
+      <input type="hidden" name="event_id" value={eventId} />
+      <input type="hidden" name="is_joined" value="false" />
+      <input type="hidden" name="participation_status" value={status} />
+      <button type="submit" className={strong ? "font-black text-slate-950 hover:text-cyan-500" : "hover:text-slate-950"}>
+        {label}
+      </button>
+    </form>
   );
 }
 
@@ -200,7 +214,7 @@ function EventsRail({
             href={`/events/${event.id}`}
             icon={CalendarDays}
           />
-        )) : <RailItem title="Bugün henüz sakin." meta="Etkinlik öner." icon={CalendarDays} />}
+        )) : <RailItem title="Bugün henüz sakin." meta="Etkinlik öner." icon={CalendarDays} href="/events/new" />}
       </RailSection>
       <RailSection title="Yakında" actionHref="/calendar">
         {events.slice(0, 5).map((event) => (

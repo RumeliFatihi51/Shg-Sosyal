@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   addDays,
+  addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
@@ -9,6 +10,7 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
+  subMonths,
 } from "date-fns";
 import { tr } from "date-fns/locale";
 import { CalendarDays, Clock3, List, Search } from "lucide-react";
@@ -40,14 +42,31 @@ export default async function CalendarPage({
   const view = ["month", "week", "list"].includes(filters.view ?? "") ? filters.view! : "list";
   const selectedDate = filters.date ? parseISO(filters.date) : new Date();
   const selectedISO = format(selectedDate, "yyyy-MM-dd");
+  const prevMonth = format(subMonths(selectedDate, 1), "yyyy-MM-dd");
+  const nextMonth = format(addMonths(selectedDate, 1), "yyyy-MM-dd");
   const { events } = await getCalendarData({ ...filters, view });
-  const selectedDayEvents = events.filter((event: any) => isSameDay(parseISO(event.event_date), selectedDate));
+  const selectedDayEvents = events.filter((event: any) =>
+    isSameDay(parseISO(event.event_date), selectedDate),
+  );
 
   return (
     <SocialPage
       rail={<CalendarRail events={events} selectedEvents={selectedDayEvents} selectedDate={selectedDate} />}
     >
-      <StickyPageHeader title="Takvim" subtitle={format(selectedDate, "d MMMM yyyy", { locale: tr })}>
+      <StickyPageHeader
+        title="Takvim"
+        subtitle={format(selectedDate, "d MMMM yyyy", { locale: tr })}
+        action={
+          <div className="flex items-center gap-2">
+            <LinkButton href={`/calendar?view=${view}&date=${prevMonth}`} variant="secondary" className="h-9 px-3">
+              Önceki
+            </LinkButton>
+            <LinkButton href={`/calendar?view=${view}&date=${nextMonth}`} variant="secondary" className="h-9 px-3">
+              Sonraki
+            </LinkButton>
+          </div>
+        }
+      >
         <PageTabs
           tabs={[
             { label: "Liste", href: `/calendar?view=list&date=${selectedISO}`, active: view === "list" },
@@ -107,7 +126,7 @@ function CalendarEventRow({ event }: { event: any }) {
       body={`${event.location}${event.communities?.name ? ` · ${event.communities.name}` : ""}`}
       actions={
         <>
-          <Link href={`/events/${event.id}`} className="font-black text-slate-950 hover:text-orange-700">
+          <Link href={`/events/${event.id}`} className="font-black text-slate-950 hover:text-cyan-500">
             Etkinliği görüntüle
           </Link>
           <Link href="/events/new" className="hover:text-slate-950">Etkinlik öner</Link>
@@ -139,16 +158,19 @@ function MonthCalendar({ selectedDate, events }: { selectedDate: Date; events: a
             <Link
               key={day.toISOString()}
               href={`/calendar?view=list&date=${format(day, "yyyy-MM-dd")}`}
-              className={`min-h-24 border-b border-r border-slate-100 p-2 transition hover:bg-slate-50 sm:min-h-32 ${
+              className={`group min-h-24 border-b border-r border-slate-100 p-2 transition hover:bg-cyan-400/10 sm:min-h-32 ${
                 currentMonth ? "bg-white" : "bg-slate-50/60 text-slate-400"
               }`}
             >
-              <div className="text-sm font-black">{format(day, "d")}</div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-black">{format(day, "d")}</span>
+                {dayEvents.length ? <span className="size-2 rounded-full bg-cyan-400" /> : null}
+              </div>
               <div className="mt-2 grid gap-1">
                 {dayEvents.slice(0, 2).map((event) => (
                   <span
                     key={event.id}
-                    className="truncate rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-black text-orange-700"
+                    className="truncate rounded-full bg-cyan-400/10 px-2 py-0.5 text-[10px] font-black text-cyan-600"
                   >
                     {formatTime(event.start_time)} {event.title}
                   </span>
@@ -179,14 +201,14 @@ function WeekCalendar({ selectedDate, events }: { selectedDate: Date; events: an
           <section key={day.toISOString()} className="px-4 py-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="font-black text-slate-950">{format(day, "EEEE, d MMMM", { locale: tr })}</h2>
-              <SocialBadge tone={dayEvents.length ? "orange" : "slate"}>
+              <SocialBadge tone={dayEvents.length ? "blue" : "slate"}>
                 {dayEvents.length ? `${dayEvents.length} etkinlik` : "Sakin"}
               </SocialBadge>
             </div>
             {dayEvents.length ? (
               <div className="grid gap-2">
                 {dayEvents.map((event) => (
-                  <Link key={event.id} href={`/events/${event.id}`} className="rounded-2xl bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50">
+                  <Link key={event.id} href={`/events/${event.id}`} className="rounded-2xl bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-cyan-400/10">
                     {formatTime(event.start_time)} · {event.title}
                   </Link>
                 ))}

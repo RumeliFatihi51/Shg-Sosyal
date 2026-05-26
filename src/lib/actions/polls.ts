@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { formString, redirectWithMessage } from "@/lib/actions/shared";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { awardPoints } from "@/features/rewards/actions";
 
 export async function votePollAction(formData: FormData) {
   const profile = await requireProfile();
@@ -24,6 +25,13 @@ export async function votePollAction(formData: FormData) {
   if (error) {
     redirectWithMessage("/polls", `Oy kaydedilemedi: ${error.message}`);
   }
+
+  await awardPoints({
+    userId: profile.id,
+    actionType: "poll_vote",
+    targetType: "poll",
+    targetId: pollId,
+  });
 
   revalidatePath("/polls");
   revalidatePath("/");
