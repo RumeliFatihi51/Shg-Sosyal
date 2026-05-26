@@ -40,40 +40,40 @@ type FeedItem =
 
 const tone = {
   ember: {
-    chip: "bg-orange-100 text-orange-800",
-    text: "text-orange-600",
+    chip: "border border-orange-400/25 bg-orange-400/15 text-orange-200",
+    text: "text-orange-300",
     line: "from-orange-500 to-amber-300",
-    soft: "bg-orange-50 text-orange-900 border-orange-100",
+    soft: "border-orange-400/25 bg-orange-400/10 text-orange-100",
   },
   sky: {
-    chip: "bg-sky-100 text-sky-800",
-    text: "text-sky-600",
+    chip: "border border-sky-400/25 bg-sky-400/15 text-sky-200",
+    text: "text-sky-300",
     line: "from-sky-500 to-cyan-300",
-    soft: "bg-sky-50 text-sky-900 border-sky-100",
+    soft: "border-sky-400/25 bg-sky-400/10 text-sky-100",
   },
   mint: {
-    chip: "bg-emerald-100 text-emerald-800",
-    text: "text-emerald-600",
+    chip: "border border-emerald-400/25 bg-emerald-400/15 text-emerald-200",
+    text: "text-emerald-300",
     line: "from-emerald-500 to-lime-300",
-    soft: "bg-emerald-50 text-emerald-900 border-emerald-100",
+    soft: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
   },
   violet: {
-    chip: "bg-violet-100 text-violet-800",
-    text: "text-violet-600",
+    chip: "border border-violet-400/25 bg-violet-400/15 text-violet-200",
+    text: "text-violet-300",
     line: "from-violet-500 to-fuchsia-300",
-    soft: "bg-violet-50 text-violet-900 border-violet-100",
+    soft: "border-violet-400/25 bg-violet-400/10 text-violet-100",
   },
   sun: {
-    chip: "bg-amber-100 text-amber-900",
-    text: "text-amber-700",
+    chip: "border border-amber-400/25 bg-amber-400/15 text-amber-200",
+    text: "text-amber-300",
     line: "from-amber-500 to-yellow-300",
-    soft: "bg-amber-50 text-amber-900 border-amber-100",
+    soft: "border-amber-400/25 bg-amber-400/10 text-amber-100",
   },
   ink: {
-    chip: "bg-slate-100 text-slate-800",
-    text: "text-slate-700",
+    chip: "border border-slate-400/25 bg-slate-400/15 text-slate-200",
+    text: "text-slate-300",
     line: "from-slate-950 to-slate-400",
-    soft: "bg-slate-50 text-slate-900 border-slate-200",
+    soft: "border-slate-400/25 bg-slate-400/10 text-slate-100",
   },
 };
 
@@ -89,10 +89,10 @@ export function FeedLayout({
 }) {
   return (
     <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-[1040px] grid-cols-1 lg:grid-cols-[minmax(0,640px)_minmax(300px,360px)]">
-      <AnimatedSection className="min-w-0 border-x border-slate-200/80 bg-white/88 backdrop-blur-xl" delay={0.02}>
+      <AnimatedSection className="min-w-0 border-x border-[var(--border)] bg-[var(--surface)] backdrop-blur-xl" delay={0.02}>
         {feed}
       </AnimatedSection>
-      <AnimatedSection className="hidden min-w-0 border-r border-slate-200/80 bg-white/55 px-5 py-4 lg:block" delay={0.06}>
+      <AnimatedSection className="hidden min-w-0 border-r border-[var(--border)] bg-[var(--surface-muted)] px-5 py-4 lg:block" delay={0.06}>
         {right}
       </AnimatedSection>
       <MobileBottomNav signedIn={signedIn} />
@@ -134,22 +134,22 @@ export function TimelineHeader({ activeTab }: { activeTab: HomeTab }) {
   ];
 
   return (
-    <header className="sticky top-16 z-20 border-b border-slate-200/80 bg-white/88 backdrop-blur-xl lg:top-0">
+    <header className="sticky top-16 z-20 border-b border-[var(--border)] bg-[var(--surface)] backdrop-blur-xl lg:top-0">
       <div className="px-4 py-3 sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold tracking-tight text-slate-950">Ana Akış</h1>
+            <h1 className="truncate text-xl font-bold tracking-tight text-[var(--foreground)]">Ana Akış</h1>
           </div>
           <Link
             href="/posts"
-            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted)] transition hover:border-cyan-300/40 hover:text-[var(--foreground)]"
             aria-label="Akışta ara"
           >
             <Search className="size-5" />
           </Link>
         </div>
       </div>
-      <div className="grid grid-cols-4 border-t border-slate-100 text-center text-sm font-semibold">
+      <div className="grid grid-cols-4 border-t border-[var(--border)] text-center text-sm font-semibold">
         {tabs.map((tab) => {
           const active = activeTab === tab.key;
 
@@ -158,12 +158,12 @@ export function TimelineHeader({ activeTab }: { activeTab: HomeTab }) {
             key={tab.label}
             href={tab.href}
             className={cn(
-              "relative py-3 text-slate-500 transition hover:bg-slate-50 hover:text-slate-950",
-              active && "text-slate-950",
+              "relative py-3 text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
+              active && "text-[var(--foreground)]",
             )}
           >
             {tab.label}
-            {active ? <span className="absolute inset-x-10 bottom-0 h-1 rounded-full bg-slate-950" /> : null}
+            {active ? <span className="absolute inset-x-10 bottom-0 h-1 rounded-full bg-[var(--accent)]" /> : null}
           </Link>
         )})}
       </div>
@@ -173,7 +173,7 @@ export function TimelineHeader({ activeTab }: { activeTab: HomeTab }) {
 
 export function ComposerPrompt({ signedIn }: { signedIn: boolean }) {
   return (
-    <section className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
+    <section className="border-b border-[var(--border)] px-4 py-4 sm:px-5">
       <div className="flex gap-3">
         <Avatar firstName="ŞHG" lastName="Sosyal" size="md" />
         <div className="min-w-0 flex-1">
@@ -181,29 +181,29 @@ export function ComposerPrompt({ signedIn }: { signedIn: boolean }) {
             <>
               <Link
                 href="/posts"
-                className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-base font-normal text-slate-500 transition hover:border-slate-300 hover:bg-white"
+                className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-left text-base font-normal text-[var(--muted)] transition hover:border-cyan-300/45 hover:text-[var(--foreground)]"
               >
                 Okulda ne paylaşmak istiyorsun?
               </Link>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex gap-1 text-xs font-semibold text-slate-500">
+                <div className="flex gap-1 text-xs font-semibold text-[var(--muted)]">
                   <QuickComposerLink href="/posts" icon={MessageCircle}>Gönderi</QuickComposerLink>
                   <QuickComposerLink href="/events/new" icon={CalendarDays}>Etkinlik</QuickComposerLink>
                   <QuickComposerLink href="/polls" icon={Vote}>Anket</QuickComposerLink>
                 </div>
                 <Link
                   href="/posts"
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--primary)] px-4 text-sm font-semibold text-[#020617] transition hover:brightness-110"
                 >
                   Paylaş
                 </Link>
               </div>
             </>
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-sm text-slate-600">Paylaşmak ve arkadaşlarının hareketlerini görmek için giriş yap.</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <p className="text-sm text-[var(--muted)]">Paylaşmak ve arkadaşlarının hareketlerini görmek için giriş yap.</p>
               <div className="flex gap-2">
-                <Link href="/login" className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white">
+                <Link href="/login" className="rounded-full bg-[var(--primary)] px-4 py-2 text-xs font-semibold text-[#020617]">
                   Giriş yap
                 </Link>
               </div>
@@ -225,7 +225,7 @@ function QuickComposerLink({
   children: ReactNode;
 }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-950">
+    <Link href={href} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]">
       <Icon className="size-4" />
       {children}
     </Link>
@@ -256,7 +256,7 @@ export function MainSchoolFeed({
   }
 
   return (
-    <StaggeredGrid className="divide-y divide-slate-200/80">
+    <StaggeredGrid className="divide-y divide-[var(--border)]">
       {items.map((item, index) => (
         <FeedCard key={feedKey(item, index)} item={item} signedIn={signedIn} />
       ))}
@@ -318,15 +318,15 @@ function TimelineItem({
   actions?: ReactNode;
 }) {
   return (
-    <article className="group px-4 py-4 transition hover:bg-slate-50/80 sm:px-5">
+    <article className="group px-4 py-4 transition hover:bg-[var(--surface-muted)] sm:px-5">
       <div className="grid grid-cols-[2.75rem_1fr] gap-3">
         <div>{avatar}</div>
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1 text-sm">
-            <span className="truncate font-semibold text-slate-950">{author}</span>
-            <span className="shrink-0 truncate text-xs text-slate-500">{handle}</span>
-            {time ? <span className="truncate text-xs font-semibold text-slate-500">· {time}</span> : null}
-            <MoreHorizontal className="ml-auto size-4 shrink-0 text-slate-400" />
+            <span className="truncate font-semibold text-[var(--foreground)]">{author}</span>
+            <span className="shrink-0 truncate text-xs text-[var(--muted)]">{handle}</span>
+            {time ? <span className="truncate text-xs font-semibold text-[var(--muted)]">· {time}</span> : null}
+            <MoreHorizontal className="ml-auto size-4 shrink-0 text-slate-500" />
           </div>
           <div className="mt-2">{children}</div>
           {actions}
@@ -353,8 +353,8 @@ function EventTweet({
       time={formatDate(event.event_date)}
       actions={null}
     >
-      <p className="text-base font-semibold leading-tight text-slate-950">{cleanText(event.title, "Yeni etkinlik")}</p>
-      <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-700">
+      <p className="text-base font-semibold leading-tight text-[var(--foreground)]">{cleanText(event.title, "Yeni etkinlik")}</p>
+      <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-300">
         {cleanText(event.description, "Detaylar yakında paylaşılacak.")}
       </p>
       <EventPreview event={event} friends={friends} signedIn={signedIn} />
@@ -379,20 +379,20 @@ function EventPreview({
     : "Bu etkinliğe ilk katılan sen ol.";
 
   return (
-    <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <div className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3">
       <Link href={`/events/${event.id}`} className="grid grid-cols-[3.25rem_1fr] gap-3">
-        <span className="flex h-14 flex-col items-center justify-center rounded-xl bg-white text-slate-950 ring-1 ring-slate-200">
+        <span className="flex h-14 flex-col items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)]">
           <span className="text-lg font-bold leading-none">{day}</span>
-          <span className="text-[10px] font-semibold uppercase text-slate-500">{month}</span>
+          <span className="text-[10px] font-semibold uppercase text-[var(--muted)]">{month}</span>
         </span>
         <span className="min-w-0">
-          <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-600">
+          <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-300">
             <span className="inline-flex items-center gap-1"><Clock3 className="size-3.5" />{formatTime(event.start_time)}</span>
             <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" />{cleanText(event.location, "Konum yakında")}</span>
           </span>
-          <span className="mt-1 block text-xs text-slate-500">{participantText}</span>
+          <span className="mt-1 block text-xs text-[var(--muted)]">{participantText}</span>
           {friends.length ? (
-            <span className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-600">
+            <span className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-300">
               <AvatarStack friends={friends} />
               {friends.length === 1 ? "1 arkadaşın gidiyor" : `${friends.length} arkadaşın gidiyor`}
             </span>
@@ -429,8 +429,8 @@ function PostTweet({ post }: { post: any }) {
       time={relativeDate(post.created_at)}
     >
       <Link href={`/posts/${post.id}`} className="block">
-        <h2 className="text-base font-semibold leading-tight text-slate-950">{cleanText(post.title, "Yeni gönderi")}</h2>
-        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+        <h2 className="text-base font-semibold leading-tight text-[var(--foreground)]">{cleanText(post.title, "Yeni gönderi")}</h2>
+        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-300">
           {cleanText(post.body, "İlk gönderiyi sen paylaş.")}
         </p>
       </Link>
@@ -455,9 +455,9 @@ function AnnouncementTweet({ announcement }: { announcement: any }) {
       actions={<TimelineActions items={[{ label: "Paylaş", icon: Repeat2 }]} />}
     >
       <div className="border-l-2 border-violet-300 pl-3">
-        <span className="text-xs font-semibold text-violet-700">Duyuru</span>
-        <h2 className="mt-1 text-base font-semibold leading-tight text-slate-950">{cleanText(announcement.title, "Yeni duyuru")}</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-700">{cleanText(announcement.body, "Henüz yeni duyuru yok.")}</p>
+        <span className="text-xs font-semibold text-violet-300">Duyuru</span>
+        <h2 className="mt-1 text-base font-semibold leading-tight text-[var(--foreground)]">{cleanText(announcement.title, "Yeni duyuru")}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-300">{cleanText(announcement.body, "Henüz yeni duyuru yok.")}</p>
       </div>
     </TimelineItem>
   );
@@ -496,10 +496,10 @@ function PollPreview({
   totalVotes: number;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-      <h2 className="text-base font-semibold leading-tight text-slate-950">{cleanText(poll.title, "Yeni anket")}</h2>
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+      <h2 className="text-base font-semibold leading-tight text-[var(--foreground)]">{cleanText(poll.title, "Yeni anket")}</h2>
       {poll.description ? (
-        <p className="mt-1 text-sm leading-6 text-slate-600">{cleanText(poll.description)}</p>
+        <p className="mt-1 text-sm leading-6 text-slate-300">{cleanText(poll.description)}</p>
       ) : null}
       <div className="mt-3 grid gap-2">
         {pollOptions.slice(0, 4).map((option: any) => {
@@ -507,19 +507,19 @@ function PollPreview({
           const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 0;
 
           return (
-            <div key={option.id} className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200">
-              <div className="flex justify-between gap-3 text-xs font-medium text-slate-700">
+            <div key={option.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+              <div className="flex justify-between gap-3 text-xs font-medium text-slate-300">
                 <span className="line-clamp-1">{cleanText(option.label, "Seçenek")}</span>
                 <span>{totalVotes ? `%${percent}` : "oy bekliyor"}</span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800">
                 <div className="h-full rounded-full bg-sky-500" style={{ width: `${totalVotes ? Math.max(percent, 8) : 12}%` }} />
               </div>
             </div>
           );
         })}
       </div>
-      <div className="mt-3 text-xs font-medium text-slate-500">{totalVotes ? `${totalVotes} oy kullanıldı` : "İlk oyu sen ver"}</div>
+      <div className="mt-3 text-xs font-medium text-[var(--muted)]">{totalVotes ? `${totalVotes} oy kullanıldı` : "İlk oyu sen ver"}</div>
     </div>
   );
 }
@@ -543,13 +543,13 @@ function CommunityTweet({
       time={status}
       actions={null}
     >
-      <p className="line-clamp-3 text-sm leading-6 text-slate-700">
+      <p className="line-clamp-3 text-sm leading-6 text-slate-300">
         {cleanText(community.description, "Topluluğu görüntüle.")}
       </p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-        {members ? <span className="rounded-full bg-slate-100 px-3 py-1.5">{members} üye</span> : null}
-        <span className="rounded-full bg-slate-100 px-3 py-1.5">{posts ? `${posts} paylaşım` : "Henüz paylaşım yok"}</span>
-        <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-700">{status}</span>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-300">
+        {members ? <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1.5">{members} üye</span> : null}
+        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1.5">{posts ? `${posts} paylaşım` : "Henüz paylaşım yok"}</span>
+        <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-emerald-200">{status}</span>
       </div>
       <div className="mt-4 flex gap-2">
         {signedIn ? (
@@ -591,11 +591,11 @@ function FriendTweet({
       handle="@arkadaşlar"
       actions={null}
     >
-      <Link href={href ?? (signedIn ? "/friends" : "/login")} className="flex items-center gap-3 rounded-2xl bg-amber-50 px-3 py-2 transition hover:bg-amber-100/70">
+      <Link href={href ?? (signedIn ? "/friends" : "/login")} className="flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 transition hover:bg-amber-400/15">
         <AvatarStack friends={friends ?? []} />
         <span className="min-w-0">
-          <span className="block line-clamp-1 text-sm font-semibold text-slate-950">{cleanText(title, "Arkadaşların ne yapıyor?")}</span>
-          <span className="mt-0.5 block line-clamp-1 text-xs text-slate-600">{cleanText(body, "Etkinlik")}</span>
+          <span className="block line-clamp-1 text-sm font-semibold text-[var(--foreground)]">{cleanText(title, "Arkadaşların ne yapıyor?")}</span>
+          <span className="mt-0.5 block line-clamp-1 text-xs text-slate-300">{cleanText(body, "Etkinlik")}</span>
         </span>
       </Link>
     </TimelineItem>
@@ -617,11 +617,11 @@ function EmptyTimelineItem({
 }) {
   return (
     <article className="px-4 py-10 text-center sm:px-5">
-      <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+      <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted)]">
         <Sparkles className="size-6" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold text-slate-950">{title}</h2>
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-600">{body}</p>
+      <h2 className="mt-4 text-lg font-semibold text-[var(--foreground)]">{title}</h2>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted)]">{body}</p>
       <div className="mt-5 flex justify-center">
         <LinkButton href={signedIn ? href : "/login"}>{signedIn ? action : "Giriş yap"}</LinkButton>
       </div>
@@ -695,11 +695,11 @@ function TodayWidget({
 
   return (
     <Widget title="Bugün okulda" href="/">
-      <div className="divide-y divide-slate-200">
+      <div className="divide-y divide-[var(--border)]">
         {rows.map((row) => (
           <Link key={`${row.title}-${row.meta}`} href={row.href} className="block py-3 first:pt-0 last:pb-0">
-            <span className="block text-sm font-semibold text-slate-950">{row.title}</span>
-            <span className="mt-0.5 block text-xs text-slate-500">{row.meta}</span>
+            <span className="block text-sm font-semibold text-[var(--foreground)]">{row.title}</span>
+            <span className="mt-0.5 block text-xs text-[var(--muted)]">{row.meta}</span>
           </Link>
         ))}
       </div>
@@ -709,7 +709,7 @@ function TodayWidget({
 
 function SearchWidget() {
   return (
-    <Link href="/posts" className="flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-500 transition hover:bg-slate-50">
+    <Link href="/posts" className="flex h-11 items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--muted)] transition hover:border-cyan-300/40 hover:text-[var(--foreground)]">
       <Search className="size-5" />
       Akışta ara
     </Link>
@@ -722,19 +722,19 @@ function UpcomingWidget({ events, signedIn }: { events: any[]; signedIn: boolean
   return (
     <Widget title="Yakında" href="/events">
       {upcomingEvents.length ? (
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-[var(--border)]">
           {upcomingEvents.map((event) => {
             const { day, month } = getDateParts(event.event_date);
 
             return (
               <Link key={event.id} href={`/events/${event.id}`} className="grid grid-cols-[2.7rem_1fr] gap-3 py-3 first:pt-0 last:pb-0">
-                <span className="flex size-11 flex-col items-center justify-center rounded-xl bg-slate-950 text-white">
+                <span className="flex size-11 flex-col items-center justify-center rounded-xl bg-[var(--primary)] text-[#020617]">
                   <span className="text-sm font-bold">{day}</span>
                   <span className="text-[9px] font-semibold uppercase">{month}</span>
                 </span>
                 <span className="min-w-0">
-                  <span className="block line-clamp-1 text-sm font-semibold text-slate-950">{cleanText(event.title, "Etkinlik")}</span>
-                  <span className="mt-1 block line-clamp-1 text-xs font-semibold text-slate-500">{formatTime(event.start_time)} · {cleanText(event.location, "Konum yakında")}</span>
+                  <span className="block line-clamp-1 text-sm font-semibold text-[var(--foreground)]">{cleanText(event.title, "Etkinlik")}</span>
+                  <span className="mt-1 block line-clamp-1 text-xs font-semibold text-[var(--muted)]">{formatTime(event.start_time)} · {cleanText(event.location, "Konum yakında")}</span>
                 </span>
               </Link>
             );
@@ -760,11 +760,11 @@ function TrendingWidget({ events, communities }: { events: any[]; communities: a
 
   return (
     <Widget title="Konuşulanlar" href="/posts">
-      <div className="divide-y divide-slate-200">
+      <div className="divide-y divide-[var(--border)]">
         {topics.map((topic, index) => (
           <Link key={topic.label} href={topic.href} className="block py-3 first:pt-0 last:pb-0">
-            <div className="text-xs text-slate-500">Okul · {index + 1}</div>
-            <div className="mt-0.5 line-clamp-2 text-sm font-semibold text-slate-950">#{topic.label}</div>
+            <div className="text-xs text-[var(--muted)]">Okul · {index + 1}</div>
+            <div className="mt-0.5 line-clamp-2 text-sm font-semibold text-[var(--foreground)]">#{topic.label}</div>
           </Link>
         ))}
       </div>
@@ -776,7 +776,7 @@ function CommunitiesWidget({ communities }: { communities: any[] }) {
   return (
     <Widget title="Aktif topluluklar" href="/communities">
       {communities.length ? (
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-[var(--border)]">
           {communities.slice(0, 4).map((community) => {
             const { members } = getCommunityStats(community);
             const initials = communityInitials(cleanText(community.name, "Topluluk"));
@@ -785,10 +785,10 @@ function CommunitiesWidget({ communities }: { communities: any[] }) {
               <Link key={community.id} href={`/communities/${community.slug}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <CommunityMonogram small>{initials}</CommunityMonogram>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-slate-950">{cleanText(community.name, "Topluluk")}</span>
-                  <span className="mt-0.5 block truncate text-xs font-medium text-slate-500">{members ? `${members} üye` : "Bugün aktif"}</span>
+                  <span className="block truncate text-sm font-semibold text-[var(--foreground)]">{cleanText(community.name, "Topluluk")}</span>
+                  <span className="mt-0.5 block truncate text-xs font-medium text-[var(--muted)]">{members ? `${members} üye` : "Bugün aktif"}</span>
                 </span>
-                <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">Aç</span>
+                <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-[#020617]">Aç</span>
               </Link>
             );
           })}
@@ -810,13 +810,13 @@ function FriendsWidget({
   return (
     <Widget title="Arkadaşların" href={signedIn ? "/friends" : "/login"}>
       {items.length ? (
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-[var(--border)]">
           {items.slice(0, 3).map((item) => (
             <Link key={item.title} href={item.href ?? "/friends"} className="flex gap-3 py-3 first:pt-0 last:pb-0">
               <AvatarStack friends={item.friends ?? []} />
               <span className="min-w-0">
-                <span className="block line-clamp-1 text-sm font-semibold text-slate-950">{cleanText(item.title, "Arkadaş hareketi")}</span>
-                <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-slate-500">{cleanText(item.body, "Etkinlik")}</span>
+                <span className="block line-clamp-1 text-sm font-semibold text-[var(--foreground)]">{cleanText(item.title, "Arkadaş hareketi")}</span>
+                <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-[var(--muted)]">{cleanText(item.body, "Etkinlik")}</span>
               </span>
             </Link>
           ))}
@@ -840,13 +840,13 @@ export function QuickActions({ signedIn, compact = false }: { signedIn: boolean;
   ];
 
   return (
-    <section className={cn("rounded-3xl border border-slate-200 bg-white p-3", compact && "p-2")}>
+    <section className={cn("rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-3", compact && "p-2")}>
       <div className="grid gap-1">
         {actions.map((action) => (
           <Link
             key={action.label}
             href={action.href}
-            className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+            className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-300 transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
           >
             <action.icon className="size-5" />
             {action.label}
@@ -867,10 +867,10 @@ function Widget({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <h2 className="text-base font-semibold text-slate-950">{title}</h2>
-        <Link href={href} className="text-xs font-semibold text-sky-600">Tümü</Link>
+        <h2 className="text-base font-semibold text-[var(--foreground)]">{title}</h2>
+        <Link href={href} className="text-xs font-semibold text-[var(--accent)]">Tümü</Link>
       </div>
       <div className="px-4 pb-4">{children}</div>
     </section>
@@ -890,10 +890,10 @@ function WidgetEmpty({
 }) {
   return (
     <div className="py-2">
-      <div className="text-sm text-slate-600">{title}</div>
-      {body ? <p className="mt-1 text-xs leading-5 text-slate-500">{body}</p> : null}
+      <div className="text-sm text-slate-300">{title}</div>
+      {body ? <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{body}</p> : null}
       {href && action ? (
-        <Link href={href} className="mt-3 inline-flex text-xs font-semibold text-sky-600">
+        <Link href={href} className="mt-3 inline-flex text-xs font-semibold text-[var(--accent)]">
           {action}
         </Link>
       ) : null}
@@ -914,14 +914,14 @@ export function MobileBottomNav({ signedIn }: { signedIn: boolean }) {
   ];
 
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-full border border-slate-200 bg-white/92 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.16)] backdrop-blur-xl lg:hidden">
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.16)] backdrop-blur-xl lg:hidden">
       {links.map((item) => (
         <Link
           key={item.label}
           href={item.href}
           className={cn(
             "flex min-w-0 flex-col items-center justify-center gap-1 rounded-full px-1 py-2 text-[10px] font-black transition",
-            item.active ? "bg-slate-950 text-white" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
+            item.active ? "bg-[var(--primary)] text-[#020617]" : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
           )}
         >
           <item.icon className="size-4" />
@@ -938,7 +938,7 @@ function TimelineActions({
   items: Array<{ label: string; icon: IconType; href?: string }>;
 }) {
   return (
-    <div className="mt-3 flex max-w-sm justify-between gap-3 text-xs font-medium text-slate-500">
+    <div className="mt-3 flex max-w-sm justify-between gap-3 text-xs font-medium text-[var(--muted)]">
       {items.map((action) => {
         const content = (
           <>
@@ -948,11 +948,11 @@ function TimelineActions({
         );
 
         return action.href ? (
-          <Link key={`${action.label}-${action.href}`} href={action.href} className="inline-flex items-center gap-1.5 rounded-full py-1 transition hover:text-slate-800">
+          <Link key={`${action.label}-${action.href}`} href={action.href} className="inline-flex items-center gap-1.5 rounded-full py-1 transition hover:text-[var(--foreground)]">
             {content}
           </Link>
         ) : (
-          <span key={action.label} className="inline-flex items-center gap-1.5 rounded-full py-1 transition group-hover:text-slate-700">
+          <span key={action.label} className="inline-flex items-center gap-1.5 rounded-full py-1 transition group-hover:text-[var(--foreground)]">
             {content}
           </span>
         );
@@ -983,7 +983,7 @@ function CommunityMonogram({
   small?: boolean;
 }) {
   return (
-    <span className={cn("flex shrink-0 items-center justify-center rounded-full bg-slate-950 font-black text-white", small ? "size-10 text-xs" : "size-11 text-sm")}>
+    <span className={cn("flex shrink-0 items-center justify-center rounded-full bg-[var(--primary)] font-black text-[#020617]", small ? "size-10 text-xs" : "size-11 text-sm")}>
       {children}
     </span>
   );
@@ -1002,7 +1002,7 @@ function AvatarStack({ friends, fallback = false }: { friends: FriendAttendance[
           <Avatar firstName="Okul" lastName="Akışı" size="sm" />
         </>
       ) : null}
-      <span className="absolute -right-1 -top-1 size-3 rounded-full bg-emerald-400 ring-2 ring-white" />
+      <span className="absolute -right-1 -top-1 size-3 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
     </span>
   );
 }

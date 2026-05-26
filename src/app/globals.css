@@ -105,19 +105,57 @@ html.dark .bg-white,
 html.dark .bg-white\/95,
 html.dark .bg-white\/92,
 html.dark .bg-white\/90,
+html.dark .bg-white\/88,
 html.dark .bg-white\/85,
 html.dark .bg-white\/80,
 html.dark .bg-white\/78,
+html.dark .bg-white\/75,
+html.dark .bg-white\/72,
 html.dark .bg-white\/70 {
   background-color: var(--surface) !important;
 }
 
 html.dark .bg-slate-50,
+html.dark .bg-slate-50\/80,
 html.dark .bg-slate-50\/70,
 html.dark .bg-slate-50\/60,
 html.dark .bg-slate-50\/55,
-html.dark .bg-slate-100 {
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/70 {
   background-color: var(--surface-muted) !important;
+}
+
+html.dark .bg-orange-50,
+html.dark .bg-orange-50\/60,
+html.dark .bg-orange-100 {
+  background-color: rgba(251, 146, 60, 0.12) !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-amber-100 {
+  background-color: rgba(251, 191, 36, 0.12) !important;
+}
+
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-100 {
+  background-color: rgba(52, 211, 153, 0.12) !important;
+}
+
+html.dark .bg-blue-100,
+html.dark .bg-sky-50,
+html.dark .bg-sky-100 {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+}
+
+html.dark .bg-purple-50,
+html.dark .bg-purple-100,
+html.dark .bg-violet-50,
+html.dark .bg-violet-100 {
+  background-color: rgba(168, 85, 247, 0.12) !important;
+}
+
+html.dark .bg-red-100 {
+  background-color: rgba(248, 113, 113, 0.13) !important;
 }
 
 html.dark .text-slate-950,
@@ -136,13 +174,62 @@ html.dark .text-slate-400 {
   color: #94a3b8 !important;
 }
 
+html.dark .text-orange-700,
+html.dark .text-orange-800,
+html.dark .text-orange-900 {
+  color: #fed7aa !important;
+}
+
+html.dark .text-amber-700,
+html.dark .text-amber-800,
+html.dark .text-amber-900 {
+  color: #fde68a !important;
+}
+
+html.dark .text-emerald-700,
+html.dark .text-emerald-800 {
+  color: #a7f3d0 !important;
+}
+
+html.dark .text-blue-700,
+html.dark .text-sky-600,
+html.dark .text-sky-700,
+html.dark .text-sky-800 {
+  color: #bae6fd !important;
+}
+
+html.dark .text-purple-700,
+html.dark .text-violet-600,
+html.dark .text-violet-700,
+html.dark .text-violet-800 {
+  color: #ddd6fe !important;
+}
+
+html.dark .text-red-700 {
+  color: #fecaca !important;
+}
+
 html.dark .border-slate-50,
 html.dark .border-slate-100,
 html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
 html.dark .border-white\/70,
 html.dark .border-white\/75,
-html.dark .border-white\/80 {
+html.dark .border-white\/80,
+html.dark .ring-slate-200,
+html.dark .ring-white {
   border-color: var(--border) !important;
+}
+
+html.dark .divide-slate-100 > :not(:last-child),
+html.dark .divide-slate-200 > :not(:last-child),
+html.dark .divide-slate-200\/80 > :not(:last-child) {
+  border-color: var(--border) !important;
+}
+
+html.dark .ring-slate-200,
+html.dark .ring-white {
+  --tw-ring-color: var(--border) !important;
 }
 
 html.dark input,

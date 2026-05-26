@@ -48,8 +48,8 @@ export default async function MessagesPage() {
                   <input type="hidden" name="return_to" value="/messages" />
                   <Avatar firstName={friend.first_name} lastName={friend.last_name} size="sm" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold text-slate-950">{fullName(friend)}</span>
-                    <span className="block truncate text-xs text-slate-500">{friend.tag ?? friend.username}</span>
+                    <span className="block truncate text-sm font-bold text-[var(--foreground)]">{fullName(friend)}</span>
+                    <span className="block truncate text-xs text-[var(--muted)]">{friend.tag ?? friend.username}</span>
                   </span>
                   <SubmitButton variant="secondary" pendingLabel="Açılıyor..." className="h-8 px-3">
                     Yaz
@@ -91,8 +91,8 @@ export default async function MessagesPage() {
         )}
       </TimelineSurface>
 
-      <div className="border-t border-slate-200 bg-white px-4 py-4 lg:hidden">
-        <Link href="/friends" className="text-sm font-black text-cyan-600">
+      <div className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-4 lg:hidden">
+        <Link href="/friends" className="text-sm font-black text-[var(--accent)]">
           Arkadaşlardan konuşma başlat
         </Link>
       </div>

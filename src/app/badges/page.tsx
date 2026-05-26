@@ -116,7 +116,7 @@ function BadgeTile({ badge }: { badge: BadgeCatalogItem }) {
         <span
           className={cn(
             "flex size-12 shrink-0 items-center justify-center rounded-2xl",
-            earned ? "bg-cyan-300 text-slate-950" : "bg-slate-800 text-slate-400",
+            earned ? "bg-cyan-300 text-[#020617]" : "bg-slate-800 text-slate-400",
           )}
         >
           {earned ? renderBadgeIcon(badge.icon) : <LockKeyhole className="size-5" />}

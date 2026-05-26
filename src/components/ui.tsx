@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+﻿/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
@@ -33,11 +33,11 @@ export function Button({
 }) {
   const variants = {
     primary:
-      "bg-[var(--primary)] text-slate-950 shadow-lg shadow-cyan-950/15 hover:brightness-105",
+      "bg-[var(--primary)] text-[#020617] shadow-lg shadow-cyan-950/15 hover:brightness-105",
     secondary:
-      "border border-[var(--border)] bg-[var(--surface-muted)] text-slate-900 shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
+      "border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)] shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
     danger: "bg-red-600 text-white shadow-lg shadow-red-900/15 hover:bg-red-700",
-    ghost: "text-slate-700 hover:bg-white/70 hover:text-slate-950",
+    ghost: "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
   };
 
   return (
@@ -68,10 +68,10 @@ export function LinkButton({
 }) {
   const variants = {
     primary:
-      "bg-[var(--primary)] text-slate-950 shadow-lg shadow-cyan-950/15 hover:brightness-105",
+      "bg-[var(--primary)] text-[#020617] shadow-lg shadow-cyan-950/15 hover:brightness-105",
     secondary:
-      "border border-[var(--border)] bg-[var(--surface-muted)] text-slate-900 shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
-    ghost: "text-slate-700 hover:bg-white/70 hover:text-slate-950",
+      "border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)] shadow-sm hover:border-cyan-300/50 hover:bg-cyan-400/10",
+    ghost: "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
   };
 
   return (
@@ -96,13 +96,13 @@ export function Badge({
   tone?: "slate" | "green" | "amber" | "red" | "blue" | "orange" | "purple";
 }) {
   const tones = {
-    slate: "bg-slate-100 text-slate-700",
-    green: "bg-emerald-100 text-emerald-700",
-    amber: "bg-amber-100 text-amber-800",
-    red: "bg-red-100 text-red-700",
-    blue: "bg-blue-100 text-blue-700",
-    orange: "bg-orange-100 text-orange-700",
-    purple: "bg-purple-100 text-purple-700",
+    slate: "border border-slate-400/20 bg-slate-400/10 text-slate-200",
+    green: "border border-emerald-400/20 bg-emerald-400/10 text-emerald-200",
+    amber: "border border-amber-400/20 bg-amber-400/10 text-amber-200",
+    red: "border border-red-400/20 bg-red-400/10 text-red-200",
+    blue: "border border-blue-400/20 bg-blue-400/10 text-blue-200",
+    orange: "border border-orange-400/20 bg-orange-400/10 text-orange-200",
+    purple: "border border-purple-400/20 bg-purple-400/10 text-purple-200",
   };
 
   return (
@@ -128,10 +128,10 @@ export function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-bold text-slate-700">
+    <label className="grid gap-2 text-sm font-bold text-slate-300">
       {label}
       <input
-        className="h-11 rounded-2xl border border-white/80 bg-white/85 px-4 text-slate-950 outline-none shadow-inner shadow-slate-950/[0.02] transition focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
+        className="h-11 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-400/10"
         name={name}
         type={type}
         defaultValue={defaultValue}
@@ -158,10 +158,10 @@ export function TextArea({
   rows?: number;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-bold text-slate-700">
+    <label className="grid gap-2 text-sm font-bold text-slate-300">
       {label}
       <textarea
-        className="rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-slate-950 outline-none shadow-inner shadow-slate-950/[0.02] transition focus:border-orange-300 focus:ring-4 focus:ring-orange-100"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-[var(--foreground)] outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-400/10"
         name={name}
         defaultValue={defaultValue}
         required={required}
@@ -184,13 +184,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-dashed border-orange-200/80 bg-white/72 p-7 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur">
+    <div className="relative overflow-hidden rounded-3xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] p-7 text-center backdrop-blur">
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-emerald-300" />
-      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-orange-50 text-[var(--primary)] shadow-inner">
+      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)]">
         {icon ?? <Sparkles className="size-5" />}
       </div>
-      <h3 className="text-lg font-black text-slate-950">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">{body}</p>
+      <h3 className="text-lg font-black text-[var(--foreground)]">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">{body}</p>
       {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
     </div>
   );
@@ -218,7 +218,7 @@ export function Avatar({
       <img
         src={src}
         alt=""
-        className={cn("rounded-full object-cover ring-2 ring-white", sizes[size])}
+        className={cn("rounded-full object-cover ring-2 ring-slate-950", sizes[size])}
       />
     );
   }
@@ -226,7 +226,7 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full bg-slate-950 font-black text-white ring-2 ring-white",
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--primary)] font-black text-[#020617] ring-2 ring-slate-950",
         sizes[size],
       )}
     >
@@ -243,9 +243,9 @@ export function Stat({
   value: string | number;
 }) {
   return (
-    <div className="rounded-3xl border border-white/75 bg-white/78 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.07)] backdrop-blur">
-      <div className="text-3xl font-black text-slate-950">{value}</div>
-      <div className="mt-1 text-sm font-semibold text-slate-600">{label}</div>
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 backdrop-blur">
+      <div className="text-3xl font-black text-[var(--foreground)]">{value}</div>
+      <div className="mt-1 text-sm font-semibold text-[var(--muted)]">{label}</div>
     </div>
   );
 }

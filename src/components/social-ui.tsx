@@ -18,13 +18,13 @@ export function SocialPage({
     <div
       className={cn(
         "mx-auto grid w-full max-w-6xl grid-cols-1 lg:grid-cols-[minmax(0,720px)_minmax(280px,1fr)]",
-        "lg:min-h-screen lg:border-x lg:border-slate-200",
+        "lg:min-h-screen lg:border-x lg:border-[var(--border)]",
         className,
       )}
     >
-      <section className="min-w-0 border-slate-200 lg:border-r">{children}</section>
+      <section className="min-w-0 border-[var(--border)] lg:border-r">{children}</section>
       {rail ? (
-        <aside className="hidden min-w-0 bg-slate-50/55 px-5 py-5 lg:block">
+        <aside className="hidden min-w-0 bg-[var(--surface-muted)] px-5 py-5 lg:block">
           <div className="sticky top-5 space-y-4">{rail}</div>
         </aside>
       ) : null}
@@ -46,17 +46,17 @@ export function StickyPageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="sticky top-16 z-20 border-b border-slate-200 bg-white/92 px-4 py-3 backdrop-blur-xl lg:top-0">
+    <header className="sticky top-16 z-20 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3 backdrop-blur-xl lg:top-0">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           {eyebrow ? (
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
               {eyebrow}
             </div>
           ) : null}
-          <h1 className="truncate text-xl font-black text-slate-950">{title}</h1>
+          <h1 className="truncate text-xl font-black text-[var(--foreground)]">{title}</h1>
           {subtitle ? (
-            <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">{subtitle}</p>
+            <p className="mt-1 max-w-xl text-sm leading-5 text-[var(--muted)]">{subtitle}</p>
           ) : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -78,13 +78,13 @@ export function PageTabs({
           key={`${tab.label}-${tab.href}`}
           href={tab.href}
           className={cn(
-            "relative flex h-10 shrink-0 items-center px-3 text-sm font-semibold text-slate-500 transition hover:text-slate-950",
-            tab.active && "font-black text-slate-950",
+            "relative flex h-10 shrink-0 items-center px-3 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--foreground)]",
+            tab.active && "font-black text-[var(--foreground)]",
           )}
         >
           {tab.label}
           {tab.active ? (
-            <span className="absolute inset-x-2 bottom-0 h-1 rounded-full bg-slate-950" />
+             <span className="absolute inset-x-2 bottom-0 h-1 rounded-full bg-[var(--accent)]" />
           ) : null}
         </Link>
       ))}
@@ -106,8 +106,8 @@ export function FilterChips({
           className={cn(
             "inline-flex h-9 shrink-0 items-center rounded-full border px-3 text-xs font-black transition",
             chip.active
-              ? "border-slate-950 bg-slate-950 text-white"
-              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50",
+              ? "border-cyan-300/50 bg-cyan-400/12 text-cyan-100"
+              : "border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:border-cyan-300/40 hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
           )}
         >
           {chip.label}
@@ -127,7 +127,7 @@ export function SearchBox({
   placeholder: string;
 }) {
   return (
-    <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm shadow-sm">
+    <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm">
       <Search className="size-4 shrink-0 text-slate-400" />
       <input
         name={name}
@@ -147,7 +147,7 @@ export function TimelineSurface({
   className?: string;
 }) {
   return (
-    <div className={cn("divide-y divide-slate-100 bg-white", className)}>
+    <div className={cn("divide-y divide-[var(--border)] bg-[var(--surface)]", className)}>
       {children}
     </div>
   );
@@ -181,13 +181,13 @@ export function TimelineRow({
       <div className="shrink-0">{avatar ?? icon}</div>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="min-w-0 truncate text-sm font-black text-slate-950">{title}</span>
-          {meta ? <span className="text-xs font-medium text-slate-500">{meta}</span> : null}
+          <span className="min-w-0 truncate text-sm font-black text-[var(--foreground)]">{title}</span>
+          {meta ? <span className="text-xs font-medium text-[var(--muted)]">{meta}</span> : null}
           {badge}
         </div>
-        {body ? <div className="mt-1 text-sm leading-6 text-slate-700">{body}</div> : null}
+        {body ? <div className="mt-1 text-sm leading-6 text-slate-300">{body}</div> : null}
         {children ? <div className="mt-3">{children}</div> : null}
-        {actions ? <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-500">{actions}</div> : null}
+        {actions ? <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[var(--muted)]">{actions}</div> : null}
       </div>
     </>
   );
@@ -197,7 +197,7 @@ export function TimelineRow({
       <Link
         href={href}
         className={cn(
-          "flex gap-3 px-4 transition hover:bg-slate-50",
+          "flex gap-3 px-4 transition hover:bg-[var(--surface-muted)]",
           compact ? "py-3" : "py-4",
         )}
       >
@@ -225,16 +225,16 @@ export function RailSection({
   actionLabel?: string;
 }) {
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
-        <h2 className="text-base font-black text-slate-950">{title}</h2>
+    <section className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+        <h2 className="text-base font-black text-[var(--foreground)]">{title}</h2>
         {actionHref ? (
-          <Link href={actionHref} className="text-xs font-black text-sky-600 hover:text-slate-950">
+          <Link href={actionHref} className="text-xs font-black text-[var(--accent)] hover:text-[var(--foreground)]">
             {actionLabel}
           </Link>
         ) : null}
       </div>
-      <div className="divide-y divide-slate-100">{children}</div>
+      <div className="divide-y divide-[var(--border)]">{children}</div>
     </section>
   );
 }
@@ -253,13 +253,13 @@ export function RailItem({
   const inner = (
     <>
       {Icon ? (
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted)]">
           <Icon className="size-4" />
         </span>
       ) : null}
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-slate-950">{title}</span>
-        {meta ? <span className="mt-0.5 block truncate text-xs text-slate-500">{meta}</span> : null}
+        <span className="block truncate text-sm font-bold text-[var(--foreground)]">{title}</span>
+        {meta ? <span className="mt-0.5 block truncate text-xs text-[var(--muted)]">{meta}</span> : null}
       </span>
       {href ? <ArrowRight className="size-4 shrink-0 text-slate-300" /> : null}
     </>
@@ -267,7 +267,7 @@ export function RailItem({
 
   if (href) {
     return (
-      <Link href={href} className="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50">
+      <Link href={href} className="flex items-center gap-3 px-4 py-3 transition hover:bg-[var(--surface-muted)]">
         {inner}
       </Link>
     );
@@ -287,8 +287,8 @@ export function InlineEmpty({
 }) {
   return (
     <div className="px-4 py-8 text-center">
-      <h3 className="text-base font-black text-slate-950">{title}</h3>
-      {body ? <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-slate-500">{body}</p> : null}
+      <h3 className="text-base font-black text-[var(--foreground)]">{title}</h3>
+      {body ? <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[var(--muted)]">{body}</p> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   );
@@ -298,7 +298,7 @@ export function DateBlock({ date }: { date: string }) {
   const parsed = new Date(`${date}T00:00:00`);
 
   return (
-    <span className="flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-slate-950 text-white">
+    <span className="flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[var(--primary)] text-[#020617]">
       <span className="text-lg font-black leading-none">{parsed.getDate()}</span>
       <span className="mt-1 text-[10px] font-black uppercase">
         {parsed.toLocaleDateString("tr-TR", { month: "short" })}
@@ -315,13 +315,13 @@ export function SocialBadge({
   tone?: "slate" | "green" | "amber" | "red" | "blue" | "orange" | "purple";
 }) {
   const tones = {
-    slate: "bg-slate-100 text-slate-700",
-    green: "bg-emerald-50 text-emerald-700",
-    amber: "bg-amber-50 text-amber-800",
-    red: "bg-red-50 text-red-700",
-    blue: "bg-blue-50 text-blue-700",
-    orange: "bg-orange-50 text-orange-700",
-    purple: "bg-purple-50 text-purple-700",
+    slate: "border border-slate-400/20 bg-slate-400/10 text-slate-200",
+    green: "border border-emerald-400/20 bg-emerald-400/10 text-emerald-200",
+    amber: "border border-amber-400/20 bg-amber-400/10 text-amber-200",
+    red: "border border-red-400/20 bg-red-400/10 text-red-200",
+    blue: "border border-blue-400/20 bg-blue-400/10 text-blue-200",
+    orange: "border border-orange-400/20 bg-orange-400/10 text-orange-200",
+    purple: "border border-purple-400/20 bg-purple-400/10 text-purple-200",
   };
 
   return (
@@ -330,4 +330,3 @@ export function SocialBadge({
     </span>
   );
 }
-

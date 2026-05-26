@@ -53,7 +53,7 @@ export default async function ConversationPage({
         action={
           <Link
             href="/messages"
-            className="inline-flex size-10 items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100"
+            className="inline-flex size-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
             aria-label="Mesajlara dön"
           >
             <ArrowLeft className="size-5" />
@@ -61,7 +61,7 @@ export default async function ConversationPage({
         }
       />
 
-      <section className="flex min-h-[68vh] flex-col bg-white">
+      <section className="flex min-h-[68vh] flex-col bg-[var(--surface)]">
         <div className="flex-1 space-y-3 px-4 py-5">
           {conversation.messages.length ? (
             conversation.messages.map((message) => {
@@ -83,7 +83,7 @@ export default async function ConversationPage({
                     <div
                       className={cn(
                         "rounded-3xl px-4 py-2 text-sm leading-6",
-                        own ? "bg-cyan-400 text-slate-950" : "bg-slate-100 text-slate-900",
+                        own ? "bg-cyan-400 text-[#020617]" : "border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]",
                       )}
                     >
                       {message.deleted_at ? "Bu mesaj silindi." : message.content}
@@ -114,7 +114,7 @@ export default async function ConversationPage({
           )}
         </div>
 
-        <form action={sendMessageAction} className="sticky bottom-0 border-t border-slate-200 bg-slate-50/90 p-3 backdrop-blur">
+        <form action={sendMessageAction} className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--surface)] p-3 backdrop-blur">
           <input type="hidden" name="conversation_id" value={conversation.id} />
           <div className="flex items-end gap-2">
             <div className="min-w-0 flex-1">

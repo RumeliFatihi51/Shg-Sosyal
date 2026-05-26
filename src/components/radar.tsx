@@ -230,7 +230,7 @@ export function CampusBoardPanel({
               Bugün
             </div>
             {featured?.href ? (
-              <LinkButton href={featured.href} className="bg-white text-slate-950 hover:bg-orange-50">
+              <LinkButton href={featured.href} className="bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-muted)]">
                 İncele
               </LinkButton>
             ) : null}

@@ -119,7 +119,7 @@ function CommunityRows({ rows }: { rows: LeaderboardCommunityRow[] }) {
   return rows.map((row) => (
     <TimelineRow
       key={row.community_id}
-      icon={<span className="flex size-11 items-center justify-center rounded-full bg-cyan-400 text-sm font-black text-slate-950">{row.name.slice(0, 2).toLocaleUpperCase("tr-TR")}</span>}
+      icon={<span className="flex size-11 items-center justify-center rounded-full bg-cyan-400 text-sm font-black text-[#020617]">{row.name.slice(0, 2).toLocaleUpperCase("tr-TR")}</span>}
       title={row.name}
       meta={`${row.member_count ?? 0} üye · ${row.post_count ?? 0} gönderi`}
       badge={<RankBadge rank={row.rank} />}
@@ -137,7 +137,7 @@ function ClassRows({ rows }: { rows: LeaderboardClassRow[] }) {
   return rows.map((row) => (
     <TimelineRow
       key={row.class_name ?? row.rank}
-      icon={<span className="flex size-11 items-center justify-center rounded-full bg-emerald-400 text-slate-950"><School className="size-5" /></span>}
+      icon={<span className="flex size-11 items-center justify-center rounded-full bg-emerald-400 text-[#020617]"><School className="size-5" /></span>}
       title={row.class_name ?? "Sınıf belirtilmemiş"}
       meta={`${row.user_count} öğrenci`}
       badge={<RankBadge rank={row.rank} />}
