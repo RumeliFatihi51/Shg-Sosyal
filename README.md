@@ -97,6 +97,12 @@ Supabase RLS smoke test SQL:
 docs/rls-smoke-test.sql
 ```
 
+PWA kurulum ve push notification checklist:
+
+```txt
+docs/pwa-checklist.md
+```
+
 ## Cron Bildirimleri
 
 Next.js route:

@@ -1,6 +1,7 @@
 import { getUnreadNotificationCount } from "@/lib/data";
 import { siteConfig } from "@/lib/env";
 import { getCurrentProfile } from "@/lib/session";
+import { PWAProvider } from "@/components/pwa/pwa-provider";
 import { ShellFrame } from "@/components/shell-frame";
 import { Toast } from "@/components/toast";
 
@@ -19,6 +20,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     >
       {children}
       <Toast />
+      <PWAProvider signedIn={Boolean(profile)} />
     </ShellFrame>
   );
 }

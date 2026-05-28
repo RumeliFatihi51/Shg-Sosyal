@@ -8,6 +8,7 @@ import { hasSupabaseAdminConfig } from "@/lib/env";
 import { getFileExtension } from "@/lib/utils";
 import { requireProfile } from "@/lib/session";
 import type { NotificationType } from "@/lib/types";
+import { sendWebPushToUser } from "@/features/push/server";
 
 export type ActionState = {
   ok: boolean;
@@ -134,6 +135,12 @@ export async function notifyUser(input: {
         .eq("id", existing.id);
 
       if (!updateError) {
+        await sendWebPushToUser(input.userId, {
+          title: input.title,
+          body: input.body,
+          url: input.href,
+          tag: input.digestKey,
+        });
         return;
       }
 
@@ -153,6 +160,13 @@ export async function notifyUser(input: {
           digestKey: input.digestKey,
           error: legacyUpdateError.message,
         });
+      } else {
+        await sendWebPushToUser(input.userId, {
+          title: input.title,
+          body: input.body,
+          url: input.href,
+          tag: input.digestKey,
+        });
       }
       return;
     }
@@ -168,6 +182,12 @@ export async function notifyUser(input: {
     });
 
     if (!insertError) {
+      await sendWebPushToUser(input.userId, {
+        title: input.title,
+        body: input.body,
+        url: input.href,
+        tag: input.digestKey,
+      });
       return;
     }
 
@@ -188,6 +208,13 @@ export async function notifyUser(input: {
         insertError: insertError.message,
         legacyInsertError: legacyInsertError.message,
       });
+    } else {
+      await sendWebPushToUser(input.userId, {
+        title: input.title,
+        body: input.body,
+        url: input.href,
+        tag: input.digestKey,
+      });
     }
     return;
   }
@@ -203,6 +230,12 @@ export async function notifyUser(input: {
   });
 
   if (!error) {
+    await sendWebPushToUser(input.userId, {
+      title: input.title,
+      body: input.body,
+      url: input.href,
+      tag: input.digestKey ?? `${input.type}:${input.userId}:${now}`,
+    });
     return;
   }
 
@@ -216,6 +249,13 @@ export async function notifyUser(input: {
       userId: input.userId,
       type: input.type,
       error: legacyError.message,
+    });
+  } else {
+    await sendWebPushToUser(input.userId, {
+      title: input.title,
+      body: input.body,
+      url: input.href,
+      tag: input.digestKey ?? `${input.type}:${input.userId}:${now}`,
     });
   }
 }

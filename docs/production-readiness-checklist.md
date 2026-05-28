@@ -12,6 +12,7 @@ supabase/migrations/20260526103000_engagement_rewards_calendar_core.sql
 supabase/migrations/20260526125500_fix_dm_conversation_ambiguity.sql
 supabase/migrations/20260528153000_production_readiness_checks.sql
 supabase/migrations/20260528154500_notification_digest_hardening.sql
+supabase/migrations/20260528161000_pwa_push_subscriptions.sql
 ```
 
 Admin panelinde sağdaki `Production` alanı eksik migration veya kritik tablo varsa uyarı gösterir.
@@ -39,6 +40,7 @@ Tüm `critical` kayıtlar `ok = true` dönmeden canlı test tamamlanmış sayıl
 - Supabase Auth redirect URL listesine canlı Netlify domaini eklenmeli.
 - Supabase Auth email confirmation açık olmalı.
 - Service role key sadece server env'de kalmalı; client bundle veya public env içinde olmamalı.
+- PWA push için `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ve `VAPID_SUBJECT` Netlify env içinde tanımlı olmalı.
 
 ## 3. Kritik manuel akışlar
 

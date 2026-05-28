@@ -151,6 +151,27 @@ select
   '20260528154500_notification_digest_hardening.sql dosyasini calistir.'
 union all
 select
+  'push_subscriptions',
+  'PWA push abonelikleri',
+  (to_regclass('public.push_subscriptions') is not null),
+  'warning',
+  '20260528161000_pwa_push_subscriptions.sql dosyasini calistir.'
+union all
+select
+  'push_subscriptions_rls',
+  'PWA push abonelikleri RLS',
+  exists (
+    select 1
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname = 'push_subscriptions'
+      and c.relrowsecurity
+  ),
+  'warning',
+  '20260528161000_pwa_push_subscriptions.sql dosyasini calistir.'
+union all
+select
   'data_api_grants',
   'authenticated Data API grantleri',
   case

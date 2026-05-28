@@ -17,6 +17,19 @@ export function hasSupabaseAdminConfig() {
   );
 }
 
+export function hasWebPushConfig() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
+  );
+}
+
+export function getVapidSubject() {
+  return (
+    process.env.VAPID_SUBJECT ||
+    (process.env.ADMIN_EMAIL ? `mailto:${process.env.ADMIN_EMAIL}` : "mailto:admin@example.com")
+  );
+}
+
 export function getSupabaseUrl() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
