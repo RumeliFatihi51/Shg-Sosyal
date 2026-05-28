@@ -5,6 +5,14 @@ import { getAdminUsers } from "@/features/users/queries";
 
 export { getAdminUsers };
 
+export type ProductionReadinessCheck = {
+  key: string;
+  label: string;
+  ok: boolean;
+  severity: "critical" | "warning";
+  fix_hint: string | null;
+};
+
 export async function getAdminStats(today: string) {
   const admin = createAdminClient();
   const [userStats, communityStats, eventStats, postStats] = await Promise.all([
@@ -24,4 +32,27 @@ export async function getAdminStats(today: string) {
     activeEvents: eventStats.count ?? 0,
     posts: postStats.count ?? 0,
   };
+}
+
+export async function getProductionReadinessChecks(): Promise<ProductionReadinessCheck[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("production_readiness_checks")
+    .select("key,label,ok,severity,fix_hint")
+    .order("severity", { ascending: true })
+    .order("key", { ascending: true });
+
+  if (error) {
+    return [
+      {
+        key: "readiness_view_missing",
+        label: "Production kontrol view okunamıyor",
+        ok: false,
+        severity: "warning",
+        fix_hint: "20260528153000_production_readiness_checks.sql migration dosyasını Supabase SQL Editor'da çalıştır.",
+      },
+    ];
+  }
+
+  return (data ?? []) as ProductionReadinessCheck[];
 }

@@ -134,8 +134,13 @@ export type Notification = {
   body: string;
   href: string | null;
   digest_key?: string | null;
+  actor_id?: string | null;
+  target_type?: string | null;
+  target_id?: string | null;
   read_at: string | null;
   created_at: string;
+  last_seen_at?: string | null;
+  occurrence_count?: number | null;
 };
 
 export type FriendAttendance = {

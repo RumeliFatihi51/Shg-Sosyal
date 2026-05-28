@@ -85,6 +85,18 @@ Manuel test ve RLS kontrol listesi:
 docs/manual-test-checklist.md
 ```
 
+Production checklist:
+
+```txt
+docs/production-readiness-checklist.md
+```
+
+Supabase RLS smoke test SQL:
+
+```txt
+docs/rls-smoke-test.sql
+```
+
 ## Cron Bildirimleri
 
 Next.js route:

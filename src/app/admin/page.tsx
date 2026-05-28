@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BarChart3, Flag, Megaphone, ShieldCheck, UsersRound } from "lucide-react";
+import { AlertTriangle, BarChart3, CheckCircle2, Flag, Megaphone, ShieldCheck, UsersRound } from "lucide-react";
 import {
   createAnnouncementAction,
   createPollAction,
@@ -489,6 +489,8 @@ function AdminRail({
   canChangeRoles: boolean;
   canModerate: boolean;
 }) {
+  const failedChecks = data.productionChecks.filter((check) => !check.ok);
+
   return (
     <>
       <RailSection title="Durum">
@@ -511,6 +513,32 @@ function AdminRail({
           icon={ShieldCheck}
         />
         <RailItem title="Duyuru / Anket" meta="Hızlı yayınlama" icon={Megaphone} href="/admin?tab=content" />
+      </RailSection>
+
+      <RailSection title="Production">
+        {data.productionChecks.length ? (
+          <>
+            <RailItem
+              title={failedChecks.length ? `${failedChecks.length} kontrol eksik` : "Canlı DB hazır"}
+              meta={failedChecks.length ? "Migration durumunu kontrol et" : "Çekirdek tablolar tamam"}
+              icon={failedChecks.length ? AlertTriangle : CheckCircle2}
+            />
+            {failedChecks.slice(0, 4).map((check) => (
+              <RailItem
+                key={check.key}
+                title={check.label}
+                meta={check.fix_hint ?? "Migration kontrolü gerekli"}
+                icon={AlertTriangle}
+              />
+            ))}
+          </>
+        ) : (
+          <RailItem
+            title="Kontrol bekliyor"
+            meta="Production readiness migration çalışınca burada görünür"
+            icon={AlertTriangle}
+          />
+        )}
       </RailSection>
     </>
   );

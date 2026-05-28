@@ -87,23 +87,30 @@ export default async function NotificationsPage({
 
 function NotificationRow({ notification }: { notification: Notification }) {
   const unread = !notification.read_at;
+  const occurrenceCount = notification.occurrence_count ?? 1;
+  const seenAt = notification.last_seen_at ?? notification.created_at;
 
   return (
     <TimelineRow
       icon={
-        <span className={`relative flex size-9 items-center justify-center rounded-full ${unread ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-slate-500"}`}>
+        <span className={`relative flex size-9 items-center justify-center rounded-full border border-[var(--border)] ${unread ? "bg-blue-400/12 text-blue-200" : "bg-[var(--surface-muted)] text-[var(--muted)]"}`}>
           {unread ? <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-blue-600" /> : null}
           <NotificationGlyph type={notification.type} />
         </span>
       }
       title={notification.title}
-      meta={`· ${formatRelative(notification.created_at)}`}
-      badge={unread ? <SocialBadge tone="blue">Yeni</SocialBadge> : null}
+      meta={`· ${formatRelative(seenAt)}`}
+      badge={
+        <>
+          {unread ? <SocialBadge tone="blue">Yeni</SocialBadge> : null}
+          {occurrenceCount > 1 ? <SocialBadge tone="slate">{occurrenceCount} kez</SocialBadge> : null}
+        </>
+      }
       body={notification.body}
       actions={
         <>
           {notification.href ? (
-            <Link href={notification.href} className="font-black text-slate-950 hover:text-orange-700">
+            <Link href={notification.href} className="font-black text-[var(--foreground)] hover:text-[var(--accent)]">
               Aç
             </Link>
           ) : null}
@@ -111,7 +118,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
             <form action={markNotificationReadAction}>
               <input type="hidden" name="notification_id" value={notification.id} />
               <input type="hidden" name="href" value="/notifications" />
-              <button type="submit" className="hover:text-slate-950">Okundu</button>
+              <button type="submit" className="hover:text-[var(--foreground)]">Okundu</button>
             </form>
           ) : null}
         </>

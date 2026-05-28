@@ -88,12 +88,16 @@ export async function notifyUser(input: {
   body: string;
   href?: string | null;
   digestKey?: string | null;
+  actorId?: string | null;
+  targetType?: string | null;
+  targetId?: string | null;
 }) {
   if (!hasSupabaseAdminConfig()) {
     return;
   }
 
   const admin = createAdminClient();
+  const now = new Date().toISOString();
   const payload = {
     user_id: input.userId,
     type: input.type,
@@ -105,13 +109,115 @@ export async function notifyUser(input: {
   };
 
   if (input.digestKey) {
-    await admin.from("notifications").upsert(payload, {
-      onConflict: "user_id,digest_key",
+    const { data: existing, error: lookupError } = await admin
+      .from("notifications")
+      .select("id,occurrence_count")
+      .eq("user_id", input.userId)
+      .eq("digest_key", input.digestKey)
+      .maybeSingle();
+
+    if (!lookupError && existing?.id) {
+      const { error: updateError } = await admin
+        .from("notifications")
+        .update({
+          title: input.title,
+          body: input.body,
+          href: input.href ?? null,
+          actor_id: input.actorId ?? null,
+          target_type: input.targetType ?? null,
+          target_id: input.targetId ?? null,
+          read_at: null,
+          created_at: now,
+          last_seen_at: now,
+          occurrence_count: Math.max(Number(existing.occurrence_count ?? 1), 1) + 1,
+        })
+        .eq("id", existing.id);
+
+      if (!updateError) {
+        return;
+      }
+
+      const { error: legacyUpdateError } = await admin
+        .from("notifications")
+        .update({
+          title: input.title,
+          body: input.body,
+          href: input.href ?? null,
+          read_at: null,
+          created_at: now,
+        })
+        .eq("id", existing.id);
+
+      if (legacyUpdateError) {
+        console.error("Notification digest could not be updated", {
+          digestKey: input.digestKey,
+          error: legacyUpdateError.message,
+        });
+      }
+      return;
+    }
+
+    const { error: insertError } = await admin.from("notifications").insert({
+      ...payload,
+      actor_id: input.actorId ?? null,
+      target_type: input.targetType ?? null,
+      target_id: input.targetId ?? null,
+      created_at: now,
+      last_seen_at: now,
+      occurrence_count: 1,
     });
+
+    if (!insertError) {
+      return;
+    }
+
+    const { error: legacyInsertError } = await admin.from("notifications").upsert(
+      {
+        ...payload,
+        created_at: now,
+      },
+      {
+        onConflict: "user_id,digest_key",
+      },
+    );
+
+    if (legacyInsertError) {
+      console.error("Notification digest could not be written", {
+        digestKey: input.digestKey,
+        lookupError: lookupError?.message,
+        insertError: insertError.message,
+        legacyInsertError: legacyInsertError.message,
+      });
+    }
     return;
   }
 
-  await admin.from("notifications").insert(payload);
+  const { error } = await admin.from("notifications").insert({
+    ...payload,
+    actor_id: input.actorId ?? null,
+    target_type: input.targetType ?? null,
+    target_id: input.targetId ?? null,
+    created_at: now,
+    last_seen_at: now,
+    occurrence_count: 1,
+  });
+
+  if (!error) {
+    return;
+  }
+
+  const { error: legacyError } = await admin.from("notifications").insert({
+    ...payload,
+    created_at: now,
+  });
+
+  if (legacyError) {
+    console.error("Notification could not be written", {
+      userId: input.userId,
+      type: input.type,
+      error: legacyError.message,
+    });
+  }
 }
 
 export async function auditLog(input: {
@@ -126,13 +232,21 @@ export async function auditLog(input: {
   }
 
   const admin = createAdminClient();
-  await admin.from("audit_logs").insert({
+  const { error } = await admin.from("audit_logs").insert({
     actor_id: input.actorId,
     action: input.action,
     target_type: input.targetType,
     target_id: input.targetId ?? null,
     metadata: input.metadata ?? {},
   });
+
+  if (error) {
+    console.error("Audit log could not be written", {
+      action: input.action,
+      targetType: input.targetType,
+      error: error.message,
+    });
+  }
 }
 
 export async function refresh(paths: string[]) {

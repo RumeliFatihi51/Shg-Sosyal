@@ -329,7 +329,10 @@ export async function markReportReviewedAction(formData: FormData) {
   });
 
   if (actionError) {
-    redirectWithMessage("/admin", `Moderasyon geçmişi kaydedilemedi: ${actionError.message}`);
+    console.error("Moderasyon geçmişi kaydedilemedi", {
+      reportId,
+      error: actionError.message,
+    });
   }
 
   await auditLog({

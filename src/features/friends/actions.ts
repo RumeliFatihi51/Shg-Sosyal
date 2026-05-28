@@ -69,6 +69,9 @@ export async function sendFriendRequestAction(formData: FormData) {
     body: `${fullName(profile)} sana arkadaşlık isteği gönderdi.`,
     href: `/profile/${profile.id}`,
     digestKey: `friend-request:${profile.id}:${receiverId}`,
+    actorId: profile.id,
+    targetType: "profile",
+    targetId: profile.id,
   });
 
   revalidatePath("/friends");
@@ -123,6 +126,9 @@ async function respondFriendRequest(
         body: `${fullName(profile)} arkadaşlık isteğini kabul etti.`,
         href: `/profile/${profile.id}`,
         digestKey: `friend-accept:${friendshipId}`,
+        actorId: profile.id,
+        targetType: "profile",
+        targetId: profile.id,
       }),
       awardPoints({
         userId: profile.id,

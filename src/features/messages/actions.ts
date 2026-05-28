@@ -77,6 +77,9 @@ export async function sendMessageAction(formData: FormData) {
         body: `${fullName(profile)} sana mesaj gönderdi.`,
         href: `/messages/${parsed.data.conversation_id}`,
         digestKey: `dm:${parsed.data.conversation_id}:${recipient.user_id}`,
+        actorId: profile.id,
+        targetType: "conversation",
+        targetId: parsed.data.conversation_id,
       }),
     ),
   );

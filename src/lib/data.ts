@@ -6,7 +6,7 @@ import { hasSupabaseAdminConfig, hasSupabaseConfig } from "@/lib/env";
 import { getCurrentProfile, requireProfile, requireRole } from "@/lib/session";
 import type { Announcement, Community, Event, FriendAttendance, Notification, Poll, Post, Profile } from "@/lib/types";
 import type { EventListItem, ParticipantRow, PostListItem } from "@/lib/view-types";
-import { getAdminStats, getAdminUsers } from "@/features/admin/queries";
+import { getAdminStats, getAdminUsers, getProductionReadinessChecks } from "@/features/admin/queries";
 import { getFriendsData as getFriendsFeatureData } from "@/features/friends/queries";
 
 function todayISO() {
@@ -841,6 +841,7 @@ export async function getAdminData(filters: {
       approvedCommunities: [],
       suspendedCommunities: [],
       auditLogs: [],
+      productionChecks: [],
       stats: {
         users: 0,
         communities: 0,
@@ -878,6 +879,7 @@ export async function getAdminData(filters: {
     approvedCommunities,
     suspendedCommunities,
     auditLogs,
+    productionChecks,
     usersResult,
     stats,
   ] = await Promise.all([
@@ -904,6 +906,7 @@ export async function getAdminData(filters: {
       .select("*, actor:profiles!audit_logs_actor_id_fkey(first_name,last_name)")
       .order("created_at", { ascending: false })
       .limit(20),
+    getProductionReadinessChecks(),
     getAdminUsers(filters.users ?? {}),
     getAdminStats(today),
   ]);
@@ -921,6 +924,7 @@ export async function getAdminData(filters: {
     approvedCommunities: approvedCommunities.data ?? [],
     suspendedCommunities: suspendedCommunities.data ?? [],
     auditLogs: auditLogs.data ?? [],
+    productionChecks,
     stats: {
       users: stats.users,
       communities: stats.communities,
