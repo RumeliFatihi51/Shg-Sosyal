@@ -1,0 +1,51 @@
+import '../models/badge_model.dart';
+
+final mockBadges = <BadgeModel>[
+  BadgeModel(
+    id: 'b1',
+    code: 'first_step',
+    name: 'İlk Adım',
+    description: 'Profilini tamamladın.',
+    icon: 'sparkles',
+    category: 'Katılım',
+    isEarned: true,
+    earnedAt: DateTime.now().subtract(const Duration(days: 7)),
+  ),
+  BadgeModel(
+    id: 'b2',
+    code: 'first_join',
+    name: 'İlk Katılım',
+    description: 'İlk etkinliğine katıldın.',
+    icon: 'calendar',
+    category: 'Katılım',
+    isEarned: true,
+    earnedAt: DateTime.now().subtract(const Duration(days: 3)),
+  ),
+  const BadgeModel(
+    id: 'b3',
+    code: 'event_hunter',
+    name: 'Etkinlik Avcısı',
+    description: '10 etkinliğe katıl.',
+    icon: 'target',
+    category: 'Başarı',
+    isEarned: false,
+  ),
+  const BadgeModel(
+    id: 'b4',
+    code: 'community_founder',
+    name: 'Topluluk Kurucusu',
+    description: 'İlk topluluğunu onaylat.',
+    icon: 'users',
+    category: 'Topluluk',
+    isEarned: false,
+  ),
+  const BadgeModel(
+    id: 'b5',
+    code: 'active_commenter',
+    name: 'Aktif Yorumcu',
+    description: '10 yorum paylaş.',
+    icon: 'message',
+    category: 'Sosyal',
+    isEarned: false,
+  ),
+];
