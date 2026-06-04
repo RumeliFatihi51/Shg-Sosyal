@@ -35,7 +35,7 @@ class BadgesScreen extends ConsumerWidget {
                 color: badge.isEarned ? AppColors.surfaceElevated : AppColors.surface,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: badge.isEarned ? AppColors.primary.withOpacity(0.45) : AppColors.border,
+                  color: badge.isEarned ? AppColors.primary.withValues(alpha: 0.45) : AppColors.border,
                 ),
               ),
               child: Column(

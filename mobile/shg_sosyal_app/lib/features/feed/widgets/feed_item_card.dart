@@ -130,7 +130,7 @@ class _EventMiniPreview extends StatelessWidget {
             width: 54,
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -184,7 +184,7 @@ class _PollPreview extends StatelessWidget {
                 Container(height: 42, color: AppColors.surfaceElevated),
                 FractionallySizedBox(
                   widthFactor: ratio,
-                  child: Container(height: 42, color: AppColors.primary.withOpacity(0.18)),
+                  child: Container(height: 42, color: AppColors.primary.withValues(alpha: 0.18)),
                 ),
                 Positioned.fill(
                   child: Padding(

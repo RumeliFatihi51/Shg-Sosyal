@@ -69,7 +69,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           await ref
                               .read(authControllerProvider.notifier)
                               .signIn(_email.text, _password.text);
-                          if (mounted) context.go('/home');
+                          if (!context.mounted) return;
+                          context.go('/home');
                         },
                 ),
                 const SizedBox(height: 10),

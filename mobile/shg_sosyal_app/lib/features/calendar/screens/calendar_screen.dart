@@ -35,7 +35,7 @@ class CalendarScreen extends ConsumerWidget {
                   width: 64,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.primary.withOpacity(0.18) : AppColors.surface,
+                    color: selected ? AppColors.primary.withValues(alpha: 0.18) : AppColors.surface,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: selected ? AppColors.primary : AppColors.border),
                   ),

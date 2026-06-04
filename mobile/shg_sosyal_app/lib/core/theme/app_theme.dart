@@ -11,7 +11,6 @@ class AppTheme {
       brightness: Brightness.dark,
       primary: AppColors.primary,
       surface: AppColors.surface,
-      background: AppColors.background,
     );
 
     return ThemeData(
@@ -33,7 +32,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primary.withOpacity(0.16),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.16),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             color: states.contains(WidgetState.selected)

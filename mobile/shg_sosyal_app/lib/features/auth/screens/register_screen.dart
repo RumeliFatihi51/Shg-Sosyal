@@ -66,7 +66,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             className: _className.text,
                             username: _username.text,
                           );
-                      if (mounted) context.go('/profile-setup');
+                      if (!context.mounted) return;
+                      context.go('/profile-setup');
                     },
                   ),
                 ],
