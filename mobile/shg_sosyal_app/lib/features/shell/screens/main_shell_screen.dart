@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/theme/app_colors.dart';
 
 class MainShellScreen extends StatelessWidget {
   const MainShellScreen({required this.child, super.key});
@@ -19,27 +22,68 @@ class MainShellScreen extends StatelessWidget {
     final path = GoRouterState.of(context).uri.path;
     final index = _indexForPath(path);
 
-    return Scaffold(
-      body: SafeArea(child: child),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (value) {
-          final route = switch (value) {
-            0 => '/home',
-            1 => '/events',
-            2 => '/communities',
-            3 => '/messages',
-            _ => '/profile/me',
-          };
-          context.go(route);
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dynamic_feed_outlined), label: 'Akış'),
-          NavigationDestination(icon: Icon(Icons.event_outlined), label: 'Etkinlik'),
-          NavigationDestination(icon: Icon(Icons.groups_2_outlined), label: 'Topluluk'),
-          NavigationDestination(icon: Icon(Icons.chat_bubble_outline), label: 'Mesaj'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profil'),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: AppColors.background,
+        systemNavigationBarColor: AppColors.background,
+      ),
+      child: Scaffold(
+        extendBody: true,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF0A1020), AppColors.background],
+            ),
+          ),
+          child: SafeArea(child: child),
+        ),
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.border)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: NavigationBar(
+              selectedIndex: index,
+              height: 68,
+              onDestinationSelected: (value) {
+                final route = switch (value) {
+                  0 => '/home',
+                  1 => '/events',
+                  2 => '/communities',
+                  3 => '/messages',
+                  _ => '/profile/me',
+                };
+                context.go(route);
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dynamic_feed_outlined),
+                  label: 'Akış',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.event_outlined),
+                  label: 'Etkinlik',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.groups_2_outlined),
+                  label: 'Topluluk',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.chat_bubble_outline),
+                  label: 'Mesaj',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  label: 'Profil',
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

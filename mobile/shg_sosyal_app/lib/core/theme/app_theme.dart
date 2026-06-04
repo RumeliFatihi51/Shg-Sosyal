@@ -43,6 +43,24 @@ class AppTheme {
           ),
         ),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surfaceElevated,
+        selectedColor: AppColors.primary.withValues(alpha: 0.16),
+        disabledColor: AppColors.surfaceElevated,
+        side: const BorderSide(color: AppColors.border),
+        labelStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        secondaryLabelStyle: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+        iconTheme: const IconThemeData(color: AppColors.textMuted),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceElevated,

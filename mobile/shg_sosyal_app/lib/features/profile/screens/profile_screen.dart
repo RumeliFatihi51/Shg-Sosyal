@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../core/widgets/app_button.dart';
@@ -27,51 +28,97 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (_, __) => const AppEmptyState(title: 'Profil yüklenemedi.', message: 'Tekrar dene.'),
         data: (summary) => ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
-            Row(
-              children: [
-                AppAvatar(name: summary.user.fullName, size: 72),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(summary.user.fullName, style: Theme.of(context).textTheme.headlineMedium),
-                      const SizedBox(height: 4),
-                      Text('${summary.user.username} · ${summary.user.className}'),
+                      AppAvatar(name: summary.user.fullName, size: 76),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(summary.user.fullName, style: Theme.of(context).textTheme.headlineMedium),
+                            const SizedBox(height: 4),
+                            Text('${summary.user.username} · ${summary.user.className}'),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(summary.user.bio ?? 'Bugün henüz sakin.', style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      _Metric(label: 'Puan', value: '${summary.user.points}'),
+                      _Metric(label: 'Etkinlik', value: '${summary.events.length}'),
+                      _Metric(label: 'Topluluk', value: '${summary.communities.length}'),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  AppButton(
+                    label: 'Profili düzenle',
+                    outlined: true,
+                    expand: true,
+                    onPressed: () => context.push('/profile/edit'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(summary.user.bio ?? 'Bugün henüz sakin.', style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 18),
-            Row(
-              children: [
-                _Metric(label: 'Puan', value: '${summary.user.points}'),
-                _Metric(label: 'Etkinlik', value: '${summary.events.length}'),
-                _Metric(label: 'Topluluk', value: '${summary.communities.length}'),
-              ],
+            _SectionHeader(
+              title: 'Rozet vitrini',
+              action: 'Tümü',
+              onAction: () => context.push('/badges'),
             ),
-            const SizedBox(height: 18),
-            AppButton(label: 'Profili düzenle', outlined: true, onPressed: () => context.push('/profile/edit')),
-            const SizedBox(height: 24),
-            Text('Rozetler', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final badge in summary.badges.take(4))
+                for (final badge in summary.badges.take(5))
                   AppBadge(label: badge.name, icon: Icons.workspace_premium_outlined),
               ],
             ),
-            const SizedBox(height: 20),
-            AppButton(label: 'Tüm rozetleri gör', onPressed: () => context.push('/badges')),
+            const SizedBox(height: 18),
+            _SectionHeader(
+              title: 'Kısa yollar',
+              action: 'Sıralama',
+              onAction: () => context.push('/leaderboard'),
+            ),
             const SizedBox(height: 10),
-            AppButton(label: 'Sıralamaya bak', outlined: true, onPressed: () => context.push('/leaderboard')),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    label: 'Mesajlar',
+                    icon: Icons.chat_bubble_outline,
+                    outlined: true,
+                    onPressed: () => context.push('/messages'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AppButton(
+                    label: 'Takvim',
+                    icon: Icons.calendar_month_outlined,
+                    outlined: true,
+                    onPressed: () => context.push('/calendar'),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -88,13 +135,40 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: Theme.of(context).textTheme.titleLarge),
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.action, required this.onAction});
+
+  final String title;
+  final String action;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
+        TextButton(onPressed: onAction, child: Text(action)),
+      ],
     );
   }
 }
