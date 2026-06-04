@@ -10,10 +10,10 @@ class MainShellScreen extends StatelessWidget {
   final Widget child;
 
   int _indexForPath(String path) {
-    if (path.startsWith('/events')) return 1;
-    if (path.startsWith('/communities')) return 2;
-    if (path.startsWith('/messages')) return 3;
-    if (path.startsWith('/profile')) return 4;
+    if (path.startsWith('/explore')) return 1;
+    if (path.startsWith('/events')) return 2;
+    if (path.startsWith('/communities')) return 3;
+    if (path.startsWith('/messages')) return 4;
     return 0;
   }
 
@@ -29,33 +29,24 @@ class MainShellScreen extends StatelessWidget {
       ),
       child: Scaffold(
         extendBody: true,
-        body: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF0A1020), AppColors.background],
-            ),
-          ),
-          child: SafeArea(child: child),
-        ),
+        backgroundColor: AppColors.background,
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.background,
             border: Border(top: BorderSide(color: AppColors.border)),
           ),
           child: SafeArea(
             top: false,
             child: NavigationBar(
               selectedIndex: index,
-              height: 68,
+              height: 66,
               onDestinationSelected: (value) {
                 final route = switch (value) {
                   0 => '/home',
-                  1 => '/events',
-                  2 => '/communities',
-                  3 => '/messages',
-                  _ => '/profile/me',
+                  1 => '/explore',
+                  2 => '/events',
+                  3 => '/communities',
+                  _ => '/messages',
                 };
                 context.go(route);
               },
@@ -63,6 +54,10 @@ class MainShellScreen extends StatelessWidget {
                 NavigationDestination(
                   icon: Icon(Icons.dynamic_feed_outlined),
                   label: 'Akış',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.search),
+                  label: 'Keşfet',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.event_outlined),
@@ -76,14 +71,11 @@ class MainShellScreen extends StatelessWidget {
                   icon: Icon(Icons.chat_bubble_outline),
                   label: 'Mesaj',
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outline),
-                  label: 'Profil',
-                ),
               ],
             ),
           ),
         ),
+        body: SafeArea(child: child),
       ),
     );
   }

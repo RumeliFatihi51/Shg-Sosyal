@@ -27,104 +27,91 @@ class EventListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final capacity = event.capacity;
-    final progress = capacity == null ? 0.0 : (event.participantCount / capacity).clamp(0.0, 1.0);
+    final progress = capacity == null ? null : (event.participantCount / capacity).clamp(0.0, 1.0);
     final capacityText = capacity == null
         ? '${event.participantCount} kişi katılıyor'
         : '${event.participantCount}/$capacity kişi';
 
     return InkWell(
       onTap: () => context.push('/events/${event.id}'),
-      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.border)),
         ),
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 58,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.24)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleLarge),
-                      Text(
-                        DateFormatters.dayMonth(event.startsAt).split(' ').last,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          AppBadge(label: _categoryLabel, color: AppColors.secondary),
-                          const SizedBox(width: 8),
-                          if (event.myStatus == EventParticipationStatus.going)
-                            const AppBadge(label: 'Katılıyorsun', color: AppColors.success),
-                        ],
-                      ),
-                      const SizedBox(height: 9),
-                      Text(event.title, style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 5),
-                      Text(
-                        '${DateFormatters.time(event.startsAt)} · ${event.location}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      Text(event.organizerName, style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: AppColors.textMuted),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (capacity != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 7,
-                  backgroundColor: AppColors.surfaceElevated,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
-            Row(
-              children: [
-                Expanded(child: Text(capacityText, style: Theme.of(context).textTheme.bodySmall)),
-                if (event.friendParticipants.isNotEmpty) ...[
-                  _FriendStack(friends: event.friendParticipants),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      _friendText(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+            SizedBox(
+              width: 52,
+              child: Column(
+                children: [
+                  Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    DateFormatters.dayMonth(event.startsAt).split(' ').last,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
-              ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      AppBadge(label: _categoryLabel, color: AppColors.secondary),
+                      if (event.myStatus == EventParticipationStatus.going)
+                        const AppBadge(label: 'Katılıyorsun', color: AppColors.success),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(event.title, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${DateFormatters.time(event.startsAt)} · ${event.location}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  Text(event.organizerName, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 9),
+                  if (progress != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: AppColors.surface,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(child: Text(capacityText, style: Theme.of(context).textTheme.bodySmall)),
+                      if (event.friendParticipants.isNotEmpty) ...[
+                        _FriendStack(friends: event.friendParticipants),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _friendText(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -158,7 +145,7 @@ class _FriendStack extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.surface, width: 2),
+                  border: Border.all(color: AppColors.background, width: 2),
                 ),
                 child: AppAvatar(name: entry.value.fullName, size: 26),
               ),

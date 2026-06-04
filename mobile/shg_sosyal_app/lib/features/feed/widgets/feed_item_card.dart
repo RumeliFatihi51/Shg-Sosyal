@@ -39,14 +39,11 @@ class FeedItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(24),
       onTap: item.event == null ? null : () => context.push('/events/${item.event!.id}'),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.82),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,52 +54,42 @@ class FeedItemCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 3,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Expanded(
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(
-                              item.author.fullName,
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                            Text(
-                              '${item.author.username} · ${DateFormatters.relative(item.createdAt)}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
+                      Text(item.author.fullName, style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        '${item.author.username} · ${DateFormatters.relative(item.createdAt)}',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                       AppBadge(label: _typeLabel, color: _tone),
                     ],
                   ),
                   if (item.title != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Text(item.title!, style: Theme.of(context).textTheme.titleMedium),
                   ],
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 6),
                   Text(item.content, style: Theme.of(context).textTheme.bodyMedium),
                   if (item.event != null) ...[
-                    const SizedBox(height: 12),
-                    _EventMiniPreview(item: item),
+                    const SizedBox(height: 10),
+                    _EventPreview(item: item),
                   ],
                   if (item.pollOptions.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     _PollPreview(item: item),
                   ],
                   if (item.badge != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     AppBadge(
                       label: item.badge!.name,
                       icon: Icons.workspace_premium_outlined,
                       color: AppColors.warning,
                     ),
                   ],
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       _Action(icon: Icons.mode_comment_outlined, label: 'Yanıtla'),
@@ -122,35 +109,29 @@ class FeedItemCard extends StatelessWidget {
   }
 }
 
-class _EventMiniPreview extends StatelessWidget {
-  const _EventMiniPreview({required this.item});
+class _EventPreview extends StatelessWidget {
+  const _EventPreview({required this.item});
 
   final FeedItemModel item;
 
   @override
   Widget build(BuildContext context) {
     final event = item.event!;
-    final hasCapacity = event.capacity != null;
-    final capacityText = hasCapacity
-        ? '${event.participantCount}/${event.capacity} kişi'
-        : '${event.participantCount} kişi katılıyor';
+    final capacityText = event.capacity == null
+        ? '${event.participantCount} kişi katılıyor'
+        : '${event.participantCount}/${event.capacity} kişi';
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Container(
-            width: 54,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
-            ),
+          SizedBox(
+            width: 42,
             child: Column(
               children: [
                 Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleMedium),
@@ -161,31 +142,24 @@ class _EventMiniPreview extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(event.title, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   '${DateFormatters.time(event.startsAt)} · ${event.location}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(capacityText, style: Theme.of(context).textTheme.bodySmall),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/events/${event.id}'),
-                      child: const Text('Detay'),
-                    ),
-                  ],
-                ),
+                Text(capacityText, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
+          ),
+          TextButton(
+            onPressed: () => context.push('/events/${event.id}'),
+            child: const Text('Detay'),
           ),
         ],
       ),
@@ -205,19 +179,19 @@ class _PollPreview extends StatelessWidget {
       children: item.pollOptions.map((option) {
         final ratio = total == 0 ? 0.0 : option.voteCount / total;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 7),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             child: Stack(
               children: [
-                Container(height: 42, color: AppColors.surfaceElevated),
+                Container(height: 38, color: AppColors.surface),
                 FractionallySizedBox(
                   widthFactor: ratio,
-                  child: Container(height: 42, color: AppColors.secondary.withValues(alpha: 0.22)),
+                  child: Container(height: 38, color: AppColors.secondary.withValues(alpha: 0.18)),
                 ),
                 Positioned.fill(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 11),
                     child: Row(
                       children: [
                         Expanded(child: Text(option.label)),

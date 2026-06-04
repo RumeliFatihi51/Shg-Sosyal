@@ -12,6 +12,7 @@ import '../../features/communities/screens/community_detail_screen.dart';
 import '../../features/events/screens/event_create_screen.dart';
 import '../../features/events/screens/event_detail_screen.dart';
 import '../../features/events/screens/events_screen.dart';
+import '../../features/explore/screens/explore_screen.dart';
 import '../../features/feed/screens/feed_screen.dart';
 import '../../features/friends/screens/friends_screen.dart';
 import '../../features/leaderboard/screens/leaderboard_screen.dart';
@@ -37,6 +38,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => MainShellScreen(child: child),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const FeedScreen()),
+          GoRoute(path: '/explore', builder: (context, state) => const ExploreScreen()),
           GoRoute(path: '/events', builder: (context, state) => const EventsScreen()),
           GoRoute(
             path: '/events/create',

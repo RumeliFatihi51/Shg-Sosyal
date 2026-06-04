@@ -16,17 +16,15 @@ class CommunityListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => context.push('/communities/${community.id}'),
-      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.border)),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppAvatar(name: community.name, size: 54),
+            AppAvatar(name: community.name, size: 50),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -55,44 +53,16 @@ class CommunityListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      _Metric('${community.memberCount}', 'üye'),
-                      _Metric('${community.postCount}', 'gönderi'),
-                      _Metric(DateFormatters.relative(community.lastActivityAt), 'aktif'),
-                    ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '${community.memberCount} üye · ${community.postCount} gönderi · ${DateFormatters.relative(community.lastActivityAt)}',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric(this.value, this.label);
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(
-        '$value $label',
-        style: Theme.of(context).textTheme.bodySmall,
       ),
     );
   }

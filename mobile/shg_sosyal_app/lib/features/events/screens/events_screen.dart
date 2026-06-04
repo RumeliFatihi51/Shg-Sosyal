@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/loading_view.dart';
-import '../../../data/models/event_model.dart';
 import '../providers/event_providers.dart';
 import '../widgets/event_list_item.dart';
 
@@ -71,11 +70,8 @@ class EventsScreen extends ConsumerWidget {
                   )
                 : Column(
                     children: [
-                      _FeaturedEvent(event: items.first),
-                      const SizedBox(height: 14),
                       for (final event in items) ...[
                         EventListItem(event: event),
-                        const SizedBox(height: 12),
                       ],
                     ],
                   ),
@@ -121,38 +117,6 @@ class _CategoryRail extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _FeaturedEvent extends StatelessWidget {
-  const _FeaturedEvent({required this.event});
-
-  final EventModel event;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Öne çıkan', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 8),
-          Text(event.title, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text(
-            '${event.organizerName} · ${event.participantCount} kişi katılıyor',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
       ),
     );
   }
