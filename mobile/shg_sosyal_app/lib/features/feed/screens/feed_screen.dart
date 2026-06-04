@@ -6,7 +6,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../data/models/community_model.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../communities/providers/community_providers.dart';
 import '../providers/feed_providers.dart';
 import '../widgets/feed_item_card.dart';
 
@@ -16,15 +18,7 @@ class FeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feed = ref.watch(feedItemsProvider);
-    final selected = ref.watch(feedFilterProvider);
     final user = ref.watch(authControllerProvider).valueOrNull;
-    final filters = {
-      'for-you': 'Sana göre',
-      'today': 'Bugün',
-      'events': 'Etkinlikler',
-      'communities': 'Topluluklar',
-      'friends': 'Arkadaşlar',
-    };
 
     return Scaffold(
       appBar: AppBar(
@@ -35,6 +29,11 @@ class FeedScreen extends ConsumerWidget {
             onPressed: () => context.push('/notifications'),
             icon: const Icon(Icons.notifications_none),
           ),
+          IconButton(
+            tooltip: 'Profil',
+            onPressed: () => context.push('/profile/me'),
+            icon: const Icon(Icons.person_outline),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -42,29 +41,9 @@ class FeedScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 86),
           children: [
-            SizedBox(
-              height: 45,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                scrollDirection: Axis.horizontal,
-                itemCount: filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final entry = filters.entries.elementAt(index);
-                  return ChoiceChip(
-                    selected: selected == entry.key,
-                    label: Text(entry.value),
-                    onSelected: (_) => ref.read(feedFilterProvider.notifier).state = entry.key,
-                  );
-                },
-              ),
-            ),
-            const Divider(height: 1),
             _Composer(
               userName: user?.fullName ?? 'ŞHG',
-              onPost: () {},
-              onEvent: () => context.push('/events/create'),
-              onPoll: () => context.push('/leaderboard'),
+              onPost: () => _openComposeSheet(context, ref),
             ),
             feed.when(
               loading: () => const Padding(
@@ -87,7 +66,7 @@ class FeedScreen extends ConsumerWidget {
                         title: 'Bugün henüz sakin.',
                         message: 'İlk gönderiyi sen paylaş.',
                         actionLabel: 'Gönderi paylaş',
-                        onAction: () {},
+                        onAction: () => _openComposeSheet(context, ref),
                       ),
                     )
                   : Column(
@@ -101,83 +80,145 @@ class FeedScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _openComposeSheet(BuildContext context, WidgetRef ref) {
+    final user = ref.read(authControllerProvider).valueOrNull;
+    final communities = ref.read(communitiesProvider).valueOrNull ?? const <CommunityModel>[];
+    final joined = communities.where((community) => community.isJoined).toList();
+    final controller = TextEditingController();
+    CommunityModel? selected = joined.isNotEmpty ? joined.first : null;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final bottom = MediaQuery.of(context).viewInsets.bottom;
+            return Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, bottom + 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Gönderi paylaş', style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 12),
+                  if (joined.isEmpty)
+                    const AppEmptyState(
+                      title: 'Önce bir topluluğa katıl.',
+                      message: 'Paylaşımlar topluluk içinde görünür.',
+                      icon: Icons.groups_2_outlined,
+                    )
+                  else ...[
+                    DropdownButtonFormField<CommunityModel>(
+                      initialValue: selected,
+                      decoration: const InputDecoration(
+                        labelText: 'Topluluk',
+                        prefixIcon: Icon(Icons.groups_2_outlined),
+                      ),
+                      items: [
+                        for (final community in joined)
+                          DropdownMenuItem(
+                            value: community,
+                            child: Text(community.name),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => selected = value),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      minLines: 4,
+                      maxLines: 8,
+                      maxLength: 280,
+                      decoration: const InputDecoration(
+                        hintText: 'Okulda ne paylaşmak istiyorsun?',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.push('/events/create'),
+                            icon: const Icon(Icons.event_outlined),
+                            label: const Text('Etkinlik öner'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        FilledButton(
+                          onPressed: () {
+                            final currentUser = user;
+                            final community = selected;
+                            if (currentUser == null || community == null) return;
+                            ref.read(localFeedPostsProvider.notifier).addPost(
+                                  author: currentUser,
+                                  community: community,
+                                  content: controller.text,
+                                );
+                            Navigator.of(sheetContext).pop();
+                          },
+                          child: const Text('Paylaş'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
 }
 
 class _Composer extends StatelessWidget {
   const _Composer({
     required this.userName,
     required this.onPost,
-    required this.onEvent,
-    required this.onPoll,
   });
 
   final String userName;
   final VoidCallback onPost;
-  final VoidCallback onEvent;
-  final VoidCallback onPoll;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppAvatar(name: userName, size: 40),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Okulda ne paylaşmak istiyorsun?',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _ComposerAction(icon: Icons.edit_outlined, label: 'Gönderi', onTap: onPost),
-                    _ComposerAction(icon: Icons.event_outlined, label: 'Etkinlik', onTap: onEvent),
-                    _ComposerAction(icon: Icons.poll_outlined, label: 'Anket', onTap: onPoll),
-                    const Spacer(),
-                    FilledButton(
-                      onPressed: onPost,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(78, 36),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                      ),
-                      child: const Text('Paylaş'),
+    return InkWell(
+      onTap: onPost,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.border)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppAvatar(name: userName, size: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Okulda ne paylaşmak istiyorsun?',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textSecondary,
                     ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            FilledButton(
+              onPressed: onPost,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(78, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+              ),
+              child: const Text('Paylaş'),
+            ),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class _ComposerAction extends StatelessWidget {
-  const _ComposerAction({required this.icon, required this.label, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: label,
-      visualDensity: VisualDensity.compact,
-      onPressed: onTap,
-      icon: Icon(icon, size: 20, color: AppColors.primary),
     );
   }
 }

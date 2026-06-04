@@ -12,8 +12,9 @@ class MainShellScreen extends StatelessWidget {
   int _indexForPath(String path) {
     if (path.startsWith('/explore')) return 1;
     if (path.startsWith('/events')) return 2;
-    if (path.startsWith('/communities')) return 3;
-    if (path.startsWith('/messages')) return 4;
+    if (path.startsWith('/calendar')) return 3;
+    if (path.startsWith('/communities')) return 4;
+    if (path.startsWith('/messages')) return 5;
     return 0;
   }
 
@@ -45,7 +46,8 @@ class MainShellScreen extends StatelessWidget {
                   0 => '/home',
                   1 => '/explore',
                   2 => '/events',
-                  3 => '/communities',
+                  3 => '/calendar',
+                  4 => '/communities',
                   _ => '/messages',
                 };
                 context.go(route);
@@ -62,6 +64,10 @@ class MainShellScreen extends StatelessWidget {
                 NavigationDestination(
                   icon: Icon(Icons.event_outlined),
                   label: 'Etkinlik',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  label: 'Takvim',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.groups_2_outlined),
