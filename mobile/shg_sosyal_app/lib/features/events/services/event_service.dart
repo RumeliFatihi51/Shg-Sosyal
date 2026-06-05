@@ -1,3 +1,4 @@
+import '../../../core/network/api_client.dart';
 import '../../../data/mock/mock_events.dart';
 import '../../../data/models/event_model.dart';
 
@@ -36,5 +37,23 @@ class MockEventService implements EventService {
       if (event.id == id) return event;
     }
     return null;
+  }
+}
+
+class ApiEventService implements EventService {
+  const ApiEventService(this._api);
+
+  final ApiClient _api;
+
+  @override
+  Future<List<EventModel>> fetchEvents({String tab = 'upcoming'}) async {
+    await _api.get('/events', queryParameters: {'tab': tab});
+    throw UnimplementedError('ApiEventService list mapping is not connected yet.');
+  }
+
+  @override
+  Future<EventModel?> fetchEventById(String id) async {
+    await _api.get('/events/$id');
+    throw UnimplementedError('ApiEventService detail mapping is not connected yet.');
   }
 }

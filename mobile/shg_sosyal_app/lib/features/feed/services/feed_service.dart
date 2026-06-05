@@ -1,3 +1,4 @@
+import '../../../core/network/api_client.dart';
 import '../../../data/mock/mock_feed.dart';
 import '../../../data/models/feed_item_model.dart';
 
@@ -16,5 +17,18 @@ class MockFeedService implements FeedService {
       return mockFeedItems.where((item) => item.community != null).toList();
     }
     return mockFeedItems;
+  }
+}
+
+class ApiFeedService implements FeedService {
+  const ApiFeedService(this._api);
+
+  final ApiClient _api;
+
+  @override
+  Future<List<FeedItemModel>> fetchFeed({String filter = 'for-you'}) async {
+    await _api.get('/feed', queryParameters: {'filter': filter});
+    // TODO: Map backend DTOs to FeedItemModel when the Ubuntu API contract is final.
+    throw UnimplementedError('ApiFeedService DTO mapping is not connected yet.');
   }
 }

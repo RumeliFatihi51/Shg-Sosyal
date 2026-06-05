@@ -70,6 +70,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               .read(authControllerProvider.notifier)
                               .signIn(_email.text, _password.text);
                           if (!context.mounted) return;
+                          final result = ref.read(authControllerProvider);
+                          if (result.hasError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Giriş yapılamadı. Bilgilerini kontrol et.')),
+                            );
+                            return;
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Tekrar hoş geldin.')),
+                          );
                           context.go('/home');
                         },
                 ),

@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/models/community_model.dart';
 import '../../../data/models/feed_item_model.dart';
 import '../../../data/models/user_model.dart';
@@ -8,7 +11,11 @@ import '../services/feed_service.dart';
 
 final feedFilterProvider = StateProvider<String>((ref) => 'for-you');
 
-final feedServiceProvider = Provider<FeedService>((ref) => MockFeedService());
+final feedServiceProvider = Provider<FeedService>((ref) {
+  const useApi = bool.fromEnvironment('SHG_USE_API');
+  if (useApi) return ApiFeedService(ApiClient());
+  return MockFeedService();
+});
 
 final feedRepositoryProvider = Provider<FeedRepository>(
   (ref) => FeedRepository(ref.watch(feedServiceProvider)),
@@ -34,6 +41,7 @@ class LocalFeedPostsController extends StateNotifier<List<FeedItemModel>> {
     required UserModel author,
     required CommunityModel community,
     required String content,
+    Uint8List? imageBytes,
   }) {
     final trimmed = content.trim();
     if (trimmed.isEmpty) return;
@@ -46,6 +54,7 @@ class LocalFeedPostsController extends StateNotifier<List<FeedItemModel>> {
         content: trimmed,
         createdAt: DateTime.now(),
         community: community,
+        localImageBytes: imageBytes,
       ),
       ...state,
     ];

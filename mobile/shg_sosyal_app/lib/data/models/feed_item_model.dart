@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'badge_model.dart';
 import 'community_model.dart';
 import 'event_model.dart';
@@ -32,6 +34,8 @@ class FeedItemModel {
     this.likeCount = 0,
     this.commentCount = 0,
     this.isLiked = false,
+    this.imageUrl,
+    this.localImageBytes,
   });
 
   final String id;
@@ -47,4 +51,6 @@ class FeedItemModel {
   final int likeCount;
   final int commentCount;
   final bool isLiked;
+  final String? imageUrl;
+  final Uint8List? localImageBytes;
 }

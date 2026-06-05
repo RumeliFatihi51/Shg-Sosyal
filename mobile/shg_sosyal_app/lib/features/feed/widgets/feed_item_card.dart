@@ -77,6 +77,23 @@ class FeedItemCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     _EventPreview(item: item),
                   ],
+                  if (item.localImageBytes != null || item.imageUrl != null) ...[
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: item.localImageBytes != null
+                          ? Image.memory(
+                              item.localImageBytes!,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.network(
+                              item.imageUrl!,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ],
                   if (item.pollOptions.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _PollPreview(item: item),

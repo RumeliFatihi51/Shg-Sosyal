@@ -67,6 +67,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             username: _username.text,
                           );
                       if (!context.mounted) return;
+                      final result = ref.read(authControllerProvider);
+                      if (result.hasError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Kayıt oluşturulamadı. Tekrar dene.')),
+                        );
+                        return;
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Hesabın oluşturuldu.')),
+                      );
                       context.go('/profile-setup');
                     },
                   ),

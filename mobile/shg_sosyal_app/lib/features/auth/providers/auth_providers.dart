@@ -1,10 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/models/user_model.dart';
 import '../repositories/auth_repository.dart';
 import '../services/auth_service.dart';
 
-final authServiceProvider = Provider<AuthService>((ref) => MockAuthService());
+final authServiceProvider = Provider<AuthService>((ref) {
+  const useApi = bool.fromEnvironment('SHG_USE_API');
+  if (useApi) return ApiAuthService(ApiClient());
+  return MockAuthService();
+});
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(ref.watch(authServiceProvider)),
@@ -26,8 +31,8 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
 
   Future<void> signIn(String email, String password) async {
     state = const AsyncValue.loading();
-    state = AsyncValue.data(
-      await _repository.signIn(email: email, password: password),
+    state = await AsyncValue.guard(
+      () => _repository.signIn(email: email, password: password),
     );
   }
 
@@ -39,8 +44,8 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
     required String username,
   }) async {
     state = const AsyncValue.loading();
-    state = AsyncValue.data(
-      await _repository.signUp(
+    state = await AsyncValue.guard(
+      () => _repository.signUp(
         fullName: fullName,
         email: email,
         password: password,

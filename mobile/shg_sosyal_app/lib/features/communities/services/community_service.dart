@@ -1,3 +1,4 @@
+import '../../../core/network/api_client.dart';
 import '../../../data/mock/mock_communities.dart';
 import '../../../data/models/community_model.dart';
 
@@ -26,5 +27,23 @@ class MockCommunityService implements CommunityService {
       if (community.id == id) return community;
     }
     return null;
+  }
+}
+
+class ApiCommunityService implements CommunityService {
+  const ApiCommunityService(this._api);
+
+  final ApiClient _api;
+
+  @override
+  Future<List<CommunityModel>> fetchCommunities({String tab = 'recommended'}) async {
+    await _api.get('/communities', queryParameters: {'tab': tab});
+    throw UnimplementedError('ApiCommunityService list mapping is not connected yet.');
+  }
+
+  @override
+  Future<CommunityModel?> fetchCommunityById(String id) async {
+    await _api.get('/communities/$id');
+    throw UnimplementedError('ApiCommunityService detail mapping is not connected yet.');
   }
 }

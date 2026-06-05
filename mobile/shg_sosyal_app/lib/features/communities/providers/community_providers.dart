@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/models/community_model.dart';
 import '../repositories/community_repository.dart';
 import '../services/community_service.dart';
 
 final communityTabProvider = StateProvider<String>((ref) => 'recommended');
-final communityServiceProvider =
-    Provider<CommunityService>((ref) => MockCommunityService());
+final communityServiceProvider = Provider<CommunityService>((ref) {
+  const useApi = bool.fromEnvironment('SHG_USE_API');
+  if (useApi) return ApiCommunityService(ApiClient());
+  return MockCommunityService();
+});
 final communityRepositoryProvider = Provider<CommunityRepository>(
   (ref) => CommunityRepository(ref.watch(communityServiceProvider)),
 );

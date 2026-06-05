@@ -1,12 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/models/event_model.dart';
 import '../repositories/event_repository.dart';
 import '../services/event_service.dart';
 
 final eventTabProvider = StateProvider<String>((ref) => 'upcoming');
 
-final eventServiceProvider = Provider<EventService>((ref) => MockEventService());
+final eventServiceProvider = Provider<EventService>((ref) {
+  const useApi = bool.fromEnvironment('SHG_USE_API');
+  if (useApi) return ApiEventService(ApiClient());
+  return MockEventService();
+});
 
 final eventRepositoryProvider = Provider<EventRepository>(
   (ref) => EventRepository(ref.watch(eventServiceProvider)),

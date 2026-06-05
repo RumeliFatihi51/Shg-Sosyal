@@ -8,6 +8,7 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../data/models/friendship_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../messages/providers/message_providers.dart';
 import '../providers/friend_providers.dart';
 
 class FriendsScreen extends ConsumerWidget {
@@ -53,7 +54,13 @@ class FriendsScreen extends ConsumerWidget {
                     _FriendTile(
                       user: item.user,
                       action: 'Mesaj',
-                      onAction: () => context.push('/messages'),
+                      onAction: () async {
+                        final conversation = await ref
+                            .read(startConversationControllerProvider.notifier)
+                            .start(item.user);
+                        if (!context.mounted || conversation == null) return;
+                        context.push('/messages/${conversation.id}');
+                      },
                     ),
                     const SizedBox(height: 10),
                   ],
