@@ -1,0 +1,13 @@
+mobile/
+node_modules/
+.next/
+out/
+build/
+coverage/
+.git/
+.netlify/
+dev.log
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
