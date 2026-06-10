@@ -23,6 +23,14 @@ export function hasWebPushConfig() {
   );
 }
 
+export function hasFirebaseMessagingConfig() {
+  return Boolean(
+    process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_CLIENT_EMAIL &&
+      process.env.FIREBASE_PRIVATE_KEY,
+  );
+}
+
 export function getVapidSubject() {
   return (
     process.env.VAPID_SUBJECT ||
@@ -58,4 +66,14 @@ export function getSupabaseServiceRoleKey() {
   }
 
   return key;
+}
+
+export function getFirebasePrivateKey() {
+  const key = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!key) {
+    throw new Error("FIREBASE_PRIVATE_KEY tanımlı değil.");
+  }
+
+  return key.replace(/\\n/g, "\n");
 }

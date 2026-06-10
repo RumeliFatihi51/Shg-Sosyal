@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getUnreadNotificationCount } from "@/lib/data";
 import { siteConfig } from "@/lib/env";
 import { getCurrentProfile } from "@/lib/session";
@@ -19,7 +20,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       displayName={siteConfig.displayName}
     >
       {children}
-      <Toast />
+      <Suspense fallback={null}>
+        <Toast />
+      </Suspense>
       <PWAProvider signedIn={Boolean(profile)} />
     </ShellFrame>
   );
