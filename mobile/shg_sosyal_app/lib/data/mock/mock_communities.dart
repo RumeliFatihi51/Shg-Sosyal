@@ -4,12 +4,15 @@ final mockCommunities = <CommunityModel>[
   CommunityModel(
     id: 'c1',
     name: 'Yapay Zeka Topluluğu',
-    description: 'Okul içinde yapay zeka, robotik ve üretken teknoloji çalışmaları.',
+    description:
+        'Okul içinde yapay zeka, robotik ve üretken teknoloji çalışmaları.',
     memberCount: 42,
     postCount: 18,
     isJoined: true,
     lastActivityAt: DateTime.now().subtract(const Duration(hours: 2)),
     category: 'Teknoloji',
+    adminIds: const ['u1', 'u2'],
+    memberIds: const ['u1', 'u2', 'u3', 'u4'],
   ),
   CommunityModel(
     id: 'c2',
@@ -20,6 +23,8 @@ final mockCommunities = <CommunityModel>[
     isJoined: false,
     lastActivityAt: DateTime.now().subtract(const Duration(hours: 5)),
     category: 'Sanat',
+    adminIds: const ['u5'],
+    memberIds: const ['u3', 'u5'],
   ),
   CommunityModel(
     id: 'c3',
@@ -30,6 +35,8 @@ final mockCommunities = <CommunityModel>[
     isJoined: true,
     lastActivityAt: DateTime.now().subtract(const Duration(minutes: 40)),
     category: 'Spor',
+    adminIds: const ['u2'],
+    memberIds: const ['u1', 'u2', 'u4'],
   ),
   CommunityModel(
     id: 'c4',
@@ -40,6 +47,8 @@ final mockCommunities = <CommunityModel>[
     isJoined: false,
     lastActivityAt: DateTime.now().subtract(const Duration(days: 1)),
     category: 'Strateji',
+    adminIds: const ['u4'],
+    memberIds: const ['u2', 'u4'],
   ),
   CommunityModel(
     id: 'c5',
@@ -50,5 +59,7 @@ final mockCommunities = <CommunityModel>[
     isJoined: false,
     lastActivityAt: DateTime.now().subtract(const Duration(hours: 8)),
     category: 'Müzik',
+    adminIds: const ['u3'],
+    memberIds: const ['u3', 'u5'],
   ),
 ];

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/role_permissions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_badge.dart';
@@ -21,12 +22,18 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Profil'),
         actions: [
-          IconButton(onPressed: () => context.push('/settings'), icon: const Icon(Icons.settings_outlined)),
+          IconButton(
+            onPressed: () => context.push('/settings'),
+            icon: const Icon(Icons.settings_outlined),
+          ),
         ],
       ),
       body: profile.when(
         loading: () => const LoadingView(),
-        error: (_, __) => const AppEmptyState(title: 'Profil yüklenemedi.', message: 'Tekrar dene.'),
+        error: (_, __) => const AppEmptyState(
+          title: 'Profil yüklenemedi.',
+          message: 'Tekrar dene.',
+        ),
         data: (summary) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
@@ -48,22 +55,45 @@ class ProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(summary.user.fullName, style: Theme.of(context).textTheme.headlineMedium),
+                            Text(
+                              summary.user.fullName,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
                             const SizedBox(height: 4),
-                            Text('${summary.user.username} · ${summary.user.className}'),
+                            Text(
+                              '${summary.user.username} · ${summary.user.className}',
+                            ),
+                            const SizedBox(height: 8),
+                            AppBadge(
+                              label: RolePermissions.label(summary.user.role),
+                              color: RolePermissions.isAdmin(summary.user)
+                                  ? AppColors.success
+                                  : RolePermissions.isTeacher(summary.user)
+                                      ? AppColors.primary
+                                      : AppColors.secondary,
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(summary.user.bio ?? 'Bugün henüz sakin.', style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    summary.user.bio ?? 'Bugün henüz sakin.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 18),
                   Row(
                     children: [
                       _Metric(label: 'Puan', value: '${summary.user.points}'),
-                      _Metric(label: 'Etkinlik', value: '${summary.events.length}'),
-                      _Metric(label: 'Topluluk', value: '${summary.communities.length}'),
+                      _Metric(
+                        label: 'Etkinlik',
+                        value: '${summary.events.length}',
+                      ),
+                      _Metric(
+                        label: 'Topluluk',
+                        value: '${summary.communities.length}',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 18),
@@ -88,7 +118,10 @@ class ProfileScreen extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 for (final badge in summary.badges.take(5))
-                  AppBadge(label: badge.name, icon: Icons.workspace_premium_outlined),
+                  AppBadge(
+                    label: badge.name,
+                    icon: Icons.workspace_premium_outlined,
+                  ),
               ],
             ),
             const SizedBox(height: 18),
@@ -119,6 +152,15 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            if (RolePermissions.canAccessAdmin(summary.user)) ...[
+              const SizedBox(height: 10),
+              AppButton(
+                label: 'Admin',
+                icon: Icons.admin_panel_settings_outlined,
+                expand: true,
+                onPressed: () => context.push('/admin'),
+              ),
+            ],
           ],
         ),
       ),
@@ -156,7 +198,11 @@ class _Metric extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.action, required this.onAction});
+  const _SectionHeader({
+    required this.title,
+    required this.action,
+    required this.onAction,
+  });
 
   final String title;
   final String action;
@@ -166,7 +212,9 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+        ),
         TextButton(onPressed: onAction, child: Text(action)),
       ],
     );

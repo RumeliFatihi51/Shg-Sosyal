@@ -9,4 +9,12 @@ class NotificationRepository {
   Future<List<NotificationModel>> getNotifications() {
     return _service.fetchNotifications();
   }
+
+  Future<void> markRead(String id) {
+    return _service.markRead(id);
+  }
+
+  Future<void> markAllRead() {
+    return _service.markAllRead();
+  }
 }

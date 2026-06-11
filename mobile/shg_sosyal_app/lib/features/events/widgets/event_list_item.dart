@@ -27,7 +27,9 @@ class EventListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final capacity = event.capacity;
-    final progress = capacity == null ? null : (event.participantCount / capacity).clamp(0.0, 1.0);
+    final progress = capacity == null
+        ? null
+        : (event.participantCount / capacity).clamp(0.0, 1.0);
     final capacityText = capacity == null
         ? '${event.participantCount} kişi katılıyor'
         : '${event.participantCount}/$capacity kişi';
@@ -46,7 +48,8 @@ class EventListItem extends StatelessWidget {
               width: 52,
               child: Column(
                 children: [
-                  Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleLarge),
+                  Text('${event.startsAt.day}',
+                      style: Theme.of(context).textTheme.titleLarge),
                   Text(
                     DateFormatters.dayMonth(event.startsAt).split(' ').last,
                     style: Theme.of(context).textTheme.bodySmall,
@@ -63,19 +66,23 @@ class EventListItem extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 6,
                     children: [
-                      AppBadge(label: _categoryLabel, color: AppColors.secondary),
+                      AppBadge(
+                          label: _categoryLabel, color: AppColors.secondary),
                       if (event.myStatus == EventParticipationStatus.going)
-                        const AppBadge(label: 'Katılıyorsun', color: AppColors.success),
+                        const AppBadge(
+                            label: 'Katılıyorsun', color: AppColors.success),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(event.title, style: Theme.of(context).textTheme.titleMedium),
+                  Text(event.title,
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 5),
                   Text(
                     '${DateFormatters.time(event.startsAt)} · ${event.location}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  Text(event.organizerName, style: Theme.of(context).textTheme.bodySmall),
+                  Text(event.organizerName,
+                      style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 9),
                   if (progress != null) ...[
                     ClipRRect(
@@ -84,14 +91,17 @@ class EventListItem extends StatelessWidget {
                         value: progress,
                         minHeight: 6,
                         backgroundColor: AppColors.surface,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.primary),
                       ),
                     ),
                     const SizedBox(height: 7),
                   ],
                   Row(
                     children: [
-                      Expanded(child: Text(capacityText, style: Theme.of(context).textTheme.bodySmall)),
+                      Expanded(
+                          child: Text(capacityText,
+                              style: Theme.of(context).textTheme.bodySmall)),
                       if (event.friendParticipants.isNotEmpty) ...[
                         _FriendStack(friends: event.friendParticipants),
                         const SizedBox(width: 8),

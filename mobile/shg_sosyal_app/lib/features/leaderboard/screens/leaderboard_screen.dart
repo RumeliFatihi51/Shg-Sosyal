@@ -34,7 +34,9 @@ class LeaderboardScreen extends ConsumerWidget {
                 return ChoiceChip(
                   selected: period == entry.key,
                   label: Text(entry.value),
-                  onSelected: (_) => ref.read(leaderboardPeriodProvider.notifier).state = entry.key,
+                  onSelected: (_) => ref
+                      .read(leaderboardPeriodProvider.notifier)
+                      .state = entry.key,
                 );
               },
             ),
@@ -42,7 +44,10 @@ class LeaderboardScreen extends ConsumerWidget {
           const SizedBox(height: 14),
           leaderboard.when(
             loading: () => const LoadingView(),
-            error: (_, __) => const AppEmptyState(title: 'Sıralama yüklenemedi.', message: 'Tekrar dene.'),
+            error: (_, __) => const AppEmptyState(
+              title: 'Sıralama yüklenemedi.',
+              message: 'Tekrar dene.',
+            ),
             data: (items) {
               if (items.isEmpty) {
                 return const AppEmptyState(
@@ -89,7 +94,10 @@ class _Podium extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Haftanın aktifleri', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Haftanın aktifleri',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const Spacer(),
               const AppBadge(label: 'Top 3', color: AppColors.warning),
             ],
@@ -98,9 +106,18 @@ class _Podium extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (items.length > 1) Expanded(child: _PodiumUser(entry: items[1], height: 96)),
-              if (items.isNotEmpty) Expanded(child: _PodiumUser(entry: items[0], height: 118, featured: true)),
-              if (items.length > 2) Expanded(child: _PodiumUser(entry: items[2], height: 84)),
+              if (items.length > 1)
+                Expanded(child: _PodiumUser(entry: items[1], height: 96)),
+              if (items.isNotEmpty)
+                Expanded(
+                  child: _PodiumUser(
+                    entry: items[0],
+                    height: 118,
+                    featured: true,
+                  ),
+                ),
+              if (items.length > 2)
+                Expanded(child: _PodiumUser(entry: items[2], height: 84)),
             ],
           ),
         ],
@@ -110,7 +127,11 @@ class _Podium extends StatelessWidget {
 }
 
 class _PodiumUser extends StatelessWidget {
-  const _PodiumUser({required this.entry, required this.height, this.featured = false});
+  const _PodiumUser({
+    required this.entry,
+    required this.height,
+    this.featured = false,
+  });
 
   final LeaderboardEntryModel entry;
   final double height;
@@ -128,7 +149,10 @@ class _PodiumUser extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        Text('${entry.points} puan', style: Theme.of(context).textTheme.bodySmall),
+        Text(
+          '${entry.points} puan',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
         const SizedBox(height: 8),
         Container(
           height: height,
@@ -138,10 +162,15 @@ class _PodiumUser extends StatelessWidget {
                 ? AppColors.warning.withValues(alpha: 0.18)
                 : AppColors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: featured ? AppColors.warning : AppColors.border),
+            border: Border.all(
+              color: featured ? AppColors.warning : AppColors.border,
+            ),
           ),
           child: Center(
-            child: Text('#${entry.rank}', style: Theme.of(context).textTheme.titleLarge),
+            child: Text(
+              '#${entry.rank}',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ),
         ),
       ],
@@ -167,7 +196,10 @@ class _LeaderboardRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 38,
-            child: Text('#${entry.rank}', style: Theme.of(context).textTheme.titleMedium),
+            child: Text(
+              '#${entry.rank}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
           AppAvatar(name: entry.user.fullName, size: 42),
           const SizedBox(width: 12),
@@ -175,13 +207,22 @@ class _LeaderboardRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(entry.user.fullName, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  entry.user.fullName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 3),
-                Text('${entry.user.username} · ${entry.category}', style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  '${entry.user.username} · ${entry.category}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
           ),
-          Text('${entry.points}', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            '${entry.points}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         ],
       ),
     );

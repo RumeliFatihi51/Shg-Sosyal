@@ -6,7 +6,7 @@ import '../repositories/auth_repository.dart';
 import '../services/auth_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
-  const useApi = bool.fromEnvironment('SHG_USE_API');
+  const useApi = bool.fromEnvironment('SHG_USE_API', defaultValue: true);
   if (useApi) return ApiAuthService(ApiClient());
   return MockAuthService();
 });
@@ -58,5 +58,9 @@ class AuthController extends StateNotifier<AsyncValue<UserModel?>> {
   Future<void> signOut() async {
     await _repository.signOut();
     state = const AsyncValue.data(null);
+  }
+
+  void setUser(UserModel user) {
+    state = AsyncValue.data(user);
   }
 }

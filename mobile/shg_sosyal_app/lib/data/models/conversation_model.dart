@@ -15,4 +15,20 @@ class ConversationModel {
   final MessageModel lastMessage;
   final DateTime lastMessageAt;
   final int unreadCount;
+
+  ConversationModel copyWith({
+    String? id,
+    UserModel? otherUser,
+    MessageModel? lastMessage,
+    DateTime? lastMessageAt,
+    int? unreadCount,
+  }) {
+    return ConversationModel(
+      id: id ?? this.id,
+      otherUser: otherUser ?? this.otherUser,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+      unreadCount: unreadCount ?? this.unreadCount,
+    );
+  }
 }

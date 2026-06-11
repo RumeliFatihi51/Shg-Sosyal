@@ -50,19 +50,25 @@ class CalendarScreen extends ConsumerWidget {
                   width: 66,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.primary.withValues(alpha: 0.16) : AppColors.surface,
+                    color: selected
+                        ? AppColors.primary.withValues(alpha: 0.16)
+                        : AppColors.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+                    border: Border.all(
+                        color: selected ? AppColors.primary : AppColors.border),
                   ),
                   child: Column(
                     children: [
-                      Text('${day.day}', style: Theme.of(context).textTheme.titleMedium),
-                      Text(DateFormatters.dayMonth(day).split(' ').last, style: Theme.of(context).textTheme.bodySmall),
+                      Text('${day.day}',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(DateFormatters.dayMonth(day).split(' ').last,
+                          style: Theme.of(context).textTheme.bodySmall),
                       const Spacer(),
                       Icon(
                         Icons.circle,
                         size: selected ? 9 : 7,
-                        color: selected ? AppColors.primary : AppColors.textMuted,
+                        color:
+                            selected ? AppColors.primary : AppColors.textMuted,
                       ),
                     ],
                   ),
@@ -83,7 +89,8 @@ class CalendarScreen extends ConsumerWidget {
                 const Icon(Icons.today_outlined, color: AppColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Bugünün etkinlikleri', style: Theme.of(context).textTheme.titleMedium),
+                  child: Text('Bugünün etkinlikleri',
+                      style: Theme.of(context).textTheme.titleMedium),
                 ),
               ],
             ),
@@ -91,9 +98,12 @@ class CalendarScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           events.when(
             loading: () => const LoadingView(),
-            error: (_, __) => const AppEmptyState(title: 'Takvim yüklenemedi.', message: 'Tekrar dene.'),
+            error: (_, __) => const AppEmptyState(
+                title: 'Takvim yüklenemedi.', message: 'Tekrar dene.'),
             data: (items) => items.isEmpty
-                ? const AppEmptyState(title: 'Bugün için etkinlik yok.', message: 'Etkinlik öner.')
+                ? const AppEmptyState(
+                    title: 'Bugün için etkinlik yok.',
+                    message: 'Etkinlik öner.')
                 : Column(
                     children: [
                       for (final event in items) ...[

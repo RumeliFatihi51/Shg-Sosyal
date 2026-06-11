@@ -25,7 +25,10 @@ class CommunitiesScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Topluluklar'),
         actions: [
-          IconButton(onPressed: () => context.push('/communities/create'), icon: const Icon(Icons.add)),
+          IconButton(
+            onPressed: () => context.push('/communities/create'),
+            icon: const Icon(Icons.add),
+          ),
         ],
       ),
       body: ListView(
@@ -49,7 +52,8 @@ class CommunitiesScreen extends ConsumerWidget {
                 return ChoiceChip(
                   selected: selected == entry.key,
                   label: Text(entry.value),
-                  onSelected: (_) => ref.read(communityTabProvider.notifier).state = entry.key,
+                  onSelected: (_) =>
+                      ref.read(communityTabProvider.notifier).state = entry.key,
                 );
               },
             ),

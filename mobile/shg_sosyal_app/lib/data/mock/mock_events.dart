@@ -5,7 +5,8 @@ final mockEvents = <EventModel>[
   EventModel(
     id: 'e1',
     title: 'Robotik Mini Demo',
-    description: 'Bilişim Laboratuvarı’nda küçük robot demo sunumları ve kısa denemeler.',
+    description:
+        'Bilişim Laboratuvarı’nda küçük robot demo sunumları ve kısa denemeler.',
     startsAt: DateTime.now().add(const Duration(hours: 4)),
     endsAt: DateTime.now().add(const Duration(hours: 5, minutes: 30)),
     location: 'Bilişim Laboratuvarı',

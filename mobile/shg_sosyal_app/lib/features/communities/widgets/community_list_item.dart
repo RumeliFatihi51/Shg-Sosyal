@@ -42,7 +42,9 @@ class CommunityListItem extends StatelessWidget {
                       ),
                       AppBadge(
                         label: community.isJoined ? 'Katıldın' : 'Aktif',
-                        color: community.isJoined ? AppColors.success : AppColors.primary,
+                        color: community.isJoined
+                            ? AppColors.success
+                            : AppColors.primary,
                       ),
                     ],
                   ),

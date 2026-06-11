@@ -6,7 +6,9 @@ class LeaderboardRepository {
 
   final LeaderboardService _service;
 
-  Future<List<LeaderboardEntryModel>> getLeaderboard({String period = 'weekly'}) {
+  Future<List<LeaderboardEntryModel>> getLeaderboard({
+    String period = 'weekly',
+  }) {
     return _service.fetchLeaderboard(period: period);
   }
 }

@@ -30,7 +30,10 @@ class EventsScreen extends ConsumerWidget {
             onPressed: () => context.push('/calendar'),
             icon: const Icon(Icons.calendar_month_outlined),
           ),
-          IconButton(onPressed: () => context.push('/events/create'), icon: const Icon(Icons.add)),
+          IconButton(
+            onPressed: () => context.push('/events/create'),
+            icon: const Icon(Icons.add),
+          ),
         ],
       ),
       body: ListView(
@@ -47,7 +50,8 @@ class EventsScreen extends ConsumerWidget {
                 return ChoiceChip(
                   selected: selected == entry.key,
                   label: Text(entry.value),
-                  onSelected: (_) => ref.read(eventTabProvider.notifier).state = entry.key,
+                  onSelected: (_) =>
+                      ref.read(eventTabProvider.notifier).state = entry.key,
                 );
               },
             ),
@@ -104,13 +108,21 @@ class _CategoryRail extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: index == 0 ? AppColors.primary.withValues(alpha: 0.14) : AppColors.surface,
+              color: index == 0
+                  ? AppColors.primary.withValues(alpha: 0.14)
+                  : AppColors.surface,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: index == 0 ? AppColors.primary : AppColors.border),
+              border: Border.all(
+                color: index == 0 ? AppColors.primary : AppColors.border,
+              ),
             ),
             child: Row(
               children: [
-                Icon(item.$2, size: 16, color: index == 0 ? AppColors.primary : AppColors.textMuted),
+                Icon(
+                  item.$2,
+                  size: 16,
+                  color: index == 0 ? AppColors.primary : AppColors.textMuted,
+                ),
                 const SizedBox(width: 7),
                 Text(item.$1, style: Theme.of(context).textTheme.bodySmall),
               ],

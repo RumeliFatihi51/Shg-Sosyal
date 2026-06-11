@@ -47,7 +47,8 @@ final mockFeedItems = <FeedItemModel>[
     type: FeedItemType.post,
     author: mockUsers[4],
     title: 'Fizik Laboratuvarı için gönüllü lazım.',
-    content: 'Deney masalarını kurmak için son derste 2 kişi yardım edebilir mi?',
+    content:
+        'Deney masalarını kurmak için son derste 2 kişi yardım edebilir mi?',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
     likeCount: 19,
     commentCount: 5,

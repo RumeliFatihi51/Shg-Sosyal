@@ -8,6 +8,7 @@ final mockNotifications = <NotificationModel>[
     body: 'Etkinlik 15:00’te Bilişim Laboratuvarı’nda başlıyor.',
     createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
     isRead: false,
+    targetRoute: '/events/e1',
   ),
   NotificationModel(
     id: 'n2',
@@ -16,6 +17,7 @@ final mockNotifications = <NotificationModel>[
     body: 'Efe Demir seni arkadaş olarak eklemek istiyor.',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
     isRead: false,
+    targetRoute: '/friends',
   ),
   NotificationModel(
     id: 'n3',
@@ -24,5 +26,6 @@ final mockNotifications = <NotificationModel>[
     body: 'İlk Katılım rozeti profiline eklendi.',
     createdAt: DateTime.now().subtract(const Duration(days: 1)),
     isRead: true,
+    targetRoute: '/badges',
   ),
 ];

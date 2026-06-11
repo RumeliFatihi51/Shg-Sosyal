@@ -1,4 +1,6 @@
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_auth.dart';
+import '../../../core/network/api_mappers.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../data/mock/mock_users.dart';
 import '../../../data/models/user_model.dart';
@@ -17,7 +19,8 @@ abstract class AuthService {
 }
 
 class MockAuthService implements AuthService {
-  MockAuthService({SecureStorage? storage}) : _storage = storage ?? const SecureStorage();
+  MockAuthService({SecureStorage? storage})
+      : _storage = storage ?? const SecureStorage();
 
   static const _sessionKey = 'mock_session_user';
 
@@ -34,7 +37,10 @@ class MockAuthService implements AuthService {
   }
 
   @override
-  Future<UserModel> signIn({required String email, required String password}) async {
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     _current = mockCurrentUser;
     await _storage.write(_sessionKey, _current!.id);
@@ -73,24 +79,34 @@ class ApiAuthService implements AuthService {
   ApiAuthService(this._api, {SecureStorage? storage})
       : _storage = storage ?? const SecureStorage();
 
-  static const _tokenKey = 'api_access_token';
-
   final ApiClient _api;
   final SecureStorage _storage;
 
   @override
   Future<UserModel?> currentUser() async {
-    final token = await _storage.read(_tokenKey);
+    final token = await _storage.read(apiAccessTokenKey);
     if (token == null) return null;
     _api.setBearerToken(token);
-    await _api.get('/auth/me');
-    throw UnimplementedError('ApiAuthService user mapping is not connected yet.');
+    final response = await _api.get('/auth/me');
+    return userFromJson(apiData(response.data));
   }
 
   @override
-  Future<UserModel> signIn({required String email, required String password}) async {
-    await _api.post('/auth/login', data: {'email': email, 'password': password});
-    throw UnimplementedError('ApiAuthService login mapping is not connected yet.');
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final response = await _api
+        .post('/auth/login', data: {'email': email, 'password': password});
+    final data = apiData(response.data);
+    final token = apiString(
+      data['access_token'] ?? apiMap(data['session'])['access_token'],
+    );
+    if (token.isNotEmpty) {
+      await _storage.write(apiAccessTokenKey, token);
+      _api.setBearerToken(token);
+    }
+    return userFromJson(data['user']);
   }
 
   @override
@@ -101,7 +117,7 @@ class ApiAuthService implements AuthService {
     required String className,
     required String username,
   }) async {
-    await _api.post(
+    final response = await _api.post(
       '/auth/register',
       data: {
         'full_name': fullName,
@@ -111,12 +127,20 @@ class ApiAuthService implements AuthService {
         'username': username,
       },
     );
-    throw UnimplementedError('ApiAuthService register mapping is not connected yet.');
+    final data = apiData(response.data);
+    final token = apiString(
+      data['access_token'] ?? apiMap(data['session'])['access_token'],
+    );
+    if (token.isNotEmpty) {
+      await _storage.write(apiAccessTokenKey, token);
+      _api.setBearerToken(token);
+    }
+    return userFromJson(data['user']);
   }
 
   @override
   Future<void> signOut() async {
-    await _storage.remove(_tokenKey);
+    await _storage.remove(apiAccessTokenKey);
     _api.setBearerToken(null);
   }
 }

@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     ".netlify/**",
+    ".vercel/**",
+    "mobile/**/.dart_tool/**",
+    "mobile/**/build/**",
+    "mobile/**/.plugin_symlinks/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

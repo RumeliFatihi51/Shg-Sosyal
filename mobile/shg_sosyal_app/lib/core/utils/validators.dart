@@ -1,7 +1,10 @@
 class Validators {
   const Validators._();
 
-  static String? required(String? value, {String message = 'Bu alan gerekli.'}) {
+  static String? required(
+    String? value, {
+    String message = 'Bu alan gerekli.',
+  }) {
     if (value == null || value.trim().isEmpty) return message;
     return null;
   }

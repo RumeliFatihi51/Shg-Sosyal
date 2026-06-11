@@ -15,8 +15,9 @@ Bu liste production öncesi gerçek Supabase projesinde elle kontrol içindir.
 - Kayıt ol: kullanıcı e-posta doğrulama mesajı görmeli.
 - E-posta doğrulanmadan giriş/protected sayfa: giriş ekranına yönlenmeli veya doğrulama uyarısı göstermeli.
 - Topluluk başvurusu gönder: başvuru admin panelinde bekleyen topluluklarda görünmeli.
-- Admin/moderator topluluğu onayla/reddet: karar bildirimi oluşmalı.
-- Etkinlik oluştur: student için pending, admin/moderator/teacher için approved davranışı korunmalı.
+- Admin topluluğu onayla/reddet: karar bildirimi oluşmalı.
+- Etkinlik oluştur: öğrenci/topluluk admini için pending, admin/öğretmen için approved davranışı korunmalı.
+- Anket oluştur: öğrenci/topluluk admini için pending, admin/öğretmen için direkt yayın davranışı korunmalı.
 - Etkinliğe katıl/katılımı kaldır: katılımcı sayısı ve profil etkinlik listesi güncellenmeli.
 - Gönderi oluştur: keşfet ve topluluk akışında görünmeli.
 - Beğeni ve eksi oy: aynı oya tekrar basınca oy kalkmalı, zıt oy basınca skor değişmeli.
@@ -41,7 +42,7 @@ Bu liste production öncesi gerçek Supabase projesinde elle kontrol içindir.
 - Student başka kullanıcının profilini update edememeli.
 - Student sadece kendi gönderdiği/aldığı arkadaşlık kayıtlarını görebilmeli.
 - Community admin sadece kendi topluluğunda etkinlik/gönderi yönetebilmeli.
-- Moderator admin kullanıcı üzerinde rol/suspend işlemi yapamamalı.
+- Rol değiştirme sadece admin tarafından yapılabilmeli; öğretmen ve topluluk admini rol değiştirememeli.
 - Anonim kullanıcı yalnız yayınlanmış etkinlikleri görebilmeli; posts/friends/admin protected kalmalı.
 - `activity_events` için kullanıcı sadece kendi activity kayıtlarını görebilmeli; staff tamamını görebilmeli.
 

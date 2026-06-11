@@ -13,5 +13,7 @@ final leaderboardRepositoryProvider = Provider<LeaderboardRepository>(
 
 final leaderboardProvider = FutureProvider<List<LeaderboardEntryModel>>((ref) {
   final period = ref.watch(leaderboardPeriodProvider);
-  return ref.watch(leaderboardRepositoryProvider).getLeaderboard(period: period);
+  return ref
+      .watch(leaderboardRepositoryProvider)
+      .getLeaderboard(period: period);
 });

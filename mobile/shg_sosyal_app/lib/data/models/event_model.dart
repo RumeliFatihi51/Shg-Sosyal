@@ -1,7 +1,9 @@
 import 'user_model.dart';
 
 enum EventStatus { pending, approved, rejected, cancelled, postponed }
+
 enum EventParticipationStatus { none, interested, going, notGoing }
+
 enum EventCategory { sport, club, workshop, social, competition, science, art }
 
 class EventModel {

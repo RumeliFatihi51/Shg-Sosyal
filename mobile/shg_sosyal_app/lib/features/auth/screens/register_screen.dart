@@ -44,15 +44,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  AppTextField(label: 'Ad soyad', controller: _fullName, validator: Validators.required),
+                  AppTextField(
+                    label: 'Ad soyad',
+                    controller: _fullName,
+                    validator: Validators.required,
+                  ),
                   const SizedBox(height: 12),
-                  AppTextField(label: 'E-posta', controller: _email, validator: Validators.email),
+                  AppTextField(
+                    label: 'E-posta',
+                    controller: _email,
+                    validator: Validators.email,
+                  ),
                   const SizedBox(height: 12),
-                  AppTextField(label: 'Şifre', controller: _password, validator: Validators.password, obscureText: true),
+                  AppTextField(
+                    label: 'Şifre',
+                    controller: _password,
+                    validator: Validators.password,
+                    obscureText: true,
+                  ),
                   const SizedBox(height: 12),
-                  AppTextField(label: 'Sınıf', hint: '9/A', controller: _className, validator: Validators.required),
+                  AppTextField(
+                    label: 'Sınıf',
+                    hint: '9/A',
+                    controller: _className,
+                    validator: Validators.required,
+                  ),
                   const SizedBox(height: 12),
-                  AppTextField(label: '@etiket', hint: '@eymen2011', controller: _username, validator: Validators.required),
+                  AppTextField(
+                    label: '@etiket',
+                    hint: '@eymen2011',
+                    controller: _username,
+                    validator: Validators.required,
+                  ),
                   const SizedBox(height: 20),
                   AppButton(
                     label: 'Kayıt ol',
@@ -70,7 +93,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       final result = ref.read(authControllerProvider);
                       if (result.hasError) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Kayıt oluşturulamadı. Tekrar dene.')),
+                          const SnackBar(
+                            content: Text('Kayıt oluşturulamadı. Tekrar dene.'),
+                          ),
                         );
                         return;
                       }

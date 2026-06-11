@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/notifications/widgets/push_bootstrap.dart';
 
 class ShgSosyalApp extends ConsumerWidget {
   const ShgSosyalApp({super.key});
@@ -25,6 +26,9 @@ class ShgSosyalApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => PushBootstrap(
+        child: child ?? const SizedBox.shrink(),
+      ),
       routerConfig: router,
     );
   }

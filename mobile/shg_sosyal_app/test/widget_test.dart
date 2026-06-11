@@ -18,7 +18,8 @@ void main() {
         child: const ShgSosyalApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text('Ana Akış'), findsWidgets);
     expect(find.text('Okulda ne paylaşmak istiyorsun?'), findsOneWidget);
@@ -30,7 +31,10 @@ class _TestAuthService implements AuthService {
   Future<UserModel?> currentUser() async => mockCurrentUser;
 
   @override
-  Future<UserModel> signIn({required String email, required String password}) async {
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     return mockCurrentUser;
   }
 

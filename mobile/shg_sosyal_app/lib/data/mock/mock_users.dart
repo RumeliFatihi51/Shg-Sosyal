@@ -8,6 +8,7 @@ final mockCurrentUser = UserModel(
   className: '9/A',
   bio: 'Robotik, yazılım ve okul etkinlikleri.',
   points: 840,
+  role: UserRole.admin,
 );
 
 final mockUsers = <UserModel>[
@@ -20,6 +21,7 @@ final mockUsers = <UserModel>[
     className: '9/A',
     bio: 'Basketbol ve satranç.',
     points: 720,
+    role: UserRole.communityAdmin,
   ),
   const UserModel(
     id: 'u3',
@@ -29,6 +31,7 @@ final mockUsers = <UserModel>[
     className: '9/B',
     bio: 'Tiyatro kulübündeyim.',
     points: 690,
+    role: UserRole.teacher,
   ),
   const UserModel(
     id: 'u4',
@@ -38,6 +41,7 @@ final mockUsers = <UserModel>[
     className: '10/C',
     bio: 'Yapay zeka ve müzik.',
     points: 610,
+    role: UserRole.student,
   ),
   const UserModel(
     id: 'u5',
@@ -47,5 +51,6 @@ final mockUsers = <UserModel>[
     className: '11/A',
     bio: 'Sahne ve Tiyatro ekibi.',
     points: 570,
+    role: UserRole.student,
   ),
 ];

@@ -4,7 +4,8 @@ import '../../../data/models/badge_model.dart';
 import '../repositories/badge_repository.dart';
 import '../services/badge_service.dart';
 
-final badgeServiceProvider = Provider<BadgeService>((ref) => MockBadgeService());
+final badgeServiceProvider =
+    Provider<BadgeService>((ref) => MockBadgeService());
 final badgeRepositoryProvider = Provider<BadgeRepository>(
   (ref) => BadgeRepository(ref.watch(badgeServiceProvider)),
 );

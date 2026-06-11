@@ -66,7 +66,7 @@ Dosyadaki örnek UUID değerleri canlı DB'deki gerçek kullanıcı, arkadaşlı
 - Student başka kullanıcının profilini update edememeli.
 - Student başka kullanıcıların arkadaşlık kayıtlarını görememeli.
 - Conversation üyesi olmayan kullanıcı DM mesajlarını okuyamamalı veya yazamamalı.
-- Moderator admin kullanıcı üzerinde rol/suspend işlemi yapamamalı.
+- Rol/suspend işlemleri sadece admin tarafından yapılabilmeli; öğretmen ve topluluk admini bu işlemleri yapamamalı.
 - Anonim kullanıcı sadece public/yayınlanmış etkinlikleri görebilmeli.
 
 ## 5. Performans ve veri sağlığı

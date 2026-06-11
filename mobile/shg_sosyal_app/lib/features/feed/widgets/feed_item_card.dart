@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -6,8 +7,9 @@ import '../../../core/utils/date_formatters.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../data/models/feed_item_model.dart';
+import '../providers/feed_providers.dart';
 
-class FeedItemCard extends StatelessWidget {
+class FeedItemCard extends ConsumerWidget {
   const FeedItemCard({required this.item, super.key});
 
   final FeedItemModel item;
@@ -37,9 +39,15 @@ class FeedItemCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
-      onTap: item.event == null ? null : () => context.push('/events/${item.event!.id}'),
+      onTap: () {
+        if (item.event != null) {
+          context.push('/events/${item.event!.id}');
+          return;
+        }
+        context.push('/posts/${item.id}');
+      },
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
         decoration: const BoxDecoration(
@@ -54,30 +62,62 @@ class FeedItemCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 3,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.author.fullName, style: Theme.of(context).textTheme.titleSmall),
-                      Text(
-                        '${item.author.username} · ${DateFormatters.relative(item.createdAt)}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      Expanded(
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 3,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(item.author.fullName,
+                                style: Theme.of(context).textTheme.titleSmall),
+                            Text(
+                              '${item.author.username} · ${DateFormatters.relative(item.createdAt)}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            if (item.editedAt != null)
+                              Text('düzenlendi',
+                                  style: Theme.of(context).textTheme.bodySmall),
+                            AppBadge(label: _typeLabel, color: _tone),
+                          ],
+                        ),
                       ),
-                      AppBadge(label: _typeLabel, color: _tone),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_horiz,
+                            color: AppColors.textMuted),
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            _openEditDialog(context, ref);
+                          }
+                          if (value == 'delete') {
+                            ref
+                                .read(feedControllerProvider.notifier)
+                                .deletePost(item.id);
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Düzenle')),
+                          PopupMenuItem(value: 'delete', child: Text('Sil')),
+                        ],
+                      ),
                     ],
                   ),
                   if (item.title != null) ...[
                     const SizedBox(height: 8),
-                    Text(item.title!, style: Theme.of(context).textTheme.titleMedium),
+                    Text(item.title!,
+                        style: Theme.of(context).textTheme.titleMedium),
                   ],
                   const SizedBox(height: 6),
-                  Text(item.content, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(item.content,
+                      style: Theme.of(context).textTheme.bodyMedium),
                   if (item.event != null) ...[
                     const SizedBox(height: 10),
                     _EventPreview(item: item),
                   ],
-                  if (item.localImageBytes != null || item.imageUrl != null) ...[
+                  if (item.localImageBytes != null ||
+                      item.imageUrl != null) ...[
                     const SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
@@ -109,11 +149,31 @@ class FeedItemCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _Action(icon: Icons.mode_comment_outlined, label: 'Yanıtla'),
+                      InkWell(
+                        onTap: () => context.push('/posts/${item.id}'),
+                        child: _Action(
+                          icon: Icons.mode_comment_outlined,
+                          label: '${item.visibleCommentCount}',
+                        ),
+                      ),
                       const Spacer(),
-                      _Action(icon: Icons.favorite_border, label: '${item.likeCount}'),
+                      InkWell(
+                        onTap: () => ref
+                            .read(feedControllerProvider.notifier)
+                            .toggleLike(item.id),
+                        child: _Action(
+                          icon: item.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          label: '${item.likeCount}',
+                          color: item.isLiked
+                              ? AppColors.danger
+                              : AppColors.textMuted,
+                        ),
+                      ),
                       const Spacer(),
-                      const _Action(icon: Icons.ios_share_outlined, label: 'Paylaş'),
+                      const _Action(
+                          icon: Icons.ios_share_outlined, label: 'Paylaş'),
                     ],
                   ),
                 ],
@@ -123,6 +183,36 @@ class FeedItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openEditDialog(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: item.content);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Gönderiyi düzenle'),
+          content: TextField(
+            controller: controller,
+            minLines: 3,
+            maxLines: 6,
+            maxLength: 280,
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Vazgeç')),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: const Text('Kaydet'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (result == null) return;
+    await ref.read(feedControllerProvider.notifier).editPost(item.id, result);
   }
 }
 
@@ -151,7 +241,8 @@ class _EventPreview extends StatelessWidget {
             width: 42,
             child: Column(
               children: [
-                Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleMedium),
+                Text('${event.startsAt.day}',
+                    style: Theme.of(context).textTheme.titleMedium),
                 Text(
                   DateFormatters.dayMonth(event.startsAt).split(' ').last,
                   style: Theme.of(context).textTheme.bodySmall,
@@ -164,13 +255,15 @@ class _EventPreview extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(event.title, style: Theme.of(context).textTheme.titleSmall),
+                Text(event.title,
+                    style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 3),
                 Text(
                   '${DateFormatters.time(event.startsAt)} · ${event.location}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                Text(capacityText, style: Theme.of(context).textTheme.bodySmall),
+                Text(capacityText,
+                    style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -191,7 +284,8 @@ class _PollPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = item.pollOptions.fold<int>(0, (sum, option) => sum + option.voteCount);
+    final total =
+        item.pollOptions.fold<int>(0, (sum, option) => sum + option.voteCount);
     return Column(
       children: item.pollOptions.map((option) {
         final ratio = total == 0 ? 0.0 : option.voteCount / total;
@@ -204,7 +298,9 @@ class _PollPreview extends StatelessWidget {
                 Container(height: 38, color: AppColors.surface),
                 FractionallySizedBox(
                   widthFactor: ratio,
-                  child: Container(height: 38, color: AppColors.secondary.withValues(alpha: 0.18)),
+                  child: Container(
+                      height: 38,
+                      color: AppColors.secondary.withValues(alpha: 0.18)),
                 ),
                 Positioned.fill(
                   child: Padding(
@@ -227,17 +323,22 @@ class _PollPreview extends StatelessWidget {
 }
 
 class _Action extends StatelessWidget {
-  const _Action({required this.icon, required this.label});
+  const _Action({
+    required this.icon,
+    required this.label,
+    this.color = AppColors.textMuted,
+  });
 
   final IconData icon;
   final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppColors.textMuted),
+        Icon(icon, size: 18, color: color),
         const SizedBox(width: 6),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],

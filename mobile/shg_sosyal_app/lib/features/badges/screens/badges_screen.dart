@@ -19,10 +19,12 @@ class BadgesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Rozetler')),
       body: badges.when(
         loading: () => const LoadingView(),
-        error: (_, __) => const AppEmptyState(title: 'Rozetler yüklenemedi.', message: 'Tekrar dene.'),
+        error: (_, __) => const AppEmptyState(
+            title: 'Rozetler yüklenemedi.', message: 'Tekrar dene.'),
         data: (items) {
           final earned = items.where((badge) => badge.isEarned).length;
-          final categories = items.map((badge) => badge.category).toSet().toList();
+          final categories =
+              items.map((badge) => badge.category).toSet().toList();
           return CustomScrollView(
             slivers: [
               SliverPadding(
@@ -35,21 +37,27 @@ class BadgesScreen extends ConsumerWidget {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
                   sliver: SliverToBoxAdapter(
-                    child: Text(category, style: Theme.of(context).textTheme.titleMedium),
+                    child: Text(category,
+                        style: Theme.of(context).textTheme.titleMedium),
                   ),
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverGrid.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       childAspectRatio: 0.88,
                     ),
-                    itemCount: items.where((badge) => badge.category == category).length,
+                    itemCount: items
+                        .where((badge) => badge.category == category)
+                        .length,
                     itemBuilder: (context, index) {
-                      final badge = items.where((badge) => badge.category == category).toList()[index];
+                      final badge = items
+                          .where((badge) => badge.category == category)
+                          .toList()[index];
                       return _BadgeCard(badge: badge);
                     },
                   ),
@@ -88,16 +96,19 @@ class _BadgeSummary extends StatelessWidget {
               color: AppColors.warning.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(Icons.workspace_premium_outlined, color: AppColors.warning),
+            child: const Icon(Icons.workspace_premium_outlined,
+                color: AppColors.warning),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$earned/$total rozet kazanıldı', style: Theme.of(context).textTheme.titleMedium),
+                Text('$earned/$total rozet kazanıldı',
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 3),
-                Text('Katılım, üretim ve sosyal hareketlerin burada birikir.', style: Theme.of(context).textTheme.bodySmall),
+                Text('Katılım, üretim ve sosyal hareketlerin burada birikir.',
+                    style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -120,7 +131,9 @@ class _BadgeCard extends StatelessWidget {
         color: badge.isEarned ? AppColors.surfaceElevated : AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: badge.isEarned ? AppColors.warning.withValues(alpha: 0.45) : AppColors.border,
+          color: badge.isEarned
+              ? AppColors.warning.withValues(alpha: 0.45)
+              : AppColors.border,
         ),
       ),
       child: Column(
@@ -133,7 +146,9 @@ class _BadgeCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(badge.name, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
-          Expanded(child: Text(badge.description, style: Theme.of(context).textTheme.bodySmall)),
+          Expanded(
+              child: Text(badge.description,
+                  style: Theme.of(context).textTheme.bodySmall)),
           AppBadge(
             label: badge.isEarned ? 'Kazanıldı' : 'Kilitli',
             color: badge.isEarned ? AppColors.success : AppColors.textMuted,

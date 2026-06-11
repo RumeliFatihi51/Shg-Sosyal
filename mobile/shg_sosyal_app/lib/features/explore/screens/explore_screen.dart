@@ -23,9 +23,12 @@ class ExploreScreen extends ConsumerWidget {
     final feedState = ref.watch(feedItemsProvider);
 
     final events = eventsState.valueOrNull ?? const <EventModel>[];
-    final communities = communitiesState.valueOrNull ?? const <CommunityModel>[];
+    final communities =
+        communitiesState.valueOrNull ?? const <CommunityModel>[];
     final feed = feedState.valueOrNull ?? const <FeedItemModel>[];
-    final loading = eventsState.isLoading && communitiesState.isLoading && feedState.isLoading;
+    final loading = eventsState.isLoading &&
+        communitiesState.isLoading &&
+        feedState.isLoading;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Keşfet')),
@@ -45,8 +48,13 @@ class ExploreScreen extends ConsumerWidget {
                 ),
                 _TopicRail(feed: feed),
                 const Divider(height: 1),
-                _SectionHeader(title: 'Yakında', action: 'Tümü', onAction: () => context.push('/events')),
-                for (final event in events.take(4)) _EventExploreRow(event: event),
+                _SectionHeader(
+                  title: 'Yakında',
+                  action: 'Tümü',
+                  onAction: () => context.push('/events'),
+                ),
+                for (final event in events.take(4))
+                  _EventExploreRow(event: event),
                 const Divider(height: 1),
                 _SectionHeader(
                   title: 'Aktif topluluklar',
@@ -56,7 +64,11 @@ class ExploreScreen extends ConsumerWidget {
                 for (final community in communities.take(5))
                   _CommunityExploreRow(community: community),
                 const Divider(height: 1),
-                _SectionHeader(title: 'Konuşulanlar', action: 'Akış', onAction: () => context.push('/home')),
+                _SectionHeader(
+                  title: 'Konuşulanlar',
+                  action: 'Akış',
+                  onAction: () => context.push('/home'),
+                ),
                 for (final item in feed.take(5)) _FeedExploreRow(item: item),
               ],
             ),
@@ -92,9 +104,14 @@ class _TopicRail extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: index == 0 ? AppColors.primary : AppColors.border),
+              border: Border.all(
+                color: index == 0 ? AppColors.primary : AppColors.border,
+              ),
             ),
-            child: Text(topics[index], style: Theme.of(context).textTheme.bodySmall),
+            child: Text(
+              topics[index],
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           );
         },
       ),
@@ -103,7 +120,11 @@ class _TopicRail extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.action, required this.onAction});
+  const _SectionHeader({
+    required this.title,
+    required this.action,
+    required this.onAction,
+  });
 
   final String title;
   final String action;
@@ -115,7 +136,9 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
+          Expanded(
+            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          ),
           TextButton(onPressed: onAction, child: Text(action)),
         ],
       ),
@@ -143,8 +166,14 @@ class _EventExploreRow extends StatelessWidget {
               width: 42,
               child: Column(
                 children: [
-                  Text('${event.startsAt.day}', style: Theme.of(context).textTheme.titleMedium),
-                  Text(DateFormatters.dayMonth(event.startsAt).split(' ').last, style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '${event.startsAt.day}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    DateFormatters.dayMonth(event.startsAt).split(' ').last,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -153,13 +182,19 @@ class _EventExploreRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(event.title, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    event.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 3),
                   Text(
                     '${DateFormatters.time(event.startsAt)} · ${event.location}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  Text('${event.participantCount} kişi katılıyor', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '${event.participantCount} kişi katılıyor',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -193,7 +228,10 @@ class _CommunityExploreRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(community.name, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    community.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 3),
                   Text(
                     '${community.memberCount} üye · ${community.postCount} gönderi',
@@ -202,7 +240,10 @@ class _CommunityExploreRow extends StatelessWidget {
                 ],
               ),
             ),
-            TextButton(onPressed: () => context.push('/communities/${community.id}'), child: const Text('Aç')),
+            TextButton(
+              onPressed: () => context.push('/communities/${community.id}'),
+              child: const Text('Aç'),
+            ),
           ],
         ),
       ),
@@ -231,7 +272,10 @@ class _FeedExploreRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title ?? item.author.fullName, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  item.title ?? item.author.fullName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 3),
                 Text(
                   item.content,

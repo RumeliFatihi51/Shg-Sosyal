@@ -41,9 +41,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(AppConstants.appName, style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  AppConstants.appName,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: 8),
-                Text(AppConstants.appTagline, style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  AppConstants.appTagline,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
                 const SizedBox(height: 28),
                 AppTextField(
                   label: 'E-posta',
@@ -73,7 +79,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           final result = ref.read(authControllerProvider);
                           if (result.hasError) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Giriş yapılamadı. Bilgilerini kontrol et.')),
+                              const SnackBar(
+                                content: Text(
+                                  'Giriş yapılamadı. Bilgilerini kontrol et.',
+                                ),
+                              ),
                             );
                             return;
                           }

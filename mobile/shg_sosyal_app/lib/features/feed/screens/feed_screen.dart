@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/auth/role_permissions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_empty_state.dart';
@@ -25,7 +26,9 @@ class FeedScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Ana Akış'),
         actions: [
-          IconButton(onPressed: () => context.push('/explore'), icon: const Icon(Icons.search)),
+          IconButton(
+              onPressed: () => context.push('/explore'),
+              icon: const Icon(Icons.search)),
           IconButton(
             onPressed: () => context.push('/notifications'),
             icon: const Icon(Icons.notifications_none),
@@ -38,7 +41,7 @@ class FeedScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(feedItemsProvider.future),
+        onRefresh: () => ref.read(feedControllerProvider.notifier).load(),
         child: ListView(
           padding: const EdgeInsets.only(bottom: 86),
           children: [
@@ -57,7 +60,8 @@ class FeedScreen extends ConsumerWidget {
                   title: 'Akış yüklenemedi.',
                   message: 'Tekrar dene.',
                   actionLabel: 'Yenile',
-                  onAction: () => ref.invalidate(feedItemsProvider),
+                  onAction: () =>
+                      ref.read(feedControllerProvider.notifier).load(),
                 ),
               ),
               data: (items) => items.isEmpty
@@ -84,10 +88,15 @@ class FeedScreen extends ConsumerWidget {
 
   void _openComposeSheet(BuildContext context, WidgetRef ref) {
     final user = ref.read(authControllerProvider).valueOrNull;
-    final communities = ref.read(communitiesProvider).valueOrNull ?? const <CommunityModel>[];
-    final joined = communities.where((community) => community.isJoined).toList();
+    final communities =
+        ref.read(communitiesProvider).valueOrNull ?? const <CommunityModel>[];
+    final availableCommunities = communities
+        .where(
+            (community) => RolePermissions.canPostInCommunity(user, community))
+        .toList();
     final controller = TextEditingController();
-    CommunityModel? selected = joined.isNotEmpty ? joined.first : null;
+    CommunityModel? selected =
+        availableCommunities.isNotEmpty ? availableCommunities.first : null;
     var isSubmitting = false;
     XFile? pickedImage;
     String? errorText;
@@ -144,19 +153,81 @@ class FeedScreen extends ConsumerWidget {
                 isSubmitting = true;
                 errorText = null;
               });
-              final bytes = await pickedImage?.readAsBytes();
-              await Future<void>.delayed(const Duration(milliseconds: 280));
-              ref.read(localFeedPostsProvider.notifier).addPost(
-                    author: currentUser,
-                    community: community,
-                    content: content,
-                    imageBytes: bytes,
-                  );
-              if (!context.mounted) return;
-              Navigator.of(sheetContext).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${community.name} içinde paylaşıldı.')),
-              );
+              try {
+                final bytes = await pickedImage?.readAsBytes();
+                await ref.read(feedControllerProvider.notifier).addPost(
+                      author: currentUser,
+                      community: community,
+                      content: content,
+                      imageBytes: bytes,
+                      imageMimeType: pickedImage?.mimeType,
+                    );
+                if (!context.mounted) return;
+                Navigator.of(sheetContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      RolePermissions.bypassesContentApproval(currentUser)
+                          ? '${community.name} içinde direkt yayınlandı.'
+                          : '${community.name} içinde paylaşıldı.',
+                    ),
+                  ),
+                );
+              } catch (error) {
+                if (!context.mounted) return;
+                setState(() {
+                  isSubmitting = false;
+                  errorText = 'Paylaşım gönderilemedi: $error';
+                });
+              }
+            }
+
+            Future<void> submitPoll() async {
+              final currentUser = user;
+              final community = selected;
+              final content = controller.text.trim();
+              if (currentUser == null) {
+                setState(() => errorText = 'Anket için giriş yapmalısın.');
+                return;
+              }
+              if (community == null) {
+                setState(() => errorText = 'Anket için bir topluluk seç.');
+                return;
+              }
+              if (content.length < 6) {
+                setState(
+                    () => errorText = 'Anket sorusu en az 6 karakter olmalı.');
+                return;
+              }
+              setState(() {
+                isSubmitting = true;
+                errorText = null;
+              });
+              try {
+                await ref.read(feedControllerProvider.notifier).addPoll(
+                  author: currentUser,
+                  community: community,
+                  question: content,
+                  options: const ['Evet', 'Hayır', 'Kararsızım'],
+                );
+                if (!context.mounted) return;
+                Navigator.of(sheetContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      RolePermissions.pollNeedsApproval(currentUser)
+                          ? 'Anket onaya gönderildi.'
+                          : 'Anket direkt yayınlandı.',
+                    ),
+                  ),
+                );
+              } catch (error) {
+                if (!context.mounted) return;
+                setState(() {
+                  isSubmitting = false;
+                  errorText = 'Anket oluşturulamadı: $error';
+                });
+              }
             }
 
             return Padding(
@@ -165,12 +236,13 @@ class FeedScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Gönderi paylaş', style: Theme.of(context).textTheme.titleLarge),
+                  Text('Gönderi paylaş',
+                      style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 12),
-                  if (joined.isEmpty)
+                  if (availableCommunities.isEmpty)
                     const AppEmptyState(
-                      title: 'Önce bir topluluğa katıl.',
-                      message: 'Paylaşımlar topluluk içinde görünür.',
+                      title: 'Paylaşım yapabileceğin topluluk yok.',
+                      message: 'Önce bir topluluğa katıl veya topluluk kur.',
                       icon: Icons.groups_2_outlined,
                     )
                   else ...[
@@ -181,10 +253,12 @@ class FeedScreen extends ConsumerWidget {
                         prefixIcon: Icon(Icons.groups_2_outlined),
                       ),
                       items: [
-                        for (final community in joined)
+                        for (final community in availableCommunities)
                           DropdownMenuItem(
                             value: community,
-                            child: Text(community.name),
+                            child: Text(
+                              '${community.name}${community.adminIds.contains(user?.id) ? ' · yönetici' : ''}',
+                            ),
                           ),
                       ],
                       onChanged: (value) => setState(() => selected = value),
@@ -207,7 +281,8 @@ class FeedScreen extends ConsumerWidget {
                     if (pickedImage != null) ...[
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceElevated,
                           borderRadius: BorderRadius.circular(16),
@@ -215,7 +290,8 @@ class FeedScreen extends ConsumerWidget {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.image_outlined, color: AppColors.primary),
+                            const Icon(Icons.image_outlined,
+                                color: AppColors.primary),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -225,7 +301,8 @@ class FeedScreen extends ConsumerWidget {
                               ),
                             ),
                             IconButton(
-                              onPressed: () => setState(() => pickedImage = null),
+                              onPressed: () =>
+                                  setState(() => pickedImage = null),
                               icon: const Icon(Icons.close),
                             ),
                           ],
@@ -234,28 +311,39 @@ class FeedScreen extends ConsumerWidget {
                     ],
                     if (errorText != null) ...[
                       const SizedBox(height: 8),
-                      Text(errorText!, style: const TextStyle(color: AppColors.danger)),
+                      Text(errorText!,
+                          style: const TextStyle(color: AppColors.danger)),
                     ],
                     const SizedBox(height: 12),
-                    Row(
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         IconButton.outlined(
                           tooltip: 'Görsel ekle',
                           onPressed: isSubmitting ? null : pickImage,
                           icon: const Icon(Icons.image_outlined),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: isSubmitting ? null : () => context.push('/events/create'),
-                            icon: const Icon(Icons.event_outlined),
-                            label: const Text('Etkinlik öner'),
-                          ),
+                        OutlinedButton.icon(
+                          onPressed: isSubmitting
+                              ? null
+                              : () {
+                                  Navigator.of(sheetContext).pop();
+                                  context.push('/events/create');
+                                },
+                          icon: const Icon(Icons.event_outlined),
+                          label: const Text('Etkinlik öner'),
                         ),
-                        const SizedBox(width: 10),
+                        OutlinedButton.icon(
+                          onPressed: isSubmitting ? null : submitPoll,
+                          icon: const Icon(Icons.poll_outlined),
+                          label: const Text('Anket'),
+                        ),
                         FilledButton(
                           onPressed: isSubmitting ? null : submit,
-                          child: Text(isSubmitting ? 'Paylaşılıyor...' : 'Paylaş'),
+                          child:
+                              Text(isSubmitting ? 'Paylaşılıyor...' : 'Paylaş'),
                         ),
                       ],
                     ),

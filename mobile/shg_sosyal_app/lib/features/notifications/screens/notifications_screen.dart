@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_formatters.dart';
@@ -14,15 +15,28 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationsProvider);
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bildirimler'),
-        actions: [TextButton(onPressed: () {}, child: const Text('Okundu yap'))],
+        actions: [
+          TextButton(
+            onPressed: unreadCount == 0
+                ? null
+                : () => ref.read(notificationsProvider.notifier).markAllRead(),
+            child: const Text('Okundu yap'),
+          ),
+        ],
       ),
       body: notifications.when(
         loading: () => const LoadingView(),
-        error: (_, __) => const AppEmptyState(title: 'Bildirimler yüklenemedi.', message: 'Tekrar dene.'),
+        error: (_, __) => AppEmptyState(
+          title: 'Bildirimler yüklenemedi.',
+          message: 'Tekrar dene.',
+          actionLabel: 'Yenile',
+          onAction: () => ref.read(notificationsProvider.notifier).load(),
+        ),
         data: (items) => items.isEmpty
             ? const AppEmptyState(
                 title: 'Henüz bildirim yok.',
@@ -34,21 +48,44 @@ class NotificationsScreen extends ConsumerWidget {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _NotificationItem(item: item),
+                  return _NotificationItem(
+                    item: item,
+                    onTap: () async {
+                      await ref
+                          .read(notificationsProvider.notifier)
+                          .markRead(item.id);
+                      if (!context.mounted) return;
+                      final route =
+                          item.targetRoute ?? _routeForType(item.type);
+                      context.push(route);
+                    },
                   );
                 },
               ),
       ),
     );
   }
+
+  String _routeForType(NotificationType type) {
+    return switch (type) {
+      NotificationType.friendRequest => '/friends',
+      NotificationType.message => '/messages',
+      NotificationType.eventReminder => '/events',
+      NotificationType.community => '/communities',
+      NotificationType.badge => '/badges',
+      NotificationType.leaderboard => '/leaderboard',
+    };
+  }
 }
 
 class _NotificationItem extends StatelessWidget {
-  const _NotificationItem({required this.item});
+  const _NotificationItem({
+    required this.item,
+    required this.onTap,
+  });
 
   final NotificationModel item;
+  final VoidCallback onTap;
 
   IconData get _icon {
     return switch (item.type) {
@@ -74,54 +111,67 @@ class _NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: item.isRead ? AppColors.surface : AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: item.isRead ? AppColors.border : _color.withValues(alpha: 0.38),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.border)),
         ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: _color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(_icon, color: _color),
             ),
-            child: Icon(_icon, color: _color),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(item.title, style: Theme.of(context).textTheme.titleMedium)),
-                    if (!item.isRead)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: item.isRead
+                                        ? FontWeight.w600
+                                        : FontWeight.w800,
+                                  ),
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(item.body, style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 8),
-                Text(DateFormatters.relative(item.createdAt), style: Theme.of(context).textTheme.bodySmall),
-              ],
+                      if (!item.isRead)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Text(item.body, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 8),
+                  Text(
+                    DateFormatters.relative(item.createdAt),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
